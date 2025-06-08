@@ -51,3 +51,7 @@ export interface DomainHealthResponse {
   timestamp: string;
   uptime: number;
 }
+
+// Export streaming types
+export * from './src/llm/streaming';
+export * from './src/llm/streaming-errors';
