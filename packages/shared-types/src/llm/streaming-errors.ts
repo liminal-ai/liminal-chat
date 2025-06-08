@@ -1,5 +1,14 @@
 // Stream error taxonomy for SSE streaming
 
+/**
+ * Categorized error codes for SSE streaming operations.
+ * 
+ * Error code ranges:
+ * - 1xxx: Network-related errors
+ * - 2xxx: Provider-related errors  
+ * - 3xxx: Stream parsing errors
+ * - 4xxx: Client request errors
+ */
 export enum StreamErrorCode {
   // Network errors (1xxx)
   NETWORK_ERROR = 1000,
@@ -22,6 +31,10 @@ export enum StreamErrorCode {
   INSUFFICIENT_QUOTA = 4002,
 }
 
+/**
+ * User-facing error messages mapped to stream error codes.
+ * Frozen to prevent runtime modifications.
+ */
 export const STREAM_ERROR_MESSAGES: Record<StreamErrorCode, string> = {
   [StreamErrorCode.NETWORK_ERROR]: "Network error occurred during streaming",
   [StreamErrorCode.CONNECTION_TIMEOUT]: "Connection timed out",
@@ -35,4 +48,4 @@ export const STREAM_ERROR_MESSAGES: Record<StreamErrorCode, string> = {
   [StreamErrorCode.INVALID_REQUEST]: "Invalid request format",
   [StreamErrorCode.AUTHENTICATION_FAILED]: "Authentication failed",
   [StreamErrorCode.INSUFFICIENT_QUOTA]: "Insufficient quota for this request",
-};
+} as const;
