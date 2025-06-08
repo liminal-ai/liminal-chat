@@ -1,0 +1,14 @@
+name = "liminal-chat-edge"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+DOMAIN_URL = "http://localhost:8766"
+
+# For local development
+[env.development]
+vars = { DOMAIN_URL = "http://localhost:8766" }
+
+# For production (update this when deploying)
+[env.production]
+vars = { DOMAIN_URL = "https://your-domain-server.com" }

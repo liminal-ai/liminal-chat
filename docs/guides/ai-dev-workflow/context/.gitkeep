@@ -1,0 +1,9 @@
+# Context directory for agent work files
+
+This directory contains:
+- requirements.md - Current work requirements
+- qe-work.md - Quality Engineer's test work and findings  
+- engineer-work.md - Engineer's implementation notes
+- status.md - Overall progress tracking
+
+These files are maintained by the Implementation Lead and updated by each agent.
