@@ -1,5 +1,4 @@
-// Re-export everything from the root index
-export * from '../index';
+// Central aggregation of shared-types exports - no circular imports
 
 // Export streaming types
 export * from './llm/streaming';
