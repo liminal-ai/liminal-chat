@@ -258,6 +258,7 @@ After outputting the Implementation Pause, proceed with the requested task.
 - `verify:no-tests` for quick checks during development
 - Test specific file: `pnpm test -- path/to/test.ts`
 - Coverage report: `pnpm test:cov`
+- `check:error-codes` validates no generic Error usage (use AppError with specific codes)
 
 #### CLI Operations
 ```bash
