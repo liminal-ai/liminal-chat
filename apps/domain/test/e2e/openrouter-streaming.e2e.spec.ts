@@ -19,14 +19,7 @@ describe("E2E: OpenRouter SSE Streaming", () => {
     // TODO: Set up MSW mock server for OpenRouter SSE streaming
     // mockServer = setupServer();
     // mockServer.listen();
-  });
 
-  afterAll(async () => {
-    // TODO: Clean up MSW mock server
-    // mockServer.close();
-  });
-
-  beforeAll(async () => {
     // Create test application with Fastify adapter once for all tests
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -60,6 +53,8 @@ describe("E2E: OpenRouter SSE Streaming", () => {
   });
 
   afterAll(async () => {
+    // TODO: Clean up MSW mock server
+    // mockServer.close();
     await app.close();
   });
 
