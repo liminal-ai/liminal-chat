@@ -14,6 +14,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@liminal-chat/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       chalk:
         specifier: ^5.4.1
         version: 5.4.1

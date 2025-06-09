@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { EdgeClientConfig } from '../utils/config';
+import { ProviderStreamEvent } from '@liminal-chat/shared-types';
 
 export interface HealthResponse {
   status: 'healthy' | 'unhealthy' | 'degraded';
@@ -10,6 +11,7 @@ export interface HealthResponse {
 export interface LLMPromptRequest {
   prompt: string;
   provider?: string;
+  stream?: boolean;
 }
 
 export interface LLMPromptResponse {
@@ -157,6 +159,96 @@ export class EdgeClient {
     }
   }
 
+  async *streamChat(prompt: string, options?: { provider?: string; lastEventId?: string }): AsyncGenerator<ProviderStreamEvent> {
+    try {
+      const body: LLMPromptRequest = { 
+        prompt, 
+        stream: true 
+      };
+      if (options?.provider) {
+        body.provider = options.provider;
+      }
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        'Cache-Control': 'no-cache'
+      };
+
+      // Add Last-Event-ID header if provided
+      if (options?.lastEventId) {
+        headers['Last-Event-ID'] = options.lastEventId;
+      }
+      
+      const response = await fetch(`${this.baseUrl}/api/v1/llm/prompt/stream`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(60000) // 60 second timeout for streaming
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json() as ErrorResponse;
+        const errorMessage = typeof errorData.error === 'string' 
+          ? errorData.error 
+          : errorData.error?.message || `Streaming request failed: ${response.status}`;
+        throw new Error(errorMessage);
+      }
+
+      // Parse SSE stream
+      if (!response.body) {
+        throw new Error('No response body for streaming');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      // @ts-ignore - node-fetch body is a ReadableStream in Node.js
+      const reader = response.body.getReader();
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          
+          // Keep the last incomplete line in buffer
+          buffer = lines.pop() || '';
+          
+          for (const line of lines) {
+            if (line.trim() === '') continue;
+            
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              
+              if (data === '[DONE]') {
+                return;
+              }
+              
+              try {
+                const event = JSON.parse(data) as ProviderStreamEvent;
+                yield event;
+              } catch (parseError) {
+                console.warn('Failed to parse SSE event:', data);
+              }
+            }
+            // Ignore comment lines (starting with :) and other SSE fields
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    } catch (error: any) {
+      if (error.code === 'ECONNREFUSED') {
+        throw new Error(`Cannot connect to server at ${this.baseUrl}`);
+      }
+      throw error;
+    }
+  }
+
   // NOTE: The following methods are commented out as they depend on endpoints
   // that don't exist in the current Echo Provider implementation.
   // They can be uncommented when conversation management is added to the server.
@@ -171,10 +263,6 @@ export class EdgeClient {
   }
 
   async addMessage(conversationId: string, content: string): Promise<MessageResponse> {
-    // Implementation removed - endpoint doesn't exist
-  }
-
-  async *streamChat(params: { conversationId: string; message: string }): AsyncGenerator<ChatEvent> {
     // Implementation removed - endpoint doesn't exist
   }
   */

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
+import { ProviderStreamEvent } from "@liminal-chat/shared-types";
 
 @Injectable()
 export class EchoProvider implements ILLMProvider {
@@ -31,7 +32,7 @@ export class EchoProvider implements ILLMProvider {
     });
   }
 
-  async *generateStream(input: string | Message[]): AsyncIterable<string> {
+  async *generateStream(input: string | Message[], originalRequestParams?: any, lastEventId?: string): AsyncIterable<ProviderStreamEvent> {
     let textContent: string;
 
     if (typeof input === "string") {
@@ -47,11 +48,22 @@ export class EchoProvider implements ILLMProvider {
     const words = response.split(" ");
 
     // Simulate streaming by yielding one word at a time
-    for (const word of words) {
-      yield word + " ";
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      yield {
+        type: 'content',
+        data: word + " ",
+        eventId: `echo-${Date.now()}-${i}`
+      };
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
+    
+    // Send completion event
+    yield {
+      type: 'done',
+      eventId: `echo-${Date.now()}-done`
+    };
   }
 
   getName(): string {

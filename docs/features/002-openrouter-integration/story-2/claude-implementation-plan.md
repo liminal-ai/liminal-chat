@@ -1,7 +1,7 @@
 # Claude Implementation Plan - Story 2: SSE Streaming
 
 **Story**: Implement End-to-End SSE Streaming with Graceful Interruption Handling  
-**Estimated Total Time**: 3 hours (Claude time)  
+**Estimated Total Time**: 45 minutes (realistic based on actual Claude performance)  
 **Implementation Date**: TBD
 
 ## Task Breakdown
@@ -104,24 +104,50 @@
 
 ---
 
-### Task 5: Implement CLI Reconnection Manager
-**Time**: 9 minutes  
-**Description**: Build reconnection logic with exponential backoff
+### Task 5A: Implement CLI SSE Streaming Foundation
+**Time**: 8 minutes  
+**Description**: Build basic CLI streaming capabilities with EdgeClient integration
+
+**Steps**:
+1. Add streaming method to `apps/cli/src/api/edge-client.ts`
+2. Implement SSE client with `Last-Event-ID` header support
+3. Add CLI streaming types (import from shared-types)
+4. Create basic content display handler
+5. Add unit tests for streaming client
+6. Run all verification commands
+
+**Definition of Done**:
+- [ ] `EdgeClient.streamChat()` method implemented
+- [ ] SSE parsing handles `text/event-stream` responses
+- [ ] `Last-Event-ID` header sent on requests
+- [ ] Basic incremental content display working
+- [ ] Unit tests cover SSE parsing and header handling
+- [ ] `pnpm lint` passes (no new violations)
+- [ ] `pnpm typecheck` passes (no new errors)
+- [ ] `pnpm test` passes (CLI tests pass)
+- [ ] Git status clean (all changes committed)
+
+---
+
+### Task 5B: Implement CLI Reconnection Manager
+**Time**: 7 minutes  
+**Description**: Build reconnection logic with exponential backoff on top of streaming foundation
 
 **Steps**:
 1. Create `apps/cli/src/api/streaming-reconnection.ts`
 2. Implement StreamReconnectionManager class
-3. Add exponential backoff with jitter
-4. Integrate with EdgeClient.streamChat
-5. Add content clearing on reconnection
+3. Add exponential backoff with jitter calculations
+4. Integrate with EdgeClient.streamChat from Task 5A
+5. Add content clearing on reconnection strategy
 6. Run all verification commands
 
 **Definition of Done**:
 - [ ] Reconnection follows exponential backoff pattern
 - [ ] Jitter prevents thundering herd
-- [ ] Last-Event-ID is preserved and sent
+- [ ] Last-Event-ID is preserved and sent correctly
 - [ ] Previous content is cleared on new stream
-- [ ] Unit tests verify backoff calculations
+- [ ] Unit tests verify backoff calculations and retry logic
+- [ ] Integration with EdgeClient.streamChat working
 - [ ] `pnpm lint` passes (no new violations)
 - [ ] `pnpm typecheck` passes (no new errors)
 - [ ] `pnpm test` passes (CLI tests pass)
@@ -132,15 +158,15 @@
 ---
 
 ### Task 6: E2E Integration and Verification
-**Time**: 9 minutes  
+**Time**: 10 minutes  
 **Description**: Connect all components and verify end-to-end flow
 
 **Steps**:
-1. Update EdgeClient to use reconnection manager
-2. Verify Edge service SSE proxying
+1. Verify Edge service SSE proxying capabilities
+2. Test complete CLI → Edge → Domain → OpenRouter flow
 3. Test with real OpenRouter API
 4. Validate performance metrics
-5. Test interruption scenarios
+5. Test interruption and reconnection scenarios
 6. Run all verification commands
 
 **Definition of Done**:
@@ -264,7 +290,7 @@ pnpm cli:chat:openrouter
 - [ ] Ready for PR with evidence of all tests passing
 
 ## Notes
-- Times are Claude estimates (human time ÷ 5)
+- Times are conservative estimates (Claude typically delivers 5-10x faster than initial estimates)
 - Each task should be committed separately for easy review
 - Run verification protocol after Task 7
 - If blocked on any task, engage systematic debug protocol

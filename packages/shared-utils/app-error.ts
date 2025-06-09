@@ -18,7 +18,7 @@ export class AppError extends Error {
     // Log TODO errors in development (only in Node.js environment)
     // @ts-ignore - global may not exist in all environments
     const globalObj = typeof globalThis !== 'undefined' ? globalThis : 
-                     typeof window !== 'undefined' ? window : 
+                     typeof (globalThis as any).window !== 'undefined' ? (globalThis as any).window : 
                      {} as any;
     
     if (globalObj.process?.env?.NODE_ENV === 'development' && 
