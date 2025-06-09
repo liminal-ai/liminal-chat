@@ -259,7 +259,15 @@ export class OpenRouterProvider implements ILLMProvider {
             }
 
             // Parse JSON data
-            const data = JSON.parse(chunk.data) as any;
+            const data = JSON.parse(chunk.data) as {
+              choices?: Array<{ delta?: { content?: string } }>;
+              usage?: {
+                prompt_tokens: number;
+                completion_tokens: number;
+                total_tokens: number;
+              };
+              model?: string;
+            };
 
             // Extract content delta
             const content = data.choices?.[0]?.delta?.content;
