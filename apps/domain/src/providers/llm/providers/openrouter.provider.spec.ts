@@ -483,28 +483,28 @@ describe("OpenRouterProvider", () => {
         expect(events[0]).toEqual({
           type: "content",
           data: "Hello",
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[1]).toEqual({
           type: "content",
           data: " world",
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[2]).toEqual({
           type: "content",
           data: "!",
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[3]).toEqual({
           type: "done",
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
 
         // Verify fetch was called with stream: true
         expect(mockFetch).toHaveBeenCalledWith(
           "https://openrouter.ai/api/v1/chat/completions",
           expect.objectContaining({
-            body: expect.stringContaining('"stream":true'),
+            body: expect.stringContaining('"stream":true') as string,
           }),
         );
       });
@@ -533,7 +533,7 @@ describe("OpenRouterProvider", () => {
             totalTokens: 15,
             model: "openai/gpt-4",
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[2].type).toBe("done");
       });
@@ -586,6 +586,7 @@ describe("OpenRouterProvider", () => {
         const mockLogger = {
           debug: jest.fn(),
         };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         (provider as any).logger = mockLogger;
 
         const chunks = ["data: [DONE]\n\n"];
@@ -628,7 +629,7 @@ describe("OpenRouterProvider", () => {
             code: StreamErrorCode.AUTHENTICATION_FAILED,
             retryable: false,
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
       });
 
@@ -656,7 +657,7 @@ describe("OpenRouterProvider", () => {
             retryable: false,
             details: { originalData: "{invalid json" },
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[2].type).toBe("done");
       });
@@ -678,7 +679,7 @@ describe("OpenRouterProvider", () => {
             code: StreamErrorCode.NETWORK_ERROR,
             retryable: true,
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
       });
 
@@ -700,7 +701,7 @@ describe("OpenRouterProvider", () => {
             code: StreamErrorCode.CONNECTION_TIMEOUT,
             retryable: true,
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
       });
 
@@ -726,7 +727,7 @@ describe("OpenRouterProvider", () => {
             code: StreamErrorCode.PROVIDER_RATE_LIMIT,
             retryable: true,
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
       });
 
@@ -753,7 +754,7 @@ describe("OpenRouterProvider", () => {
               originalError: "No response body available for streaming",
             },
           },
-          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/),
+          eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
       });
     });
@@ -774,13 +775,13 @@ describe("OpenRouterProvider", () => {
         expect(mockFetch).toHaveBeenCalledWith(
           "https://openrouter.ai/api/v1/chat/completions",
           expect.objectContaining({
-            body: expect.stringContaining('"temperature":0.7'),
+            body: expect.stringContaining('"temperature":0.7') as string,
           }),
         );
         expect(mockFetch).toHaveBeenCalledWith(
           "https://openrouter.ai/api/v1/chat/completions",
           expect.objectContaining({
-            body: expect.stringContaining('"max_tokens":100'),
+            body: expect.stringContaining('"max_tokens":100') as string,
           }),
         );
       });
