@@ -4,6 +4,7 @@
   "private": true,
   "description": "A threshold between human and AI communication",
   "scripts": {
+    "claude": "./scripts/claude-shell.sh",
     "dev": "pnpm -r --parallel run dev",
     "dev:all": "pnpm -r --parallel run dev",
     "build": "pnpm check:error-codes && pnpm -r run build",

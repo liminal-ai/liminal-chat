@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EdgeClient } from './edge-client';
+import { ProviderStreamEvent } from '@liminal-chat/shared-types';
 import fetch from 'node-fetch';
 
 // Mock node-fetch
@@ -280,7 +281,185 @@ describe('EdgeClient', () => {
     });
   });
 
-  // NOTE: Tests for conversation management and streaming have been removed
-  // as these features are not part of the current Echo Provider implementation.
-  // They can be added back when the server supports these endpoints.
+  describe('streamChat', () => {
+    it('should send correct headers and request body', async () => {
+      const mockReader = {
+        read: vi.fn()
+          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('data: {"type":"content","data":"Hello","eventId":"test-1"}\n') })
+          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('data: {"type":"done","eventId":"test-2"}\n') })
+          .mockResolvedValueOnce({ done: true, value: undefined }),
+        releaseLock: vi.fn()
+      };
+
+      const mockResponse = {
+        ok: true,
+        body: {
+          getReader: () => mockReader
+        }
+      };
+
+      mockFetch.mockResolvedValue(mockResponse as any);
+
+      const events: ProviderStreamEvent[] = [];
+      
+      for await (const event of client.streamChat('Hello', { provider: 'openrouter', lastEventId: 'last-123' })) {
+        events.push(event);
+      }
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8787/api/v1/llm/prompt/stream',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Last-Event-ID': 'last-123'
+          }),
+          body: expect.stringContaining('"prompt":"Hello"') && 
+                expect.stringContaining('"provider":"openrouter"') &&
+                expect.stringContaining('"stream":true')
+        })
+      );
+
+      expect(events).toHaveLength(2);
+      expect(events[0]).toEqual({
+        type: 'content',
+        data: 'Hello',
+        eventId: 'test-1'
+      });
+      expect(events[1]).toEqual({
+        type: 'done',
+        eventId: 'test-2'
+      });
+    });
+
+    it('should parse SSE events correctly', async () => {
+      const sseData = [
+        'data: {"type":"content","data":"Hello","eventId":"1"}\n',
+        'data: {"type":"content","data":" World","eventId":"2"}\n',
+        ': comment line\n',
+        'data: {"type":"usage","data":{"promptTokens":2,"completionTokens":3,"totalTokens":5,"model":"test"},"eventId":"3"}\n',
+        'data: {"type":"done","eventId":"4"}\n'
+      ].join('');
+
+      const mockReader = {
+        read: vi.fn()
+          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(sseData) })
+          .mockResolvedValueOnce({ done: true, value: undefined }),
+        releaseLock: vi.fn()
+      };
+
+      const mockResponse = {
+        ok: true,
+        body: { getReader: () => mockReader }
+      };
+
+      mockFetch.mockResolvedValue(mockResponse as any);
+
+      const events: ProviderStreamEvent[] = [];
+      
+      for await (const event of client.streamChat('Test')) {
+        events.push(event);
+      }
+
+      expect(events).toHaveLength(4);
+      expect(events[0]).toEqual({ type: 'content', data: 'Hello', eventId: '1' });
+      expect(events[1]).toEqual({ type: 'content', data: ' World', eventId: '2' });
+      expect(events[2]).toEqual({ 
+        type: 'usage', 
+        data: { promptTokens: 2, completionTokens: 3, totalTokens: 5, model: 'test' },
+        eventId: '3'
+      });
+      expect(events[3]).toEqual({ type: 'done', eventId: '4' });
+    });
+
+    it('should handle [DONE] signal correctly', async () => {
+      const sseData = 'data: {"type":"content","data":"Test","eventId":"1"}\ndata: [DONE]\n';
+
+      const mockReader = {
+        read: vi.fn()
+          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(sseData) })
+          .mockResolvedValueOnce({ done: true, value: undefined }),
+        releaseLock: vi.fn()
+      };
+
+      const mockResponse = {
+        ok: true,
+        body: { getReader: () => mockReader }
+      };
+
+      mockFetch.mockResolvedValue(mockResponse as any);
+
+      const events: ProviderStreamEvent[] = [];
+      
+      for await (const event of client.streamChat('Test')) {
+        events.push(event);
+      }
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toEqual({ type: 'content', data: 'Test', eventId: '1' });
+    });
+
+    it('should handle malformed JSON gracefully', async () => {
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      
+      const sseData = 'data: {invalid json}\ndata: {"type":"content","data":"Valid","eventId":"1"}\ndata: [DONE]\n';
+
+      const mockReader = {
+        read: vi.fn()
+          .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(sseData) })
+          .mockResolvedValueOnce({ done: true, value: undefined }),
+        releaseLock: vi.fn()
+      };
+
+      const mockResponse = {
+        ok: true,
+        body: { getReader: () => mockReader }
+      };
+
+      mockFetch.mockResolvedValue(mockResponse as any);
+
+      const events: ProviderStreamEvent[] = [];
+      
+      for await (const event of client.streamChat('Test')) {
+        events.push(event);
+      }
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toEqual({ type: 'content', data: 'Valid', eventId: '1' });
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to parse SSE event:', '{invalid json}');
+      
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle HTTP errors', async () => {
+      const mockResponse = {
+        ok: false,
+        status: 400,
+        json: () => Promise.resolve({ error: 'Bad request' })
+      };
+
+      mockFetch.mockResolvedValue(mockResponse as any);
+
+      await expect(async () => {
+        for await (const event of client.streamChat('Test')) {
+          // Should not reach here
+        }
+      }).rejects.toThrow('Bad request');
+    });
+
+    it('should handle connection errors', async () => {
+      const error = new Error('Connection failed');
+      (error as any).code = 'ECONNREFUSED';
+      
+      mockFetch.mockRejectedValue(error);
+
+      await expect(async () => {
+        for await (const event of client.streamChat('Test')) {
+          // Should not reach here
+        }
+      }).rejects.toThrow('Cannot connect to server at http://localhost:8787');
+    });
+  });
 });
