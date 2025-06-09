@@ -13,9 +13,15 @@ export interface LlmResponse {
   };
 }
 
+import { ProviderStreamEvent } from "@liminal-chat/shared-types";
+
 export interface ILLMProvider {
   generate(input: string | Message[]): Promise<LlmResponse>;
-  generateStream?(input: string | Message[]): AsyncIterable<string>;
+  generateStream?(
+    input: string | Message[],
+    originalRequestParams?: any,
+    lastEventId?: string,
+  ): AsyncIterable<ProviderStreamEvent>;
   getName(): string;
   isAvailable(): boolean;
 }
