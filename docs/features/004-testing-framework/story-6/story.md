@@ -500,7 +500,7 @@ test('performance benchmark', async ({ apiContext }) => {
 ## Implementation Notes
 
 ### Documentation Organization
-```
+```bash
 docs/testing/
 ├── README.md                    # Testing overview and quick start
 ├── strategy/

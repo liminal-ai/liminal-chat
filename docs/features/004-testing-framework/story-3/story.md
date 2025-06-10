@@ -327,7 +327,7 @@ test.describe('Domain Providers Endpoint', () => {
 5. **Remove old tests**: Clean up Supertest dependencies
 
 ### Test Organization
-```
+```bash
 tests/integration/domain/
 ├── health.spec.ts           # Health endpoint tests
 ├── llm-prompt.spec.ts       # Prompt endpoint tests  

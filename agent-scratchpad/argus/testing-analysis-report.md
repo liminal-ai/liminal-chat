@@ -101,7 +101,7 @@ Coverage Failures:
 - **Mock Strategy**: Proper fetch mocking for external calls
 
 #### **What We're Doing Poorly** ❌
-- **Insufficient Coverage**: Only 6 tests for entire Edge service
+- **Insufficient Coverage**: Only 6 tests for the entire Edge service
 - **Missing Scenarios**: No streaming, error handling, or auth testing
 - **No Integration**: No tests with actual Domain service
 - **No Performance**: No latency or throughput testing

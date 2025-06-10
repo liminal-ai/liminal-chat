@@ -4,7 +4,7 @@
 Implement comprehensive CLI end-to-end testing using Playwright + Node child_process, covering both batch and interactive modes, configuration flows, and complete user workflows from CLI input to final output.
 
 ## Background
-CLI tier currently has limited E2E testing with many tests skipped. This story establishes comprehensive E2E automation to validate complete user workflows, ensuring CLI commands work correctly in real-world scenarios.
+CLI tier currently has limited E2E testing, with many tests skipped. This story establishes comprehensive E2E automation to validate complete user workflows, ensuring CLI commands work correctly in real-world scenarios.
 
 ## Scope
 
@@ -480,7 +480,7 @@ class InteractiveCLISession {
 ## Implementation Notes
 
 ### Test Organization
-```
+```bash
 tests/e2e/cli/
 ├── basic-commands.spec.ts        # Version, help, health
 ├── chat-commands.spec.ts         # Chat functionality
