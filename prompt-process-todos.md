@@ -1,15 +1,15 @@
-# Process Learning & Prompt Update TODOs
+# Process Learning & Prompt Update To-Dos
 
 ## Debrief: Scope Underestimation in Feature 002 Story 2
 
 ### What Happened
 
-**Story 2 Scope Issue:**
+#### Story 2 Scope Issue
 - **Planned**: "Add SSE streaming" - seemed like a straightforward feature enhancement
 - **Reality**: Production-grade streaming system with network resilience, UTF-8 handling, performance monitoring, error taxonomy, and cross-tier integration
 - **Result**: 7 tasks, 554-line specification, 45+ minute implementation that took significantly longer
 
-**Root Cause Analysis:**
+#### Root Cause Analysis
 1. **Capability Complexity Underestimation**: Streaming isn't an add-on feature - it's a fundamental architectural capability touching every system layer
 2. **Scope Creep During Design**: Started as "basic streaming" but proper implementation required network resilience, error handling, performance monitoring
 3. **Warning Signs Ignored**: 554-line story spec, 7-task breakdown, detailed technical architecture - all indicators this was feature-level work
@@ -19,13 +19,13 @@
 
 ### What We Learned
 
-**Good Decisions:**
+#### Good Decisions
 - Building comprehensive streaming foundation rather than technical debt
 - Detailed interface definitions prevented inconsistent implementation choices  
 - Production-ready implementation won't need significant rework for conversation persistence
 - Architecture is extensible rather than brittle
 
-**Process Failures:**
+#### Process Failures
 - Didn't recognize story specification size as scope indicator
 - Attempted feature-level complexity in story-level timeframe
 - Lost track of original scope over extended implementation
@@ -39,7 +39,7 @@
 
 **Add Scope Detection Guardrails:**
 
-```
+```markdown
 ## Story Scope Validation
 
 Before committing to story implementation, validate scope appropriateness:
@@ -71,7 +71,7 @@ Before committing to story implementation, validate scope appropriateness:
 
 **Add Planning Phase Scope Vigilance:**
 
-```
+```markdown
 ## Scope Underestimation Defense
 
 When reviewing or creating technical designs for stories, actively guard against scope underestimation:
@@ -125,12 +125,12 @@ When scope concerns arise, immediately surface the question: "Should we deliver 
 
 ## Success Metrics
 
-**Planning Improvement:**
+#### Planning Improvement
 - Stories consistently ≤30 minutes implementation time
 - Story specifications ≤200 lines
 - Reduced need for mid-story scope adjustments
 
-**Implementation Quality:**
+#### Implementation Quality
 - Maintained focus on original story objectives throughout implementation
 - Clear boundaries between stories and features
 - Better predictability of story completion timeframes

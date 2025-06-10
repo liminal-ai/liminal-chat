@@ -50,6 +50,8 @@ export class DomainController {
   @Post("llm/prompt/stream")
   @ApiOperation({
     summary: "Send prompt to LLM provider with streaming response",
+    description:
+      "Uses POST (not GET) to support complex request bodies with message arrays and long prompts that exceed URL length limits",
   })
   @ApiResponse({ status: 200, description: "Server-sent events stream" })
   async streamPrompt(
@@ -57,6 +59,14 @@ export class DomainController {
     @Res({ passthrough: false }) response: Response,
     @Headers("Last-Event-ID") lastEventId?: string,
   ): Promise<void> {
+    // Validate that stream flag is set for streaming endpoint
+    if (!dto.stream) {
+      throw new HttpException(
+        "Stream flag must be true for streaming endpoint",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // Set SSE headers
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
@@ -67,12 +77,29 @@ export class DomainController {
       "Content-Type, Last-Event-ID",
     );
 
+    // Flush headers immediately to establish SSE stream with proxies
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof (response as any).flushHeaders === "function") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      (response as any).flushHeaders();
+    }
+
     try {
+      // Handle client disconnects to avoid dangling async iterators
+      let clientClosed = false;
+      response.on("close", () => {
+        clientClosed = true;
+      });
+
       // Stream events from the LLM service
       for await (const event of this.llmService.promptStream(
         dto,
         lastEventId,
       )) {
+        // Break early if client disconnected
+        if (clientClosed) {
+          break;
+        }
         const sseData = {
           id: event.eventId,
           type: event.type,
@@ -93,6 +120,13 @@ export class DomainController {
         sseMessage += `data: ${sseData.data}\n\n`;
 
         response.write(sseMessage);
+
+        // Flush chunk immediately for prompt delivery
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (typeof (response as any).flush === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          (response as any).flush();
+        }
 
         // Exit on done event
         if (event.type === "done") {
