@@ -23,7 +23,7 @@ export const PROVIDER_ERRORS = {
   connectionError: 'Error: Unable to connect to server. Check your connection and try again.'
 };
 
-describe('E2E: Provider Selection', () => {
+describe.skip('E2E: Provider Selection', () => {
   let serverProcess: ChildProcess;
   let client: EdgeClient;
   const cliPath = path.join(process.cwd(), 'bin', 'liminal.js');

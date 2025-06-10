@@ -11,7 +11,7 @@ describe('Edge Server', () => {
       const env = { DOMAIN_URL: 'http://localhost:8766' };
       
       const res = await app.fetch(req, env);
-      const json = await res.json();
+      const json = await res.json() as any;
       
       expect(res.status).toBe(200);
       expect(json).toMatchObject({
@@ -85,7 +85,7 @@ describe('Edge Server', () => {
       
       const env = { DOMAIN_URL: 'http://localhost:8766' };
       const res = await app.fetch(req, env);
-      const json = await res.json();
+      const json = await res.json() as any;
       
       expect(res.status).toBe(500);
       expect(json.error).toContain('Domain server error');

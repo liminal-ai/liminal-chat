@@ -52,6 +52,42 @@ export interface DomainHealthResponse {
   uptime: number;
 }
 
-// Export streaming types
-export * from './src/llm/streaming';
-export * from './src/llm/streaming-errors';
+// Streaming types directly in main index
+export type ProviderStreamEvent = 
+  | { type: 'content'; data: string; eventId?: string }
+  | { type: 'usage'; data: UsageData; eventId?: string }
+  | { type: 'done'; eventId?: string }
+  | { type: 'error'; data: StreamError; eventId?: string };
+
+export interface UsageData {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  model: string;
+}
+
+export interface StreamError {
+  message: string;
+  code: StreamErrorCode;
+  retryable: boolean;
+  details?: Record<string, unknown>;
+}
+
+export const StreamErrorCode = {
+  PROVIDER_ERROR: 'PROVIDER_ERROR',
+  RATE_LIMIT: 'RATE_LIMIT',
+  AUTHENTICATION: 'AUTHENTICATION',
+  AUTHENTICATION_FAILED: 'AUTHENTICATION_FAILED',
+  NETWORK: 'NETWORK',
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  CONNECTION_TIMEOUT: 'CONNECTION_TIMEOUT',
+  CONNECTION_LOST: 'CONNECTION_LOST',
+  PARSE_ERROR: 'PARSE_ERROR',
+  MALFORMED_JSON: 'MALFORMED_JSON',
+  PROVIDER_RATE_LIMIT: 'PROVIDER_RATE_LIMIT',
+  PROVIDER_INVALID_RESPONSE: 'PROVIDER_INVALID_RESPONSE',
+  PROVIDER_UNAVAILABLE: 'PROVIDER_UNAVAILABLE',
+  UNKNOWN: 'UNKNOWN'
+} as const;
+
+export type StreamErrorCode = typeof StreamErrorCode[keyof typeof StreamErrorCode];

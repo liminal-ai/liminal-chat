@@ -48,7 +48,7 @@ app.post('/api/v1/llm/prompt', async (c) => {
         error: `Domain server error: ${errorText}`,
         code: ERROR_CODES.DOMAIN.INVALID_RESPONSE
       };
-      return c.json(errorResponse, response.status);
+      return c.json(errorResponse, response.status as any);
     }
 
     // Handle streaming response
@@ -64,7 +64,7 @@ app.post('/api/v1/llm/prompt', async (c) => {
     }
 
     // Handle JSON response
-    const data = await response.json();
+    const data = await response.json() as any;
     return c.json(data);
   } catch (error) {
     console.error('Proxy error:', error);
@@ -88,10 +88,10 @@ app.get('/api/v1/llm/providers', async (c) => {
         error: 'Failed to fetch providers',
         code: ERROR_CODES.DOMAIN.INVALID_RESPONSE
       };
-      return c.json(errorResponse, response.status);
+      return c.json(errorResponse, response.status as any);
     }
     
-    const data = await response.json();
+    const data = await response.json() as any;
     return c.json(data);
   } catch (error) {
     console.error('Providers fetch error:', error);

@@ -11,6 +11,7 @@ import {
   ValidatorConstraintInterface,
   Validate,
   ValidationArguments,
+  IsBoolean,
 } from "class-validator";
 import { Type } from "class-transformer";
 import { ApiPropertyOptional } from "@nestjs/swagger";
@@ -67,4 +68,12 @@ export class LlmPromptRequestDto {
   @IsOptional()
   @IsString()
   provider?: string;
+
+  @ApiPropertyOptional({
+    description: "Enable streaming response",
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  stream?: boolean;
 }
