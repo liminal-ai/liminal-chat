@@ -32,7 +32,13 @@ export class EchoProvider implements ILLMProvider {
     });
   }
 
-  async *generateStream(input: string | Message[], originalRequestParams?: any, lastEventId?: string): AsyncIterable<ProviderStreamEvent> {
+  async *generateStream(
+    input: string | Message[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _originalRequestParams?: any,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _lastEventId?: string,
+  ): AsyncIterable<ProviderStreamEvent> {
     let textContent: string;
 
     if (typeof input === "string") {
@@ -51,18 +57,18 @@ export class EchoProvider implements ILLMProvider {
     for (let i = 0; i < words.length; i++) {
       const word = words[i];
       yield {
-        type: 'content',
+        type: "content",
         data: word + " ",
-        eventId: `echo-${Date.now()}-${i}`
+        eventId: `echo-${Date.now()}-${i}`,
       };
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    
+
     // Send completion event
     yield {
-      type: 'done',
-      eventId: `echo-${Date.now()}-done`
+      type: "done",
+      eventId: `echo-${Date.now()}-done`,
     };
   }
 

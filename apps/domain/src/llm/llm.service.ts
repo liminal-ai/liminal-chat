@@ -13,22 +13,26 @@ export class LlmService {
     private readonly errorMapper: VercelErrorMapper,
   ) {}
 
+  private validatePromptInput(dto: LlmPromptRequestDto): void {
+    // Validate that either prompt or messages is provided
+    if (!dto.prompt && !dto.messages) {
+      throw new HttpException(
+        { error: "Either prompt or messages must be provided" },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (dto.prompt && dto.messages) {
+      throw new HttpException(
+        { error: "Cannot provide both prompt and messages" },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   async prompt(dto: LlmPromptRequestDto): Promise<LlmResponse> {
     try {
-      // Validate that either prompt or messages is provided
-      if (!dto.prompt && !dto.messages) {
-        throw new HttpException(
-          { error: "Either prompt or messages must be provided" },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (dto.prompt && dto.messages) {
-        throw new HttpException(
-          { error: "Cannot provide both prompt and messages" },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      this.validatePromptInput(dto);
 
       // Get the provider
       const provider = this.providerFactory.getProvider(dto.provider);
@@ -58,20 +62,7 @@ export class LlmService {
     dto: LlmPromptRequestDto,
   ): AsyncIterable<ProviderStreamEvent> {
     try {
-      // Validate that either prompt or messages is provided
-      if (!dto.prompt && !dto.messages) {
-        throw new HttpException(
-          { error: "Either prompt or messages must be provided" },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (dto.prompt && dto.messages) {
-        throw new HttpException(
-          { error: "Cannot provide both prompt and messages" },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      this.validatePromptInput(dto);
 
       // Get the provider
       const provider = this.providerFactory.getProvider(dto.provider);

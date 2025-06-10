@@ -1,14 +1,16 @@
 import { Injectable, HttpException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { randomBytes } from "crypto";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
 import {
   ProviderStreamEvent,
   StreamErrorCode,
   StreamError,
 } from "@liminal-chat/shared-types";
-// Simple ID generator for event IDs
+// Cryptographically secure ID generator for event IDs
 const generateId = (): string => {
-  return Math.random().toString(36).substring(2, 8);
+  // Generate 4 random bytes and convert to base36 (better than Math.random)
+  return randomBytes(4).toString("hex").substring(0, 6);
 };
 import * as openRouterConfig from "../../../config/openrouter-models.json";
 
@@ -247,6 +249,7 @@ export class OpenRouterProvider implements ILLMProvider {
       });
 
       // 3. Process SSE chunks
+      let lastContentEventId: string | undefined;
       for await (const chunk of this.parseSSEStream(response)) {
         const eventId = `or-${Date.now()}-${generateId()}`; // e.g., or-1733680800000-x7B9mK
 
@@ -254,7 +257,8 @@ export class OpenRouterProvider implements ILLMProvider {
           try {
             // Handle special [DONE] signal
             if (chunk.data === "[DONE]") {
-              yield { type: "done", eventId };
+              // Reuse the last content event's eventId for resumption continuity
+              yield { type: "done", eventId: lastContentEventId || eventId };
               break;
             }
 
@@ -272,6 +276,7 @@ export class OpenRouterProvider implements ILLMProvider {
             // Extract content delta
             const content = data.choices?.[0]?.delta?.content;
             if (content !== undefined && content !== "") {
+              lastContentEventId = eventId; // Track for done event continuity
               yield { type: "content", data: content, eventId };
             }
 
@@ -395,6 +400,9 @@ export class OpenRouterProvider implements ILLMProvider {
           }
         }
       }
+
+      // Flush any remaining bytes from decoder
+      buffer += decoder.decode();
 
       // Process any remaining data in buffer
       if (buffer.trim()) {
