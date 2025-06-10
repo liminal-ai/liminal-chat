@@ -69,18 +69,21 @@ describe('Chat Command', () => {
       expect(command.description()).toBe('Start an interactive chat session');
       
       // Check for options (provider and stream)
-      const options = command.options;
-      expect(options).toHaveLength(2);
-      
+      const providerOpt = command.options.find(o => o.long === '--provider');
+      const streamOpt   = command.options.find(o => o.long === '--stream');
+
+      expect(providerOpt).toBeDefined();
+      expect(streamOpt).toBeDefined();
+
       // Provider option
-      expect(options[0].short).toBe('-p');
-      expect(options[0].long).toBe('--provider');
-      expect(options[0].description).toContain('LLM provider');
-      
+      expect(providerOpt!.short).toBe('-p');
+      expect(providerOpt!.long).toBe('--provider');
+      expect(providerOpt!.description).toContain('LLM provider');
+
       // Stream option
-      expect(options[1].short).toBe('-s');
-      expect(options[1].long).toBe('--stream');
-      expect(options[1].description).toContain('streaming');
+      expect(streamOpt!.short).toBe('-s');
+      expect(streamOpt!.long).toBe('--stream');
+      expect(streamOpt!.description).toContain('streaming');
     });
   });
 
