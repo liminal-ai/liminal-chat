@@ -118,6 +118,7 @@ app.post('/api/v1/llm/prompt/stream', async (c) => {
         'Connection': 'keep-alive',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Last-Event-ID',
+        'Access-Control-Expose-Headers': 'Last-Event-ID',
       },
     });
   } catch (error) {

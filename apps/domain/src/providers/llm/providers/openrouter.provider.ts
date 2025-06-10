@@ -290,16 +290,23 @@ export class OpenRouterProvider implements ILLMProvider {
               if (firstTokenTime === null) {
                 firstTokenTime = chunkTime;
                 const latency = Number(firstTokenTime - startTime) / 1000000; // Convert to ms
-                this.logger.debug(
-                  `First token latency: ${latency.toFixed(2)}ms [${streamId}]`,
-                );
+                if (process.env.NODE_ENV !== "production") {
+                  this.logger.debug(
+                    `First token latency: ${latency.toFixed(2)}ms [${streamId}]`,
+                  );
+                }
               } else {
-                // Record inter-chunk latency
+                // Record inter-chunk latency (throttled logging)
                 const interChunkLatency =
                   Number(chunkTime - lastChunkTime) / 1000000;
-                this.logger.debug(
-                  `Inter-chunk latency: ${interChunkLatency.toFixed(2)}ms [${streamId}]`,
-                );
+                if (
+                  process.env.NODE_ENV !== "production" &&
+                  chunkCount % 10 === 0
+                ) {
+                  this.logger.debug(
+                    `Inter-chunk latency: ${interChunkLatency.toFixed(2)}ms [${streamId}] (chunk ${chunkCount})`,
+                  );
+                }
               }
 
               lastChunkTime = chunkTime;
