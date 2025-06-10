@@ -53,10 +53,10 @@ describe('StreamReconnectionManager', () => {
     );
 
     // Mock setTimeout to avoid actual delays in tests
-    vi.spyOn(global, 'setTimeout').mockImplementation((fn: Function) => {
+    vi.spyOn(global, 'setTimeout').mockImplementation(((fn: (...args: unknown[]) => void) => {
       fn();
-      return 0 as any;
-    });
+      return 0 as unknown as NodeJS.Timeout;
+    }) as unknown as typeof setTimeout);
   });
 
   afterEach(() => {
@@ -174,18 +174,18 @@ describe('StreamReconnectionManager', () => {
       // Set retry count manually for testing
       (manager as any).state.retryCount = 1;
       const delay1 = calculateBackoffDelay();
-      expect(delay1).toBeGreaterThan(900); // 1000 - 10% jitter
-      expect(delay1).toBeLessThan(1100); // 1000 + 10% jitter
+      expect(delay1).toBeGreaterThanOrEqual(900); // 1000 - 10% jitter
+      expect(delay1).toBeLessThanOrEqual(1100); // 1000 + 10% jitter
 
       (manager as any).state.retryCount = 2;
       const delay2 = calculateBackoffDelay();
-      expect(delay2).toBeGreaterThan(1800); // 2000 - 10% jitter
-      expect(delay2).toBeLessThan(2200); // 2000 + 10% jitter
+      expect(delay2).toBeGreaterThanOrEqual(1800); // 2000 - 10% jitter
+      expect(delay2).toBeLessThanOrEqual(2200); // 2000 + 10% jitter
 
       (manager as any).state.retryCount = 3;
       const delay3 = calculateBackoffDelay();
-      expect(delay3).toBeGreaterThan(3600); // 4000 - 10% jitter
-      expect(delay3).toBeLessThan(4400); // 4000 + 10% jitter
+      expect(delay3).toBeGreaterThanOrEqual(3600); // 4000 - 10% jitter
+      expect(delay3).toBeLessThanOrEqual(4400); // 4000 + 10% jitter
     });
 
     it('should cap delay at maxDelayMs', () => {

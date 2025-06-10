@@ -46,7 +46,11 @@ export class StreamReconnectionManager {
     prompt: string,
     options?: { provider?: string }
   ): AsyncGenerator<ProviderStreamEvent> {
-    while (this.state.retryCount <= this.config.maxRetries) {
+    while (true) {
+      // Exit the loop if retry count exceeds max retries
+      if (this.state.retryCount > this.config.maxRetries) {
+        throw new Error(`Failed to reconnect after ${this.config.maxRetries} attempts.`);
+      }
       try {
         // Clear content if this is a reconnection attempt
         if (this.state.shouldClearContent && this.onContentClear) {
@@ -66,20 +70,20 @@ export class StreamReconnectionManager {
           if (event.eventId) {
             this.state.lastEventId = event.eventId;
           }
-
-          // Reset retry count on successful event
-          this.state.retryCount = 0;
           
           yield event;
           
           // Exit successfully if we get a 'done' event
           if (event.type === 'done') {
+            // Reset retry count only after complete stream success
+            this.state.retryCount = 0;
             return;
           }
         }
 
         // If we reach here, the stream ended without a 'done' event
-        // This might be a normal completion, so return
+        // This might be a normal completion, so reset retry count and return
+        this.state.retryCount = 0;
         return;
 
       } catch (error: any) {
@@ -92,11 +96,6 @@ export class StreamReconnectionManager {
         this.state.isReconnecting = true;
         this.state.shouldClearContent = true;
 
-        // If we've exceeded max retries, throw the error
-        if (this.state.retryCount > this.config.maxRetries) {
-          throw new Error(`Failed to reconnect after ${this.config.maxRetries} attempts: ${error.message}`);
-        }
-
         // Calculate delay with exponential backoff and jitter
         const delay = this.calculateBackoffDelay();
         
@@ -107,7 +106,8 @@ export class StreamReconnectionManager {
             message: `Connection lost. Reconnecting in ${Math.round(delay / 1000)}s... (attempt ${this.state.retryCount}/${this.config.maxRetries})`,
             code: 'CONNECTION_LOST',
             retryable: true
-          }
+          },
+          eventId: this.state.lastEventId
         };
 
         // Wait before retrying

@@ -143,7 +143,7 @@ async function startChatSession(client: EdgeClient, options: any): Promise<void>
           }
           
           // Add response to history
-          const responseContent = streamingDisplayHandler.getContent();
+          const responseContent = streamingDisplayHandler?.getContent();
           if (responseContent) {
             conversationHistory.push({ role: 'assistant', content: responseContent });
           }
