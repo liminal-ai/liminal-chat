@@ -60,7 +60,7 @@ describe("E2E: OpenRouter SSE Streaming", () => {
       // Act: Send streaming request with manual event handling
       await new Promise<void>((resolve, reject) => {
         request(app.getHttpServer())
-          .post("/domain/llm/prompt")
+          .post("/domain/llm/prompt/stream")
           .set("Accept", "text/event-stream")
           .send({
             prompt: "Hello",
@@ -284,14 +284,15 @@ describe("E2E: OpenRouter SSE Streaming", () => {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               res.on("error", () => {
                 // Simulate reconnection logic
-                events.push({
-                  type: "error",
+                const errorEvent = {
+                  type: "error" as const,
                   data: {
                     code: StreamErrorCode.CONNECTION_LOST,
                     message: "Connection lost. Attempting to reconnect...",
                     retryable: true,
                   },
-                });
+                };
+                events.push(errorEvent);
 
                 // Simulate exponential backoff attempts
                 reconnectionAttempts.push(
@@ -322,11 +323,12 @@ describe("E2E: OpenRouter SSE Streaming", () => {
       expect(events).toContainEqual(
         expect.objectContaining({
           type: "error",
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           data: expect.objectContaining({
             code: StreamErrorCode.CONNECTION_LOST,
             message: "Connection lost. Attempting to reconnect...",
-          }) as object,
-        }) as object,
+          }),
+        }),
       );
 
       // Assert: Reconnection attempts with exponential backoff
@@ -370,8 +372,18 @@ describe("E2E: OpenRouter SSE Streaming", () => {
       await waitForReconnectionAttempts(response, 3);
 
       // Assert: Final error message
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect((response as any).lastEvent).toEqual({
+
+      const responseWithEvent = response as unknown as {
+        lastEvent: {
+          type: string;
+          data: {
+            message: string;
+            code: number;
+            retryable: boolean;
+          };
+        };
+      };
+      expect(responseWithEvent.lastEvent).toEqual({
         type: "error",
         data: {
           message: "Reconnection failed. Please try your command again.",

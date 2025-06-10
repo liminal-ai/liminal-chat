@@ -68,7 +68,7 @@ export interface UsageData {
 
 export interface StreamError {
   message: string;
-  code: string;
+  code: StreamErrorCode;
   retryable: boolean;
   details?: Record<string, unknown>;
 }
@@ -81,6 +81,7 @@ export const StreamErrorCode = {
   NETWORK: 'NETWORK',
   NETWORK_ERROR: 'NETWORK_ERROR',
   CONNECTION_TIMEOUT: 'CONNECTION_TIMEOUT',
+  CONNECTION_LOST: 'CONNECTION_LOST',
   PARSE_ERROR: 'PARSE_ERROR',
   MALFORMED_JSON: 'MALFORMED_JSON',
   PROVIDER_RATE_LIMIT: 'PROVIDER_RATE_LIMIT',

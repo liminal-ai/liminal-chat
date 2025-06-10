@@ -5,6 +5,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  HttpException,
   Sse,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
@@ -38,7 +39,10 @@ export class DomainController {
   @ApiResponse({ status: 200, type: LlmResponse })
   async prompt(@Body() dto: LlmPromptRequestDto): Promise<LlmResponse> {
     if (dto.stream) {
-      throw new Error("Use /llm/prompt/stream endpoint for streaming requests");
+      throw new HttpException(
+        "Use /llm/prompt/stream endpoint for streaming requests",
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.llmService.prompt(dto);
   }
@@ -55,7 +59,12 @@ export class DomainController {
       map((event: ProviderStreamEvent) => ({
         id: event.eventId,
         type: event.type,
-        data: JSON.stringify(event),
+        data:
+          event.type === "content" ||
+          event.type === "usage" ||
+          event.type === "error"
+            ? JSON.stringify(event.data)
+            : "",
       })),
     );
   }
