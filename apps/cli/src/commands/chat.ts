@@ -3,6 +3,8 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { EdgeClient } from '../api/edge-client';
+import { StreamReconnectionManager } from '../api/streaming-reconnection';
+import { StreamingDisplayHandler } from '../utils/streaming-display';
 
 export function createChatCommand(client: EdgeClient): Command {
   const chat = new Command('chat');
@@ -10,6 +12,7 @@ export function createChatCommand(client: EdgeClient): Command {
   chat
     .description('Start an interactive chat session')
     .option('-p, --provider <provider>', 'LLM provider to use (default: echo)')
+    .option('-s, --stream', 'Use streaming responses (default: false)')
     .action(async (options) => {
       try {
         await startChatSession(client, options);
@@ -38,8 +41,9 @@ async function startChatSession(client: EdgeClient, options: any): Promise<void>
     return;
   }
 
-  // Get provider from options
+  // Get options
   const provider = options.provider?.toLowerCase();
+  const useStreaming = options.stream || false;
   
   // Validate provider if specified
   if (provider) {
@@ -66,10 +70,34 @@ async function startChatSession(client: EdgeClient, options: any): Promise<void>
   if (provider) {
     console.log(chalk.gray(`Using provider: ${provider}`));
   }
+  if (useStreaming) {
+    console.log(chalk.gray('Streaming mode: enabled'));
+  }
   console.log(chalk.gray('Type "exit" to quit\n'));
 
   // Maintain local conversation history
   const conversationHistory: Array<{role: string, content: string}> = [];
+
+  // Setup streaming components if needed
+  let streamingDisplayHandler: StreamingDisplayHandler | undefined;
+  let reconnectionManager: StreamReconnectionManager | undefined;
+  
+  if (useStreaming) {
+    streamingDisplayHandler = new StreamingDisplayHandler({
+      showUsage: true,
+      clearOnReconnect: true
+    });
+    
+    reconnectionManager = new StreamReconnectionManager(
+      {
+        maxRetries: 3,
+        baseDelayMs: 1000,
+        maxDelayMs: 10000,
+        jitterFactor: 0.1
+      },
+      () => streamingDisplayHandler?.clear()
+    );
+  }
 
   // Setup interrupt handler
   let isExiting = false;
@@ -101,33 +129,59 @@ async function startChatSession(client: EdgeClient, options: any): Promise<void>
       // Add to history
       conversationHistory.push({ role: 'user', content: message });
 
-      // Call prompt endpoint with loading indicator
-      const spinner = ora('Thinking...').start();
-      
-      try {
-        const response = await client.prompt(message, provider ? { provider } : undefined);
-        spinner.stop();
+      if (useStreaming && reconnectionManager && streamingDisplayHandler) {
+        // Use streaming with reconnection
+        console.log(chalk.green('Assistant: '));
         
-        // Display response
-        console.log(chalk.green('Assistant:'), response.content);
-        
-        // Display model info if provider was specified
-        if (provider && response.model) {
-          console.log(chalk.gray(`Model: ${response.model}`));
+        try {
+          for await (const event of reconnectionManager.streamWithReconnection(
+            client, 
+            message, 
+            provider ? { provider } : undefined
+          )) {
+            streamingDisplayHandler.processEvent(event);
+          }
+          
+          // Add response to history
+          const responseContent = streamingDisplayHandler?.getContent();
+          if (responseContent) {
+            conversationHistory.push({ role: 'assistant', content: responseContent });
+          }
+          
+        } catch (error: any) {
+          console.error(chalk.red('\nError:'), error.message);
+          console.log(); // Add blank line for spacing
         }
         
-        // Display token usage
-        const usage = response.usage;
-        const totalTokens = usage.totalTokens || (usage.promptTokens + usage.completionTokens);
-        console.log(chalk.gray(`Tokens used: ${totalTokens} (prompt: ${usage.promptTokens}, completion: ${usage.completionTokens})\n`));
+      } else {
+        // Use non-streaming with loading indicator
+        const spinner = ora('Thinking...').start();
         
-        // Add to history
-        conversationHistory.push({ role: 'assistant', content: response.content });
-        
-      } catch (error: any) {
-        spinner.stop();
-        console.error(chalk.red('Error:'), error.message);
-        console.log(); // Add blank line for spacing
+        try {
+          const response = await client.prompt(message, provider ? { provider } : undefined);
+          spinner.stop();
+          
+          // Display response
+          console.log(chalk.green('Assistant:'), response.content);
+          
+          // Display model info if provider was specified
+          if (provider && response.model) {
+            console.log(chalk.gray(`Model: ${response.model}`));
+          }
+          
+          // Display token usage
+          const usage = response.usage;
+          const totalTokens = usage.totalTokens || (usage.promptTokens + usage.completionTokens);
+          console.log(chalk.gray(`Tokens used: ${totalTokens} (prompt: ${usage.promptTokens}, completion: ${usage.completionTokens})\n`));
+          
+          // Add to history
+          conversationHistory.push({ role: 'assistant', content: response.content });
+          
+        } catch (error: any) {
+          spinner.stop();
+          console.error(chalk.red('Error:'), error.message);
+          console.log(); // Add blank line for spacing
+        }
       }
       
     } catch (error: any) {
