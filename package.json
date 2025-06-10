@@ -22,12 +22,12 @@
     "edge:dev": "cd apps/edge && pnpm dev",
     "domain:dev": "cd apps/domain && pnpm start:dev",
     "cli:dev": "cd apps/cli && pnpm dev",
-    "domain:start": "cd apps/domain && pnpm start:dev > domain.log 2>&1 &",
-    "domain:stop": "lsof -ti:8766 | xargs kill -9 2>/dev/null || true",
-    "domain:restart": "pnpm domain:stop && pnpm domain:start",
-    "edge:start": "cd apps/edge && pnpm dev > edge.log 2>&1 &",
-    "edge:stop": "lsof -ti:8787 | xargs kill -9 2>/dev/null || true",
-    "edge:restart": "pnpm edge:stop && pnpm edge:start",
+    "domain:start": "pm2 start --name domain --cwd apps/domain npm -- run start:dev",
+    "domain:stop": "pm2 stop domain || true",
+    "domain:restart": "pm2 restart domain || (pnpm domain:stop && pnpm domain:start)",
+    "edge:start": "pm2 start --name edge --cwd apps/edge npm -- run dev",
+    "edge:stop": "pm2 stop edge || true", 
+    "edge:restart": "pm2 restart edge || (pnpm edge:stop && pnpm edge:start)",
     "cli:chat": "cd apps/cli && pnpm dev chat",
     "cli:chat:echo": "cd apps/cli && pnpm dev chat --provider echo",
     "cli:chat:openrouter": "cd apps/cli && pnpm dev chat --provider openrouter",
@@ -40,7 +40,7 @@
     "domain:test:e2e": "pnpm -F domain-server-nest test:e2e",
     "edge:test": "pnpm -F @liminal/edge test",
     "start:all": "pnpm domain:start && pnpm edge:start",
-    "stop:all": "pnpm domain:stop && pnpm edge:stop",
+    "stop:all": "pm2 stop all || true",
     "restart:all": "pnpm stop:all && pnpm start:all",
     "typecheck:watch": "tsc --noEmit --watch -p tsconfig.json",
     "verify:all": "pnpm lint && pnpm typecheck && pnpm test",
@@ -48,6 +48,7 @@
     "pretest:e2e": "pnpm cli:build"
   },
   "devDependencies": {
+    "pm2": "^6.0.8",
     "typescript": "^5.3.3"
   },
   "packageManager": "pnpm@8.15.1"

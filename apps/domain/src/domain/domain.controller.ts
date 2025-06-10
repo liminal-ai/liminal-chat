@@ -6,16 +6,15 @@ import {
   HttpCode,
   HttpStatus,
   HttpException,
-  Sse,
+  Res,
+  Headers,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { Observable, from, map } from "rxjs";
 import { HealthService } from "../health/health.service";
 import { LlmService } from "../llm/llm.service";
 import { LlmPromptRequestDto } from "./dto/llm-prompt-request.dto";
 import { LlmResponse } from "../llm/dto/llm-response.dto";
 import { ProviderHealthService } from "../providers/llm/provider-health.service";
-import { ProviderStreamEvent } from "@liminal-chat/shared-types";
 
 @ApiTags("domain")
 @Controller("domain")
@@ -47,26 +46,77 @@ export class DomainController {
     return this.llmService.prompt(dto);
   }
 
-  @Sse("llm/prompt/stream")
+  @Post("llm/prompt/stream")
   @ApiOperation({
     summary: "Send prompt to LLM provider with streaming response",
   })
   @ApiResponse({ status: 200, description: "Server-sent events stream" })
-  streamPrompt(
+  async streamPrompt(
     @Body() dto: LlmPromptRequestDto,
-  ): Observable<{ id?: string; type: string; data: string }> {
-    return from(this.llmService.promptStream(dto)).pipe(
-      map((event: ProviderStreamEvent) => ({
-        id: event.eventId,
-        type: event.type,
-        data:
-          event.type === "content" ||
-          event.type === "usage" ||
-          event.type === "error"
-            ? JSON.stringify(event.data)
-            : "",
-      })),
+    @Res({ passthrough: false }) response: any,
+    @Headers("Last-Event-ID") lastEventId?: string,
+  ): Promise<void> {
+    // Set SSE headers
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    response.header("Content-Type", "text/event-stream");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    response.header("Cache-Control", "no-cache");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    response.header("Connection", "keep-alive");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    response.header("Access-Control-Allow-Origin", "*");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    response.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Last-Event-ID",
     );
+
+    try {
+      // Stream events from the LLM service
+      for await (const event of this.llmService.promptStream(
+        dto,
+        lastEventId,
+      )) {
+        const sseData = {
+          id: event.eventId,
+          type: event.type,
+          data:
+            event.type === "content" ||
+            event.type === "usage" ||
+            event.type === "error"
+              ? JSON.stringify(event.data)
+              : "",
+        };
+
+        // Write SSE format
+        let sseMessage = "";
+        if (sseData.id) {
+          sseMessage += `id: ${sseData.id}\n`;
+        }
+        sseMessage += `event: ${sseData.type}\n`;
+        sseMessage += `data: ${sseData.data}\n\n`;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        response.write(sseMessage);
+
+        // Exit on done event
+        if (event.type === "done") {
+          break;
+        }
+      }
+    } catch (error) {
+      // Send error event
+      const errorMessage = `event: error\ndata: ${JSON.stringify({
+        message: error instanceof Error ? error.message : "Unknown error",
+        code: "INTERNAL_ERROR",
+        retryable: false,
+      })}\n\n`;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      response.write(errorMessage);
+    } finally {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      response.end();
+    }
   }
 
   @Get("llm/providers")
