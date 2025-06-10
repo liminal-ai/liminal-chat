@@ -1,10 +1,22 @@
-import { Injectable, HttpException } from "@nestjs/common";
+import { Injectable, HttpException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { randomBytes } from "crypto";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
+import {
+  ProviderStreamEvent,
+  StreamErrorCode,
+  StreamError,
+} from "@liminal-chat/shared-types";
+// Cryptographically secure ID generator for event IDs
+const generateId = (): string => {
+  // Generate 4 random bytes and convert to base36 (better than Math.random)
+  return randomBytes(4).toString("hex").substring(0, 6);
+};
 import * as openRouterConfig from "../../../config/openrouter-models.json";
 
 @Injectable()
 export class OpenRouterProvider implements ILLMProvider {
+  private readonly logger = new Logger(OpenRouterProvider.name);
   private readonly apiKey: string | undefined;
   private readonly model: string;
   private readonly appUrl: string;
@@ -197,6 +209,270 @@ export class OpenRouterProvider implements ILLMProvider {
         500,
       );
     }
+  }
+
+  async *generateStream(
+    input: string | Message[],
+    originalRequestParams: any = {},
+    lastEventId?: string,
+  ): AsyncIterable<ProviderStreamEvent> {
+    // 1. Log received lastEventId for observability (if present)
+    if (lastEventId) {
+      this.logger.debug(
+        `Received lastEventId: ${lastEventId} (not used for OpenRouter resumption)`,
+      );
+    }
+
+    if (!this.apiKey) {
+      yield {
+        type: "error",
+        data: {
+          message:
+            "Provider 'openrouter' requires configuration. Set OPENROUTER_API_KEY environment variable.",
+          code: StreamErrorCode.AUTHENTICATION_FAILED,
+          retryable: false,
+        },
+        eventId: `or-${Date.now()}-${generateId()}`,
+      };
+      return;
+    }
+
+    // Convert string prompt to messages format
+    const messages: Message[] =
+      typeof input === "string" ? [{ role: "user", content: input }] : input;
+
+    try {
+      // 2. Initiate a NEW stream request to OpenRouter API with `stream: true`
+      const response = await this.startStream(messages, {
+        ...originalRequestParams,
+        stream: true,
+      });
+
+      // 3. Process SSE chunks
+      let lastContentEventId: string | undefined;
+      for await (const chunk of this.parseSSEStream(response)) {
+        const eventId = `or-${Date.now()}-${generateId()}`; // e.g., or-1733680800000-x7B9mK
+
+        if (chunk.type === "data") {
+          try {
+            // Handle special [DONE] signal
+            if (chunk.data === "[DONE]") {
+              // Reuse the last content event's eventId for resumption continuity
+              yield { type: "done", eventId: lastContentEventId || eventId };
+              break;
+            }
+
+            // Parse JSON data
+            const data = JSON.parse(chunk.data) as {
+              choices?: Array<{ delta?: { content?: string } }>;
+              usage?: {
+                prompt_tokens: number;
+                completion_tokens: number;
+                total_tokens: number;
+              };
+              model?: string;
+            };
+
+            // Extract content delta
+            const content = data.choices?.[0]?.delta?.content;
+            if (content !== undefined && content !== "") {
+              lastContentEventId = eventId; // Track for done event continuity
+              yield { type: "content", data: content, eventId };
+            }
+
+            // Check for usage data
+            if (data.usage) {
+              yield {
+                type: "usage",
+                data: {
+                  promptTokens: data.usage.prompt_tokens,
+                  completionTokens: data.usage.completion_tokens,
+                  totalTokens: data.usage.total_tokens,
+                  model: data.model || this.model,
+                },
+                eventId,
+              };
+            }
+          } catch {
+            yield {
+              type: "error",
+              data: {
+                message: "Malformed JSON data received from provider",
+                code: StreamErrorCode.MALFORMED_JSON,
+                retryable: false,
+                details: { originalData: chunk.data },
+              },
+              eventId,
+            };
+          }
+        }
+        // Ignore SSE comments (lines starting with :)
+      }
+    } catch (error) {
+      yield {
+        type: "error",
+        data: this.mapErrorToStreamError(error),
+        eventId: `or-${Date.now()}-${generateId()}`,
+      };
+    }
+  }
+
+  private async startStream(
+    messages: Message[],
+    requestParams: any,
+  ): Promise<Response> {
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.apiKey}`,
+          "HTTP-Referer": this.appUrl,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: messages,
+          stream: true,
+          ...requestParams,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = (await response
+          .json()
+          .catch(() => ({}) as Record<string, unknown>)) as {
+          error?: { message?: string };
+        };
+        const errorMessage =
+          errorData.error?.message ||
+          `HTTP ${response.status}: ${response.statusText}`;
+
+        throw new Error(`OpenRouter API Error: ${errorMessage}`);
+      }
+
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  private async *parseSSEStream(
+    response: Response,
+  ): AsyncIterable<{ type: string; data: string }> {
+    if (!response.body) {
+      throw new Error("No response body available for streaming");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+
+        // Keep the last line in buffer if it doesn't end with newline
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+
+          // Skip empty lines and comments
+          if (!trimmedLine || trimmedLine.startsWith(":")) {
+            continue;
+          }
+
+          if (trimmedLine.startsWith("data: ")) {
+            const data = trimmedLine.slice(6); // Remove 'data: ' prefix
+            yield { type: "data", data };
+          }
+        }
+      }
+
+      // Flush any remaining bytes from decoder
+      buffer += decoder.decode();
+
+      // Process any remaining data in buffer
+      if (buffer.trim()) {
+        const trimmedLine = buffer.trim();
+        if (trimmedLine.startsWith("data: ")) {
+          const data = trimmedLine.slice(6);
+          yield { type: "data", data };
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  private mapErrorToStreamError(error: unknown): StreamError {
+    // Handle timeout specifically
+    if (error instanceof Error && error.name === "AbortError") {
+      return {
+        message: "OpenRouter request timeout",
+        code: StreamErrorCode.CONNECTION_TIMEOUT,
+        retryable: true,
+      };
+    }
+
+    // Handle network errors
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      return {
+        message: "Network error connecting to OpenRouter",
+        code: StreamErrorCode.NETWORK_ERROR,
+        retryable: true,
+      };
+    }
+
+    // Handle general errors
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    if (errorMessage.includes("401") || errorMessage.includes("Unauthorized")) {
+      return {
+        message: "Invalid OpenRouter API key",
+        code: StreamErrorCode.AUTHENTICATION_FAILED,
+        retryable: false,
+      };
+    }
+
+    if (
+      errorMessage.includes("429") ||
+      errorMessage.toLowerCase().includes("rate limit")
+    ) {
+      return {
+        message: "OpenRouter rate limit exceeded",
+        code: StreamErrorCode.PROVIDER_RATE_LIMIT,
+        retryable: true,
+      };
+    }
+
+    if (errorMessage.includes("404") || errorMessage.includes("not found")) {
+      return {
+        message: `Model '${this.model}' not found on OpenRouter`,
+        code: StreamErrorCode.PROVIDER_INVALID_RESPONSE,
+        retryable: false,
+      };
+    }
+
+    return {
+      message: `OpenRouter error: ${errorMessage}`,
+      code: StreamErrorCode.PROVIDER_UNAVAILABLE,
+      retryable: true,
+      details: { originalError: errorMessage },
+    };
   }
 
   getName(): string {

@@ -30,6 +30,7 @@
   "author": "Liminal Type Chat",
   "license": "MIT",
   "dependencies": {
+    "@liminal-chat/shared-types": "workspace:*",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "dotenv": "^16.5.0",
