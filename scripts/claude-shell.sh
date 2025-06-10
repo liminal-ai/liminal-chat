@@ -33,5 +33,5 @@ cleanup() {
 trap cleanup EXIT
 EOF
 
-# Start bash with the temporary rcfile
-exec bash --rcfile "$TEMP_RCFILE"
+# Start bash with the temporary rcfile and launch claude
+exec bash --rcfile "$TEMP_RCFILE" -c "claude"

@@ -60,6 +60,7 @@ export class LlmService {
 
   async *promptStream(
     dto: LlmPromptRequestDto,
+    lastEventId?: string,
   ): AsyncIterable<ProviderStreamEvent> {
     try {
       this.validatePromptInput(dto);
@@ -77,7 +78,7 @@ export class LlmService {
 
       // Generate streaming response
       const input = dto.prompt || dto.messages!;
-      yield* provider.generateStream(input);
+      yield* provider.generateStream(input, {}, lastEventId);
     } catch (error) {
       // Handle specific errors
       if (error instanceof ProviderNotFoundError) {

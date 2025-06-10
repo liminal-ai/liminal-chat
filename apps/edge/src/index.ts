@@ -77,6 +77,60 @@ app.post('/api/v1/llm/prompt', async (c) => {
   }
 });
 
+// Dedicated streaming endpoint for SSE
+app.post('/api/v1/llm/prompt/stream', async (c) => {
+  try {
+    const body = await c.req.json();
+    const domainUrl = c.env.DOMAIN_URL;
+    
+    // Forward headers for Last-Event-ID if present
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    const lastEventId = c.req.header('Last-Event-ID');
+    if (lastEventId) {
+      headers['Last-Event-ID'] = lastEventId;
+    }
+    
+    // Forward request to domain server streaming endpoint
+    // SSE endpoints in NestJS expect POST with body, not GET
+    const response = await fetch(`${domainUrl}/domain/llm/prompt/stream`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      const errorResponse: EdgeError = {
+        error: `Domain server error: ${errorText}`,
+        code: ERROR_CODES.DOMAIN.INVALID_RESPONSE
+      };
+      return c.json(errorResponse, response.status as any);
+    }
+
+    // Return the SSE stream with proper headers
+    return new Response(response.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Last-Event-ID',
+      },
+    });
+  } catch (error) {
+    console.error('Streaming proxy error:', error);
+    const errorResponse: EdgeError = {
+      error: 'Failed to proxy streaming request to domain server',
+      code: ERROR_CODES.EDGE.DOMAIN_UNAVAILABLE,
+      details: error instanceof Error ? error.message : undefined
+    };
+    return c.json(errorResponse, 500);
+  }
+});
+
 // Get available providers
 app.get('/api/v1/llm/providers', async (c) => {
   try {

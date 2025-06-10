@@ -67,6 +67,57 @@ To use OpenRouter:
 2. Set `OPENROUTER_API_KEY` in `apps/domain/.env`
 3. Optionally set `OPENROUTER_MODEL` to override the default (openai/gpt-4.1)
 
+## Streaming Chat Examples
+
+Liminal Chat supports real-time streaming responses for interactive conversations:
+
+### CLI Streaming
+```bash
+# Start streaming chat with OpenRouter
+pnpm cli:chat:openrouter
+
+# Example session:
+You: Write a 200 word story about space exploration
+Assistant: [tokens appear incrementally in real-time]
+Dr. Vega's gloved hands trembled as she pressed the ignition...
+[streaming continues word by word]
+
+Model: openai/gpt-4.1
+Tokens used: 156 (prompt: 16, completion: 140)
+```
+
+### Streaming API
+The Edge server provides SSE (Server-Sent Events) streaming:
+
+```bash
+# Streaming endpoint
+POST /api/v1/llm/prompt/stream
+
+# SSE Response Format:
+event: content
+data: {"type":"content","data":"Hello","eventId":"or-1234-abc"}
+
+event: usage  
+data: {"type":"usage","data":{"totalTokens":15},"eventId":"or-1234-def"}
+
+event: done
+data: {"type":"done","eventId":"or-1234-ghi"}
+```
+
+### Performance Characteristics
+- **First token latency**: ≤ 500ms
+- **Inter-chunk latency**: ≤ 100ms  
+- **Reconnection time**: ≤ 2s (automatic with exponential backoff)
+- **Memory usage**: ≤ 10MB for 10k token streams
+
+### Interruption and Reconnection
+```bash
+# During streaming:
+# - Press Ctrl+C to interrupt
+# - CLI automatically reconnects with exponential backoff
+# - Streams resume from last received event ID
+```
+
 ## Development
 
 - Uses pnpm workspaces for monorepo management

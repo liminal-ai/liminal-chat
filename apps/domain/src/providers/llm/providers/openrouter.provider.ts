@@ -241,6 +241,14 @@ export class OpenRouterProvider implements ILLMProvider {
     const messages: Message[] =
       typeof input === "string" ? [{ role: "user", content: input }] : input;
 
+    // Initialize performance monitoring variables outside try block
+    const streamId = `stream-${Date.now()}-${generateId()}`;
+    const startTime = process.hrtime.bigint();
+    let firstTokenTime: bigint | null = null;
+    let lastChunkTime = startTime;
+    let chunkCount = 0;
+    const startMemory = process.memoryUsage().heapUsed;
+
     try {
       // 2. Initiate a NEW stream request to OpenRouter API with `stream: true`
       const response = await this.startStream(messages, {
@@ -248,10 +256,10 @@ export class OpenRouterProvider implements ILLMProvider {
         stream: true,
       });
 
-      // 3. Process SSE chunks
       let lastContentEventId: string | undefined;
       for await (const chunk of this.parseSSEStream(response)) {
         const eventId = `or-${Date.now()}-${generateId()}`; // e.g., or-1733680800000-x7B9mK
+        const chunkTime = process.hrtime.bigint();
 
         if (chunk.type === "data") {
           try {
@@ -276,6 +284,25 @@ export class OpenRouterProvider implements ILLMProvider {
             // Extract content delta
             const content = data.choices?.[0]?.delta?.content;
             if (content !== undefined && content !== "") {
+              chunkCount++;
+
+              // Record first token latency
+              if (firstTokenTime === null) {
+                firstTokenTime = chunkTime;
+                const latency = Number(firstTokenTime - startTime) / 1000000; // Convert to ms
+                this.logger.debug(
+                  `First token latency: ${latency.toFixed(2)}ms [${streamId}]`,
+                );
+              } else {
+                // Record inter-chunk latency
+                const interChunkLatency =
+                  Number(chunkTime - lastChunkTime) / 1000000;
+                this.logger.debug(
+                  `Inter-chunk latency: ${interChunkLatency.toFixed(2)}ms [${streamId}]`,
+                );
+              }
+
+              lastChunkTime = chunkTime;
               lastContentEventId = eventId; // Track for done event continuity
               yield { type: "content", data: content, eventId };
             }
@@ -308,7 +335,24 @@ export class OpenRouterProvider implements ILLMProvider {
         }
         // Ignore SSE comments (lines starting with :)
       }
+
+      // Log final performance metrics
+      const endTime = process.hrtime.bigint();
+      const totalDuration = Number(endTime - startTime) / 1000000; // Convert to ms
+      const endMemory = process.memoryUsage().heapUsed;
+      const memoryDelta = (endMemory - startMemory) / 1024 / 1024; // Convert to MB
+
+      this.logger.debug(
+        `Stream complete [${streamId}]: ${totalDuration.toFixed(2)}ms total, ${chunkCount} chunks, ${memoryDelta.toFixed(2)}MB memory delta`,
+      );
     } catch (error) {
+      // Log error performance metrics
+      const endTime = process.hrtime.bigint();
+      const totalDuration = Number(endTime - startTime) / 1000000;
+      this.logger.debug(
+        `Stream error [${streamId}]: ${totalDuration.toFixed(2)}ms before error, ${chunkCount} chunks processed`,
+      );
+
       yield {
         type: "error",
         data: this.mapErrorToStreamError(error),
