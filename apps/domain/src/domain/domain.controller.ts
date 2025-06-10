@@ -9,6 +9,7 @@ import {
   Res,
   Headers,
 } from "@nestjs/common";
+import { Response } from "express";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { HealthService } from "../health/health.service";
 import { LlmService } from "../llm/llm.service";
@@ -53,20 +54,15 @@ export class DomainController {
   @ApiResponse({ status: 200, description: "Server-sent events stream" })
   async streamPrompt(
     @Body() dto: LlmPromptRequestDto,
-    @Res({ passthrough: false }) response: any,
+    @Res({ passthrough: false }) response: Response,
     @Headers("Last-Event-ID") lastEventId?: string,
   ): Promise<void> {
     // Set SSE headers
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    response.header("Content-Type", "text/event-stream");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    response.header("Cache-Control", "no-cache");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    response.header("Connection", "keep-alive");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    response.header("Access-Control-Allow-Origin", "*");
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    response.header(
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader(
       "Access-Control-Allow-Headers",
       "Content-Type, Last-Event-ID",
     );
@@ -96,7 +92,6 @@ export class DomainController {
         sseMessage += `event: ${sseData.type}\n`;
         sseMessage += `data: ${sseData.data}\n\n`;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         response.write(sseMessage);
 
         // Exit on done event
@@ -111,10 +106,8 @@ export class DomainController {
         code: "INTERNAL_ERROR",
         retryable: false,
       })}\n\n`;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       response.write(errorMessage);
     } finally {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       response.end();
     }
   }

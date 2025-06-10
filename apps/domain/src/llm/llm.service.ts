@@ -78,7 +78,7 @@ export class LlmService {
 
       // Generate streaming response
       const input = dto.prompt || dto.messages!;
-      yield* provider.generateStream(input, {}, lastEventId);
+      yield* provider.generateStream(input, undefined, lastEventId);
     } catch (error) {
       // Handle specific errors
       if (error instanceof ProviderNotFoundError) {
