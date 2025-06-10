@@ -6,16 +6,16 @@ import {
   HttpCode,
   HttpStatus,
   HttpException,
-  Sse,
+  Res,
+  Headers,
 } from "@nestjs/common";
+import { Response } from "express";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { Observable, from, map } from "rxjs";
 import { HealthService } from "../health/health.service";
 import { LlmService } from "../llm/llm.service";
 import { LlmPromptRequestDto } from "./dto/llm-prompt-request.dto";
 import { LlmResponse } from "../llm/dto/llm-response.dto";
 import { ProviderHealthService } from "../providers/llm/provider-health.service";
-import { ProviderStreamEvent } from "@liminal-chat/shared-types";
 
 @ApiTags("domain")
 @Controller("domain")
@@ -47,26 +47,103 @@ export class DomainController {
     return this.llmService.prompt(dto);
   }
 
-  @Sse("llm/prompt/stream")
+  @Post("llm/prompt/stream")
   @ApiOperation({
     summary: "Send prompt to LLM provider with streaming response",
+    description:
+      "Uses POST (not GET) to support complex request bodies with message arrays and long prompts that exceed URL length limits",
   })
   @ApiResponse({ status: 200, description: "Server-sent events stream" })
-  streamPrompt(
+  async streamPrompt(
     @Body() dto: LlmPromptRequestDto,
-  ): Observable<{ id?: string; type: string; data: string }> {
-    return from(this.llmService.promptStream(dto)).pipe(
-      map((event: ProviderStreamEvent) => ({
-        id: event.eventId,
-        type: event.type,
-        data:
-          event.type === "content" ||
-          event.type === "usage" ||
-          event.type === "error"
-            ? JSON.stringify(event.data)
-            : "",
-      })),
+    @Res({ passthrough: false }) response: Response,
+    @Headers("Last-Event-ID") lastEventId?: string,
+  ): Promise<void> {
+    // Validate that stream flag is set for streaming endpoint
+    if (!dto.stream) {
+      throw new HttpException(
+        "Stream flag must be true for streaming endpoint",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Set SSE headers
+    response.setHeader("Content-Type", "text/event-stream");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Last-Event-ID",
     );
+
+    // Flush headers immediately to establish SSE stream with proxies
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (typeof (response as any).flushHeaders === "function") {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      (response as any).flushHeaders();
+    }
+
+    try {
+      // Handle client disconnects to avoid dangling async iterators
+      let clientClosed = false;
+      response.on("close", () => {
+        clientClosed = true;
+      });
+
+      // Stream events from the LLM service
+      for await (const event of this.llmService.promptStream(
+        dto,
+        lastEventId,
+      )) {
+        // Break early if client disconnected
+        if (clientClosed) {
+          break;
+        }
+        const sseData = {
+          id: event.eventId,
+          type: event.type,
+          data:
+            event.type === "content" ||
+            event.type === "usage" ||
+            event.type === "error"
+              ? JSON.stringify(event.data)
+              : "",
+        };
+
+        // Write SSE format
+        let sseMessage = "";
+        if (sseData.id) {
+          sseMessage += `id: ${sseData.id}\n`;
+        }
+        sseMessage += `event: ${sseData.type}\n`;
+        sseMessage += `data: ${sseData.data}\n\n`;
+
+        response.write(sseMessage);
+
+        // Flush chunk immediately for prompt delivery
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (typeof (response as any).flush === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          (response as any).flush();
+        }
+
+        // Exit on done event
+        if (event.type === "done") {
+          break;
+        }
+      }
+    } catch (error) {
+      // Send error event
+      const errorMessage = `event: error\ndata: ${JSON.stringify({
+        message: error instanceof Error ? error.message : "Unknown error",
+        code: "INTERNAL_ERROR",
+        retryable: false,
+      })}\n\n`;
+      response.write(errorMessage);
+    } finally {
+      response.end();
+    }
   }
 
   @Get("llm/providers")

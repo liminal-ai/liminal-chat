@@ -104,6 +104,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : "No stack trace",
     );
 
+    // Log verbose validation details only in non-production environments
+    if (
+      status === HttpStatus.BAD_REQUEST &&
+      exception instanceof HttpException &&
+      process.env.NODE_ENV !== "production"
+    ) {
+      this.logger.debug(
+        `Full validation error: ${JSON.stringify(
+          exception.getResponse(),
+          null,
+          2,
+        )}`,
+      );
+    }
+
     response.status(status).send({
       error: {
         code,
