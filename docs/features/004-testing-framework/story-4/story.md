@@ -376,7 +376,7 @@ test.describe('Edge Security Headers', () => {
 ## Implementation Notes
 
 ### Test Organization
-```
+```bash
 tests/integration/edge/
 ├── health.spec.ts              # Edge health endpoint
 ├── proxy-behavior.spec.ts      # Basic proxy functionality

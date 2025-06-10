@@ -13,7 +13,7 @@ This feature modernizes and consolidates the testing architecture across all tie
 ## Architecture Transformation
 
 ### Current State (Mixed Testing)
-```
+```text
 Domain:  Jest (123 unit tests) + Supertest integration
 CLI:     Vitest (89 unit tests) + Custom integration  
 Edge:    Vitest (6 unit tests) + Basic E2E
@@ -21,7 +21,7 @@ Total:   Mixed frameworks, fragmented approach
 ```
 
 ### Target State (Unified Testing)
-```
+```text
 All Tiers: Vitest (unified unit testing)
 Integration: Playwright HTTP API testing (Edge + Domain)
 E2E: Playwright + Node child_process (CLI workflows)
