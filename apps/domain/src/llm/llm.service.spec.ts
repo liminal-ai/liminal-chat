@@ -1,34 +1,51 @@
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { LlmService } from "./llm.service";
 import { LlmProviderFactory } from "../providers/llm/llm-provider.factory";
 import { VercelErrorMapper } from "../providers/llm/vercel-error.mapper";
-import { ILLMProvider } from "../providers/llm/llm-provider.interface";
 import { LlmPromptRequestDto } from "../domain/dto/llm-prompt-request.dto";
 import { ProviderNotFoundError } from "../providers/llm/errors";
 
+// Mock interfaces for proper TypeScript typing
+interface MockLLMProvider {
+  generate: ReturnType<typeof vi.fn>;
+  getName: ReturnType<typeof vi.fn>;
+  isAvailable: ReturnType<typeof vi.fn>;
+}
+
+interface MockLlmProviderFactory {
+  getProvider: ReturnType<typeof vi.fn>;
+  getAvailableProviders: ReturnType<typeof vi.fn>;
+  onModuleInit: ReturnType<typeof vi.fn>;
+}
+
+interface MockVercelErrorMapper {
+  mapError: ReturnType<typeof vi.fn>;
+}
+
 describe("LlmService", () => {
   let service: LlmService;
-  let mockProviderFactory: jest.Mocked<LlmProviderFactory>;
-  let mockErrorMapper: jest.Mocked<VercelErrorMapper>;
-  let mockProvider: jest.Mocked<ILLMProvider>;
+  let mockProviderFactory: MockLlmProviderFactory;
+  let mockErrorMapper: MockVercelErrorMapper;
+  let mockProvider: MockLLMProvider;
 
   beforeEach(async () => {
     mockProvider = {
-      generate: jest.fn(),
-      getName: jest.fn().mockReturnValue("echo"),
-      isAvailable: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<ILLMProvider>;
+      generate: vi.fn(),
+      getName: vi.fn().mockReturnValue("echo"),
+      isAvailable: vi.fn().mockReturnValue(true),
+    };
 
     mockProviderFactory = {
-      getProvider: jest.fn().mockReturnValue(mockProvider),
-      getAvailableProviders: jest.fn().mockReturnValue(["echo"]),
-      onModuleInit: jest.fn(),
-    } as unknown as jest.Mocked<LlmProviderFactory>;
+      getProvider: vi.fn().mockReturnValue(mockProvider),
+      getAvailableProviders: vi.fn().mockReturnValue(["echo"]),
+      onModuleInit: vi.fn(),
+    };
 
     mockErrorMapper = {
-      mapError: jest.fn(),
-    } as unknown as jest.Mocked<VercelErrorMapper>;
+      mapError: vi.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -54,13 +71,12 @@ describe("LlmService", () => {
         model: "echo-1.0",
         usage: { promptTokens: 2, completionTokens: 3, totalTokens: 5 },
       };
-      (mockProvider.generate as jest.Mock).mockResolvedValue(mockResponse);
+      mockProvider.generate.mockResolvedValue(mockResponse);
 
       const result = await service.prompt({ prompt: "Hello" });
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockProviderFactory.getProvider).toHaveBeenCalledWith(undefined);
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+
       expect(mockProvider.generate).toHaveBeenCalledWith("Hello");
       expect(result).toEqual(mockResponse);
     });
@@ -72,11 +88,10 @@ describe("LlmService", () => {
         model: "echo-1.0",
         usage: { promptTokens: 2, completionTokens: 3, totalTokens: 5 },
       };
-      (mockProvider.generate as jest.Mock).mockResolvedValue(mockResponse);
+      mockProvider.generate.mockResolvedValue(mockResponse);
 
       const result = await service.prompt({ messages });
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockProvider.generate).toHaveBeenCalledWith(messages);
       expect(result).toEqual(mockResponse);
     });
@@ -87,11 +102,10 @@ describe("LlmService", () => {
         model: "gpt-4",
         usage: { promptTokens: 10, completionTokens: 20, totalTokens: 30 },
       };
-      (mockProvider.generate as jest.Mock).mockResolvedValue(mockResponse);
+      mockProvider.generate.mockResolvedValue(mockResponse);
 
       await service.prompt({ prompt: "Hello", provider: "openai" });
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockProviderFactory.getProvider).toHaveBeenCalledWith("openai");
     });
 
@@ -128,7 +142,7 @@ describe("LlmService", () => {
 
     it("should map provider errors using error mapper", async () => {
       const providerError = new Error("API Error");
-      (mockProvider.generate as jest.Mock).mockRejectedValue(providerError);
+      mockProvider.generate.mockRejectedValue(providerError);
 
       const mappedException = new HttpException(
         {
@@ -145,7 +159,7 @@ describe("LlmService", () => {
       await expect(service.prompt({ prompt: "Hello" })).rejects.toThrow(
         mappedException,
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+
       expect(mockErrorMapper.mapError).toHaveBeenCalledWith(
         providerError,
         "unknown",

@@ -9,7 +9,7 @@ import {
   Res,
   Headers,
 } from "@nestjs/common";
-import { Response } from "express";
+import { FastifyReply } from "fastify";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { HealthService } from "../health/health.service";
 import { LlmService } from "../llm/llm.service";
@@ -56,7 +56,7 @@ export class DomainController {
   @ApiResponse({ status: 200, description: "Server-sent events stream" })
   async streamPrompt(
     @Body() dto: LlmPromptRequestDto,
-    @Res({ passthrough: false }) response: Response,
+    @Res({ passthrough: false }) response: FastifyReply,
     @Headers("Last-Event-ID") lastEventId?: string,
   ): Promise<void> {
     // Validate that stream flag is set for streaming endpoint
@@ -67,27 +67,23 @@ export class DomainController {
       );
     }
 
-    // Set SSE headers
-    response.setHeader("Content-Type", "text/event-stream");
-    response.setHeader("Cache-Control", "no-cache");
-    response.setHeader("Connection", "keep-alive");
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader(
+    // Set SSE headers (using Fastify's raw response)
+    response.raw.setHeader("Content-Type", "text/event-stream");
+    response.raw.setHeader("Cache-Control", "no-cache");
+    response.raw.setHeader("Connection", "keep-alive");
+    response.raw.setHeader("Access-Control-Allow-Origin", "*");
+    response.raw.setHeader(
       "Access-Control-Allow-Headers",
       "Content-Type, Last-Event-ID",
     );
 
     // Flush headers immediately to establish SSE stream with proxies
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof (response as any).flushHeaders === "function") {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      (response as any).flushHeaders();
-    }
+    response.raw.flushHeaders();
 
     try {
       // Handle client disconnects to avoid dangling async iterators
       let clientClosed = false;
-      response.on("close", () => {
+      response.raw.on("close", () => {
         clientClosed = true;
       });
 
@@ -119,13 +115,11 @@ export class DomainController {
         sseMessage += `event: ${sseData.type}\n`;
         sseMessage += `data: ${sseData.data}\n\n`;
 
-        response.write(sseMessage);
+        response.raw.write(sseMessage);
 
         // Flush chunk immediately for prompt delivery
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (typeof (response as any).flush === "function") {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-          (response as any).flush();
+        if (typeof response.raw.flush === "function") {
+          response.raw.flush();
         }
 
         // Exit on done event
@@ -140,9 +134,9 @@ export class DomainController {
         code: "INTERNAL_ERROR",
         retryable: false,
       })}\n\n`;
-      response.write(errorMessage);
+      response.raw.write(errorMessage);
     } finally {
-      response.end();
+      response.raw.end();
     }
   }
 

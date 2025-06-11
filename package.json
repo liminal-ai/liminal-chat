@@ -31,6 +31,7 @@
     "cli:chat": "cd apps/cli && pnpm dev chat",
     "cli:chat:echo": "cd apps/cli && pnpm dev chat --provider echo",
     "cli:chat:openrouter": "cd apps/cli && pnpm dev chat --provider openrouter",
+    "cli:or:stream": "cd apps/cli && pnpm dev chat --provider openrouter --stream",
     "cli:providers": "cd apps/cli && pnpm dev providers",
     "cli:help": "cd apps/cli && pnpm dev --help",
     "cli:build": "pnpm -F @liminal/cli build",
@@ -45,14 +46,7 @@
     "typecheck:watch": "tsc --noEmit --watch -p tsconfig.json",
     "verify:all": "pnpm lint && pnpm typecheck && pnpm test",
     "verify:no-tests": "pnpm lint && pnpm typecheck",
-    "pretest:e2e": "pnpm cli:build",
-    "test:playwright": "playwright test",
-    "test:integration": "playwright test --project=integration-domain --project=integration-edge",
-    "test:e2e": "playwright test --project=e2e-cli",
-    "test:playwright:ui": "playwright test --ui",
-    "test:playwright:debug": "playwright test --debug",
-    "test:playwright:headed": "playwright test --headed",
-    "test:playwright:report": "playwright show-report tests/reports/html-report"
+    "pretest:e2e": "pnpm cli:build"
   },
   "devDependencies": {
     "pm2": "^6.0.8",

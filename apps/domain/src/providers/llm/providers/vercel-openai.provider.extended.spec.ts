@@ -1,15 +1,23 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockedFunction,
+} from "vitest";
 // ConfigService import removed - mocked inline
 import { ConfigService } from "@nestjs/config";
 import { VercelOpenAIProvider } from "./vercel-openai.provider";
 import { generateText } from "ai";
 
-jest.mock("ai", () => ({
-  generateText: jest.fn(),
+vi.mock("ai", () => ({
+  generateText: vi.fn(),
 }));
 
-jest.mock("@ai-sdk/openai", () => ({
-  createOpenAI: jest.fn(() => {
-    return jest.fn((modelName: string) => ({
+vi.mock("@ai-sdk/openai", () => ({
+  createOpenAI: vi.fn(() => {
+    return vi.fn((modelName: string) => ({
       id: modelName,
       __type: "openai-model",
     }));
@@ -18,14 +26,14 @@ jest.mock("@ai-sdk/openai", () => ({
 
 describe("VercelOpenAIProvider - Extended Tests", () => {
   let provider: VercelOpenAIProvider;
-  let mockGenerateText: jest.MockedFunction<typeof generateText>;
+  let mockGenerateText: MockedFunction<typeof generateText>;
 
   beforeEach(() => {
-    mockGenerateText = generateText as jest.MockedFunction<typeof generateText>;
+    mockGenerateText = generateText as MockedFunction<typeof generateText>;
     mockGenerateText.mockClear();
 
     const configService = {
-      get: jest.fn((key: string, defaultValue?: string) => {
+      get: vi.fn((key: string, defaultValue?: string) => {
         if (key === "OPENAI_API_KEY") return "test-api-key";
         if (key === "OPENAI_MODEL") return "o4-mini";
         return defaultValue;
@@ -96,7 +104,9 @@ describe("VercelOpenAIProvider - Extended Tests", () => {
       mockGenerateText.mockImplementation(() => {
         const response = responses[callCount % responses.length];
         callCount++;
-        return Promise.resolve(response as any);
+        return Promise.resolve(
+          response as Awaited<ReturnType<typeof generateText>>,
+        );
       });
 
       // Make concurrent requests
@@ -125,7 +135,7 @@ describe("VercelOpenAIProvider - Extended Tests", () => {
         return Promise.resolve({
           text: `Response ${callCount}`,
           usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
-        } as any);
+        } as Awaited<ReturnType<typeof generateText>>);
       });
 
       const promises = [

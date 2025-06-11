@@ -1,22 +1,36 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockedFunction,
+} from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { DomainService } from "./domain.service";
 import { LlmService } from "../llm/llm.service";
+import { LlmResponse } from "../llm/dto/llm-response.dto";
+import { LlmPromptRequestDto } from "./dto/llm-prompt-request.dto";
+
+interface MockLlmService {
+  prompt: MockedFunction<(dto: LlmPromptRequestDto) => Promise<LlmResponse>>;
+}
 
 describe("DomainService", () => {
   let service: DomainService;
-  let mockLlmService: jest.Mocked<LlmService>;
+  let mockLlmService: MockLlmService;
 
   beforeEach(async () => {
     mockLlmService = {
-      prompt: jest.fn(),
-    } as unknown as jest.Mocked<LlmService>;
+      prompt: vi.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DomainService,
         {
           provide: LlmService,
-          useValue: mockLlmService,
+          useValue: mockLlmService as unknown as LlmService,
         },
       ],
     }).compile();
@@ -37,7 +51,6 @@ describe("DomainService", () => {
 
       const result = await service.prompt(dto);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLlmService.prompt).toHaveBeenCalledWith(dto);
       expect(result).toEqual(expectedResponse);
     });
@@ -57,7 +70,6 @@ describe("DomainService", () => {
 
       const result = await service.prompt(dto);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLlmService.prompt).toHaveBeenCalledWith(dto);
       expect(result).toEqual(expectedResponse);
     });
