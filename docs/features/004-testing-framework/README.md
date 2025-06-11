@@ -30,7 +30,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ## Stories
 
-### [Story 1: Domain Unit Test Migration](story-1/story.md)
+### [Jest to Vitest Migration for Domain Tier](1-jest-to-vitest-migration/jest-to-vitest-migration.md)
 **Objective**: Migrate Domain tier from Jest to Vitest with SWC
 
 **Key Deliverables**:
@@ -44,7 +44,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ---
 
-### [Story 2: Playwright Framework Setup](story-2/story.md)
+### [Playwright Framework Setup and Configuration](2-playwright-framework-setup/playwright-framework-setup.md)
 **Objective**: Establish Playwright infrastructure for integration and E2E testing
 
 **Key Deliverables**:
@@ -58,7 +58,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ---
 
-### [Story 3: Domain Integration Test Migration](story-3/story.md)
+### [Domain API Integration Tests with Playwright](3-domain-api-integration-tests/domain-api-integration-tests.md)
 **Objective**: Migrate Domain API testing from Supertest to Playwright HTTP
 
 **Key Deliverables**:
@@ -72,7 +72,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ---
 
-### [Story 4: Edge Integration Test Migration](story-4/story.md)
+### [Edge Proxy Integration Tests and Validation](4-edge-proxy-integration-tests/edge-proxy-integration-tests.md)
 **Objective**: Implement comprehensive Edge API testing with Playwright
 
 **Key Deliverables**:
@@ -86,7 +86,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ---
 
-### [Story 5: CLI E2E Test Implementation](story-5/story.md)
+### [CLI End-to-End Test Automation](5-cli-e2e-automation/cli-e2e-automation.md)
 **Objective**: Implement CLI testing using Playwright + Node child_process
 
 **Key Deliverables**:
@@ -100,7 +100,7 @@ Total: Unified frameworks, comprehensive strategy
 
 ---
 
-### [Story 6: Testing Playbook & Documentation](story-6/story.md)
+### [Testing Documentation and Developer Playbook](6-testing-documentation-playbook/testing-documentation-playbook.md)
 **Objective**: Create comprehensive testing guidelines and documentation
 
 **Key Deliverables**:
