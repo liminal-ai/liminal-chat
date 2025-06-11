@@ -1,4 +1,4 @@
-# Story 3: Domain Integration Test Migration
+# Domain API Integration Tests with Playwright
 
 ## Objective
 Migrate Domain API integration testing from Supertest to Playwright HTTP API testing, ensuring comprehensive coverage of all Domain endpoints with real HTTP validation and improved debugging capabilities.

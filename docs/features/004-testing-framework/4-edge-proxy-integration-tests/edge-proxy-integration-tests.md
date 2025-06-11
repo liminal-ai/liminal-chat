@@ -1,4 +1,4 @@
-# Story 4: Edge Integration Test Migration
+# Edge Proxy Integration Tests and Validation
 
 ## Objective
 Implement comprehensive Edge API integration testing using Playwright, focusing on proxy behavior validation, cross-tier communication, and error handling across the Edge → Domain boundary.
