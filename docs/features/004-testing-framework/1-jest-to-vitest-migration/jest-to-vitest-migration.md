@@ -1,4 +1,4 @@
-# Story 1: Domain Unit Test Migration
+# Jest to Vitest Migration for Domain Tier
 
 ## Objective
 Migrate Domain tier from Jest to Vitest with SWC plugin, ensuring full compatibility with NestJS testing module while improving performance and developer experience.

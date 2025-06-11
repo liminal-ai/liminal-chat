@@ -1,4 +1,4 @@
-# Story 5: CLI E2E Test Implementation
+# CLI End-to-End Test Automation
 
 ## Objective
 Implement comprehensive CLI end-to-end testing using Playwright + Node child_process, covering both batch and interactive modes, configuration flows, and complete user workflows from CLI input to final output.
