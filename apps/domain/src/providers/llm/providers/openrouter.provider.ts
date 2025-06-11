@@ -12,7 +12,7 @@ const generateId = (): string => {
   // Generate 4 random bytes and convert to base36 (better than Math.random)
   return randomBytes(4).toString("hex").substring(0, 6);
 };
-import * as openRouterConfig from "../../../config/openrouter-models.json";
+import openRouterConfig from "../../../config/openrouter-models.json";
 
 @Injectable()
 export class OpenRouterProvider implements ILLMProvider {

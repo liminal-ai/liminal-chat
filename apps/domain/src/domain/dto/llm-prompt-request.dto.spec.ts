@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { validate } from "class-validator";
 import { LlmPromptRequestDto } from "./llm-prompt-request.dto";
 import { MessageDto } from "./message.dto";

@@ -1,47 +1,67 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockedFunction,
+} from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { ProviderHealthService } from "./provider-health.service";
 import { LlmProviderFactory } from "./llm-provider.factory";
 import { ILLMProvider } from "./llm-provider.interface";
 
+// Mock types for proper TypeScript typing
+interface MockLlmProviderFactory {
+  getProvider: MockedFunction<(name?: string) => ILLMProvider>;
+  getDefaultProvider: MockedFunction<() => string>;
+  getAvailableProviders: MockedFunction<() => string[]>;
+  onModuleInit: MockedFunction<() => void>;
+}
+
+interface MockConfigService {
+  get: MockedFunction<(key: string) => string | undefined>;
+}
+
 describe("ProviderHealthService", () => {
   let service: ProviderHealthService;
   let mockEchoProvider: ILLMProvider;
   let mockOpenAIProvider: ILLMProvider;
-  let mockFactory: jest.Mocked<LlmProviderFactory>;
-  let mockConfigService: jest.Mocked<ConfigService>;
+  let mockFactory: MockLlmProviderFactory;
+  let mockConfigService: MockConfigService;
 
   beforeEach(async () => {
     // Create mock providers
     mockEchoProvider = {
-      generate: jest.fn(),
-      generateStream: jest.fn(),
-      getName: jest.fn().mockReturnValue("echo"),
-      isAvailable: jest.fn().mockReturnValue(true),
+      generate: vi.fn(),
+      generateStream: vi.fn(),
+      getName: vi.fn().mockReturnValue("echo"),
+      isAvailable: vi.fn().mockReturnValue(true),
     };
 
     mockOpenAIProvider = {
-      generate: jest.fn(),
-      generateStream: jest.fn(),
-      getName: jest.fn().mockReturnValue("openai"),
-      isAvailable: jest.fn().mockReturnValue(false),
+      generate: vi.fn(),
+      generateStream: vi.fn(),
+      getName: vi.fn().mockReturnValue("openai"),
+      isAvailable: vi.fn().mockReturnValue(false),
     };
 
     // Create mock factory
     mockFactory = {
-      getProvider: jest.fn(),
-      getDefaultProvider: jest.fn().mockReturnValue("echo"),
-      getAvailableProviders: jest.fn().mockReturnValue(["echo"]),
-      onModuleInit: jest.fn(),
-    } as unknown as jest.Mocked<LlmProviderFactory>;
+      getProvider: vi.fn(),
+      getDefaultProvider: vi.fn().mockReturnValue("echo"),
+      getAvailableProviders: vi.fn().mockReturnValue(["echo"]),
+      onModuleInit: vi.fn(),
+    };
 
     // Create mock config service
     mockConfigService = {
-      get: jest.fn().mockImplementation((key: string) => {
+      get: vi.fn().mockImplementation((key: string) => {
         if (key === "DEFAULT_LLM_PROVIDER") return "echo";
         return undefined;
       }),
-    } as unknown as jest.Mocked<ConfigService>;
+    };
 
     // Override getProvider to return our mock providers
     mockFactory.getProvider.mockImplementation((name?: string) => {
@@ -53,8 +73,14 @@ describe("ProviderHealthService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProviderHealthService,
-        { provide: LlmProviderFactory, useValue: mockFactory },
-        { provide: ConfigService, useValue: mockConfigService },
+        {
+          provide: LlmProviderFactory,
+          useValue: mockFactory as unknown as LlmProviderFactory,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService as unknown as ConfigService,
+        },
       ],
     }).compile();
 
@@ -63,10 +89,10 @@ describe("ProviderHealthService", () => {
 
   describe("onModuleInit", () => {
     it("should validate all providers on startup", async () => {
-      const loggerLogSpy = jest
+      const loggerLogSpy = vi
         .spyOn(service["logger"], "log")
         .mockImplementation();
-      const loggerWarnSpy = jest
+      const loggerWarnSpy = vi
         .spyOn(service["logger"], "warn")
         .mockImplementation();
 
@@ -85,7 +111,7 @@ describe("ProviderHealthService", () => {
     });
 
     it("should log default provider status", async () => {
-      const loggerLogSpy = jest
+      const loggerLogSpy = vi
         .spyOn(service["logger"], "log")
         .mockImplementation();
 
