@@ -1,4 +1,4 @@
-# Story 2: Playwright Framework Setup
+# Playwright Framework Setup and Configuration
 
 ## Objective
 Establish Playwright testing infrastructure for integration and E2E testing, creating a robust foundation for cross-tier testing with proper fixtures, utilities, and CI/CD integration.

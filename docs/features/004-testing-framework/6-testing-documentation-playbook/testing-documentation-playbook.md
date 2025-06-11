@@ -1,4 +1,4 @@
-# Story 6: Testing Playbook & Documentation
+# Testing Documentation and Developer Playbook
 
 ## Objective
 Create comprehensive testing guidelines, developer workflows, and documentation to ensure consistent testing practices across the team, enabling efficient onboarding and maintenance of the modernized testing infrastructure.
