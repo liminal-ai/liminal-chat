@@ -119,7 +119,7 @@ export class DomainController {
 
         // Flush chunk immediately for prompt delivery
         if (typeof response.raw.flush === "function") {
-          response.raw.flush();
+          (response.raw.flush as () => void)();
         }
 
         // Exit on done event
