@@ -1,6 +1,9 @@
 # Liminal Chat
 
-A threshold between human and AI communication.
+Bring Your Own Key (BYOK) LLM Chat
+Round Table AI Chat orchestration
+LLM/Agent Integrator through CLI
+Enterprise Scaffolding to Support Coding Agents
 
 ![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)
