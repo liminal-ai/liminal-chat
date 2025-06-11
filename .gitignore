@@ -87,4 +87,4 @@ apps/cli/bin/*.js
 # Additional IDE files
 *.sublime-workspace
 *.sublime-project
-.history/
+.history/worktrees/
