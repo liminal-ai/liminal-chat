@@ -11,7 +11,7 @@ type TestFixtures = {
 export const test = base.extend<TestFixtures>({
   apiContext: async ({ playwright }, use) => {
     const context = await playwright.request.newContext({
-      baseURL: 'http://localhost:8787',
+      baseURL: process.env.API_BASE_URL ?? 'http://localhost:8787',
       extraHTTPHeaders: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'

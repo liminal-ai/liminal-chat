@@ -9,8 +9,8 @@ export const serverTest = base.extend<ServerFixtures>({
   ensureServersRunning: async (_unused, use) => {
     const ensureRunning = async () => {
       // Check if servers are running by hitting health endpoints
-      const edgeHealthUrl = 'http://localhost:8787/health'
-      const domainHealthUrl = 'http://localhost:8766/health'
+      const edgeHealthUrl = `${process.env.EDGE_BASE_URL ?? 'http://localhost:8787'}/health`
+      const domainHealthUrl = `${process.env.DOMAIN_BASE_URL ?? 'http://localhost:8766'}/health`
       
       try {
         const edgeResponse = await fetch(edgeHealthUrl)
