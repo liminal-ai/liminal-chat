@@ -13,8 +13,12 @@ export const serverTest = base.extend<ServerFixtures>({
       const domainHealthUrl = 'http://localhost:8766/health'
       
       try {
-        await fetch(edgeHealthUrl)
-        await fetch(domainHealthUrl)
+        const edgeResponse = await fetch(edgeHealthUrl)
+        const domainResponse = await fetch(domainHealthUrl)
+        
+        if (!edgeResponse.ok || !domainResponse.ok) {
+          throw new Error('Servers are not healthy. Please check server status.')
+        }
       } catch (error) {
         throw new Error('Servers are not running. Please start them with: pnpm dev')
       }
