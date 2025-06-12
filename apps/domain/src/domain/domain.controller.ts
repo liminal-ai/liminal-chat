@@ -78,7 +78,9 @@ export class DomainController {
     );
 
     // Flush headers immediately to establish SSE stream with proxies
-    response.raw.flushHeaders();
+    if (typeof response.raw.flushHeaders === 'function') {
+      response.raw.flushHeaders();
+    }
 
     try {
       // Handle client disconnects to avoid dangling async iterators

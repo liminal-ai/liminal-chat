@@ -1,7 +1,8 @@
 import { test as base } from './base-fixtures'
+import type { APIRequestContext } from '@playwright/test'
 
 type AuthFixtures = {
-  authenticatedContext: any
+  authenticatedContext: APIRequestContext
 }
 
 export const authTest = base.extend<AuthFixtures>({
@@ -12,7 +13,7 @@ export const authTest = base.extend<AuthFixtures>({
   }
 })
 
-export async function createAuthState(): Promise<any> {
+export async function createAuthState(): Promise<Record<string, unknown>> {
   // Placeholder for creating auth state
   // Will be implemented when authentication is added
   return {}
