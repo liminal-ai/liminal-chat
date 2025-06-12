@@ -1,3 +1,12 @@
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockedFunction,
+} from "vitest";
 import { ConfigService } from "@nestjs/config";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { OpenRouterProvider } from "./openrouter.provider";
@@ -8,22 +17,21 @@ import {
 } from "@liminal-chat/shared-types";
 
 // Mock fetch globally
-global.fetch = jest.fn();
+const mockFetch = vi.fn() as MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 // Enable fake timers
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe("OpenRouterProvider", () => {
   let provider: OpenRouterProvider;
   let configService: ConfigService;
-  let mockFetch: jest.MockedFunction<typeof fetch>;
 
   beforeEach(() => {
-    mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
     mockFetch.mockClear();
 
     configService = {
-      get: jest.fn((key: string) => {
+      get: vi.fn((key: string) => {
         if (key === "OPENROUTER_API_KEY") return "test-api-key";
         if (key === "OPENROUTER_MODEL") return "openai/gpt-4.1";
         if (key === "OPENROUTER_APP_URL") return "http://localhost:3000";
@@ -38,8 +46,8 @@ describe("OpenRouterProvider", () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.clearAllTimers();
+    vi.clearAllMocks();
+    vi.clearAllTimers();
   });
 
   describe("generate()", () => {
@@ -216,7 +224,7 @@ describe("OpenRouterProvider", () => {
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(
@@ -240,7 +248,7 @@ describe("OpenRouterProvider", () => {
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(
@@ -260,7 +268,7 @@ describe("OpenRouterProvider", () => {
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(504);
@@ -277,7 +285,7 @@ describe("OpenRouterProvider", () => {
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(503);
@@ -296,7 +304,7 @@ describe("OpenRouterProvider", () => {
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(500);
@@ -309,14 +317,14 @@ describe("OpenRouterProvider", () => {
 
       it("should throw PROVIDER_NOT_CONFIGURED if API key missing", async () => {
         const noKeyConfigService = {
-          get: jest.fn().mockReturnValue(undefined),
+          get: vi.fn().mockReturnValue(undefined),
         } as unknown as ConfigService;
 
         const provider = new OpenRouterProvider(noKeyConfigService);
 
         try {
           await provider.generate("test");
-          fail("Should have thrown");
+          throw new Error("Should have thrown");
         } catch (error) {
           expect(error).toBeInstanceOf(HttpException);
           expect((error as HttpException).getStatus()).toBe(502);
@@ -338,7 +346,7 @@ describe("OpenRouterProvider", () => {
   describe("isAvailable()", () => {
     it("should return false if API key not configured", () => {
       const noKeyConfigService = {
-        get: jest.fn().mockReturnValue(undefined),
+        get: vi.fn().mockReturnValue(undefined),
       } as unknown as ConfigService;
 
       const provider = new OpenRouterProvider(noKeyConfigService);
@@ -353,10 +361,10 @@ describe("OpenRouterProvider", () => {
   describe("configuration", () => {
     it("should use default model if not specified", async () => {
       const defaultConfigService = {
-        get: jest.fn((key: string, defaultValue?: unknown) => {
+        get: vi.fn((key: string, defaultValue?: unknown) => {
           if (key === "OPENROUTER_API_KEY") return "test-key";
           if (key === "OPENROUTER_APP_URL") return "http://localhost";
-          if (key === "OPENROUTER_MODEL") return defaultValue;
+          if (key === "OPENROUTER_MODEL") return undefined; // Explicitly return undefined to trigger fallback
           if (key === "OPENROUTER_BASE_URL") return defaultValue;
           if (key === "OPENROUTER_TIMEOUT") return defaultValue;
           return defaultValue;
@@ -389,7 +397,7 @@ describe("OpenRouterProvider", () => {
 
     it("should use configured model name", async () => {
       const customConfigService = {
-        get: jest.fn((key: string) => {
+        get: vi.fn((key: string) => {
           if (key === "OPENROUTER_API_KEY") return "test-key";
           if (key === "OPENROUTER_MODEL") return "anthropic/claude-2";
           if (key === "OPENROUTER_APP_URL") return "http://localhost";
@@ -443,18 +451,18 @@ describe("OpenRouterProvider", () => {
       let chunkIndex = 0;
 
       const mockReader = {
-        read: jest.fn().mockImplementation(() => {
+        read: vi.fn().mockImplementation(() => {
           if (chunkIndex >= chunks.length) {
             return Promise.resolve({ done: true, value: undefined });
           }
           const chunk = encoder.encode(chunks[chunkIndex++]);
           return Promise.resolve({ done: false, value: chunk });
         }),
-        releaseLock: jest.fn(),
+        releaseLock: vi.fn(),
       };
 
       const mockBody = {
-        getReader: jest.fn().mockReturnValue(mockReader),
+        getReader: vi.fn().mockReturnValue(mockReader),
       };
 
       return {
@@ -584,10 +592,12 @@ describe("OpenRouterProvider", () => {
 
       it("should log lastEventId when provided", async () => {
         const mockLogger = {
-          debug: jest.fn(),
+          debug: vi.fn(),
         };
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (provider as any).logger = mockLogger;
+        // Access private logger property for testing
+        (
+          provider as OpenRouterProvider & { logger: typeof mockLogger }
+        ).logger = mockLogger;
 
         const chunks = ["data: [DONE]\n\n"];
         mockFetch.mockResolvedValueOnce(createMockStreamResponse(chunks));
@@ -610,7 +620,7 @@ describe("OpenRouterProvider", () => {
     describe("error handling", () => {
       it("should yield error event when API key missing", async () => {
         const noKeyConfigService = {
-          get: jest.fn().mockReturnValue(undefined),
+          get: vi.fn().mockReturnValue(undefined),
         } as unknown as ConfigService;
 
         const provider = new OpenRouterProvider(noKeyConfigService);

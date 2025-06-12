@@ -3,9 +3,23 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import * as request from "supertest";
+import request from "supertest";
 import { DomainModule } from "./domain.module";
 import { ConfigModule } from "@nestjs/config";
+
+// Type definitions for test responses
+interface LlmResponse {
+  content: string;
+  model: string;
+  usage?: object;
+}
+
+interface ErrorResponse {
+  error: {
+    code: string;
+    message: string;
+  };
+}
 
 describe("Domain Controller - LLM Endpoint", () => {
   let app: NestFastifyApplication;
@@ -43,9 +57,10 @@ describe("Domain Controller - LLM Endpoint", () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty("content", "Echo: Hello, world!");
-      expect(response.body).toHaveProperty("model", "echo-1.0");
-      expect(response.body).toHaveProperty("usage");
+      const body = response.body as LlmResponse;
+      expect(body).toHaveProperty("content", "Echo: Hello, world!");
+      expect(body).toHaveProperty("model", "echo-1.0");
+      expect(body).toHaveProperty("usage");
     });
 
     it("should process messages with echo provider", async () => {
@@ -60,8 +75,9 @@ describe("Domain Controller - LLM Endpoint", () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty("content", "Echo: Hello");
-      expect(response.body).toHaveProperty("model", "echo-1.0");
+      const body = response.body as LlmResponse;
+      expect(body).toHaveProperty("content", "Echo: Hello");
+      expect(body).toHaveProperty("model", "echo-1.0");
     });
 
     it("should return 400 for validation errors", async () => {
@@ -73,7 +89,8 @@ describe("Domain Controller - LLM Endpoint", () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty("error");
+      const body = response.body as ErrorResponse;
+      expect(body).toHaveProperty("error");
     });
 
     it("should return proper error for missing provider", async () => {
@@ -86,15 +103,11 @@ describe("Domain Controller - LLM Endpoint", () => {
 
       // The global exception filter now converts ProviderNotFoundError to 400
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty("error");
-      expect(
-        (response.body as { error: { code: string; message: string } }).error
-          .code,
-      ).toBe("PROVIDER_NOT_FOUND");
-      expect(
-        (response.body as { error: { code: string; message: string } }).error
-          .message,
-      ).toContain("Provider 'non-existent' not found");
+
+      const body = response.body as ErrorResponse;
+      expect(body).toHaveProperty("error");
+      expect(body.error.code).toBe("PROVIDER_NOT_FOUND");
+      expect(body.error.message).toContain("Provider 'non-existent' not found");
     });
   });
 });
