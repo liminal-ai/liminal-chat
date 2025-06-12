@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { LlmProviderFactory } from "./llm-provider.factory";
 import { ILLMProvider } from "./llm-provider.interface";
 import { ConfigService } from "@nestjs/config";
@@ -8,31 +9,37 @@ import { OpenRouterProvider } from "./providers/openrouter.provider";
 
 describe("LlmProviderFactory", () => {
   let factory: LlmProviderFactory;
-  let mockEchoProvider: jest.Mocked<ILLMProvider>;
-  let mockOpenAIProvider: jest.Mocked<ILLMProvider>;
-  let mockOpenRouterProvider: jest.Mocked<ILLMProvider>;
+  let mockEchoProvider: ILLMProvider & {
+    isAvailable: Mock;
+  };
+  let mockOpenAIProvider: ILLMProvider & {
+    isAvailable: Mock;
+  };
+  let mockOpenRouterProvider: ILLMProvider & {
+    isAvailable: Mock;
+  };
 
   beforeEach(() => {
     mockEchoProvider = {
-      generate: jest.fn(),
-      getName: jest.fn().mockReturnValue("echo"),
-      isAvailable: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<ILLMProvider>;
+      generate: vi.fn(),
+      getName: vi.fn().mockReturnValue("echo"),
+      isAvailable: vi.fn().mockReturnValue(true),
+    };
 
     mockOpenAIProvider = {
-      generate: jest.fn(),
-      getName: jest.fn().mockReturnValue("openai"),
-      isAvailable: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<ILLMProvider>;
+      generate: vi.fn(),
+      getName: vi.fn().mockReturnValue("openai"),
+      isAvailable: vi.fn().mockReturnValue(true),
+    };
 
     mockOpenRouterProvider = {
-      generate: jest.fn(),
-      getName: jest.fn().mockReturnValue("openrouter"),
-      isAvailable: jest.fn().mockReturnValue(true),
-    } as unknown as jest.Mocked<ILLMProvider>;
+      generate: vi.fn(),
+      getName: vi.fn().mockReturnValue("openrouter"),
+      isAvailable: vi.fn().mockReturnValue(true),
+    };
 
     const configService = {
-      get: jest.fn((key: string) => {
+      get: vi.fn((key: string) => {
         if (key === "OPENAI_API_KEY") return "test-key";
         if (key === "DEFAULT_LLM_PROVIDER") return "echo";
         return undefined;
@@ -90,29 +97,20 @@ describe("LlmProviderFactory", () => {
     });
 
     it("should always include echo provider", () => {
-      (mockOpenAIProvider.isAvailable as jest.Mock) = jest
-        .fn()
-        .mockReturnValue(false);
+      mockOpenAIProvider.isAvailable = vi.fn().mockReturnValue(false);
       const providers = factory.getAvailableProviders();
       expect(providers).toContain("echo");
     });
 
     it("should check isAvailable for each provider", () => {
-      (mockOpenAIProvider.isAvailable as jest.Mock) = jest
-        .fn()
-        .mockReturnValue(false);
-      (mockOpenRouterProvider.isAvailable as jest.Mock) = jest
-        .fn()
-        .mockReturnValue(false);
+      mockOpenAIProvider.isAvailable = vi.fn().mockReturnValue(false);
+      mockOpenRouterProvider.isAvailable = vi.fn().mockReturnValue(false);
       const providers = factory.getAvailableProviders();
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockEchoProvider.isAvailable).toHaveBeenCalled();
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockOpenAIProvider.isAvailable).toHaveBeenCalled();
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockOpenRouterProvider.isAvailable).toHaveBeenCalled();
       expect(providers).toEqual(["echo"]); // Only echo is available
     });
@@ -126,7 +124,7 @@ describe("LlmProviderFactory", () => {
 
     it("should handle missing configuration gracefully", () => {
       const noConfigService = {
-        get: jest.fn().mockReturnValue(undefined),
+        get: vi.fn().mockReturnValue(undefined),
       };
 
       const factoryWithNoConfig = new LlmProviderFactory(
@@ -144,7 +142,7 @@ describe("LlmProviderFactory", () => {
     });
 
     it("should log available providers on init", () => {
-      const logSpy = jest.spyOn(factory["logger"], "log");
+      const logSpy = vi.spyOn(factory["logger"], "log");
       factory.onModuleInit();
 
       expect(logSpy).toHaveBeenCalledWith("Initializing LLM providers...");

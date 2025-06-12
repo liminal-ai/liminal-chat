@@ -73,6 +73,7 @@ apps/cli/bin/*.js
 **/*.test-results.json
 **/junit.xml
 **/.vitest-result.json
+tests/reports/
 
 # Process files
 *.pid
@@ -87,4 +88,4 @@ apps/cli/bin/*.js
 # Additional IDE files
 *.sublime-workspace
 *.sublime-project
-.history/
+.history/worktrees/

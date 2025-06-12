@@ -1,16 +1,24 @@
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  vi,
+  type MockedFunction,
+} from "vitest";
 // TestingModule import removed - not used
 import { ConfigService } from "@nestjs/config";
 import { VercelOpenAIProvider } from "./vercel-openai.provider";
 import { generateText } from "ai";
 
 // Mock the Vercel AI SDK
-jest.mock("ai", () => ({
-  generateText: jest.fn(),
+vi.mock("ai", () => ({
+  generateText: vi.fn(),
 }));
 
-jest.mock("@ai-sdk/openai", () => ({
-  createOpenAI: jest.fn(() => {
-    return jest.fn((modelName: string) => ({
+vi.mock("@ai-sdk/openai", () => ({
+  createOpenAI: vi.fn(() => {
+    return vi.fn((modelName: string) => ({
       id: modelName,
       __type: "openai-model",
     }));
@@ -20,14 +28,14 @@ jest.mock("@ai-sdk/openai", () => ({
 describe("VercelOpenAIProvider", () => {
   let provider: VercelOpenAIProvider;
   let configService: ConfigService;
-  let mockGenerateText: jest.MockedFunction<typeof generateText>;
+  let mockGenerateText: MockedFunction<typeof generateText>;
 
   beforeEach(() => {
-    mockGenerateText = generateText as jest.MockedFunction<typeof generateText>;
+    mockGenerateText = generateText as MockedFunction<typeof generateText>;
     mockGenerateText.mockClear();
 
     configService = {
-      get: jest.fn((key: string) => {
+      get: vi.fn((key: string) => {
         if (key === "OPENAI_API_KEY") return "test-api-key";
         if (key === "OPENAI_MODEL") return "gpt-4.1-turbo";
         return undefined;
@@ -40,7 +48,7 @@ describe("VercelOpenAIProvider", () => {
   describe("configuration", () => {
     it("should throw PROVIDER_NOT_CONFIGURED if API key missing", async () => {
       const noKeyConfigService = {
-        get: jest.fn().mockReturnValue(undefined),
+        get: vi.fn().mockReturnValue(undefined),
       } as unknown as ConfigService;
 
       const provider = new VercelOpenAIProvider(noKeyConfigService);
@@ -69,7 +77,7 @@ describe("VercelOpenAIProvider", () => {
 
     it("should default to o4-mini if no model specified", async () => {
       const defaultConfigService = {
-        get: jest.fn((key: string, defaultValue?: string) => {
+        get: vi.fn((key: string, defaultValue?: string) => {
           if (key === "OPENAI_API_KEY") return "test-api-key";
           if (key === "OPENAI_MODEL") return defaultValue;
           return defaultValue;
@@ -242,7 +250,7 @@ describe("VercelOpenAIProvider", () => {
   describe("availability", () => {
     it("should return false if API key not configured", () => {
       const noKeyConfigService = {
-        get: jest.fn().mockReturnValue(undefined),
+        get: vi.fn().mockReturnValue(undefined),
       } as unknown as ConfigService;
 
       // Create provider that doesn't throw in constructor
