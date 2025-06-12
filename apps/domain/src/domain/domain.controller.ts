@@ -117,11 +117,6 @@ export class DomainController {
 
         response.raw.write(sseMessage);
 
-        // Flush chunk immediately for prompt delivery
-        if (typeof response.raw.flush === "function") {
-          (response.raw.flush as () => void)();
-        }
-
         // Exit on done event
         if (event.type === "done") {
           break;
