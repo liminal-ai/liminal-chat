@@ -1,11 +1,11 @@
-import { expect } from '@playwright/test'
+import { expect, type APIResponse } from '@playwright/test'
 
-export function expectValidResponse(response: any) {
+export function expectValidResponse(response: APIResponse) {
   expect(response.status()).toBeGreaterThanOrEqual(200)
   expect(response.status()).toBeLessThan(300)
 }
 
-export function expectErrorResponse(response: any, expectedStatus?: number) {
+export function expectErrorResponse(response: APIResponse, expectedStatus?: number) {
   if (expectedStatus) {
     expect(response.status()).toBe(expectedStatus)
   } else {
@@ -19,13 +19,13 @@ export function expectStreamingContent(content: string) {
   expect(content.length).toBeGreaterThan(0)
 }
 
-export function expectValidLLMResponse(data: any) {
+export function expectValidLLMResponse(data: Record<string, unknown>) {
   expect(data).toHaveProperty('content')
   expect(data.content).toBeTruthy()
   expect(typeof data.content).toBe('string')
 }
 
-export function expectValidErrorCode(data: any) {
+export function expectValidErrorCode(data: Record<string, unknown>) {
   expect(data).toHaveProperty('errorCode')
   expect(data.errorCode).toMatch(/^[A-Z_]+$/)
 } 

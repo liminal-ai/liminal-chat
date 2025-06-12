@@ -37,7 +37,7 @@ export function waitForCondition(
   })
 }
 
-export function parseStreamedResponse(streamData: string): string[] {
+export function parseStreamedResponse<T = unknown>(streamData: string): (T | string)[] {
   return streamData
     .split('\n')
     .filter(line => line.startsWith('data: '))

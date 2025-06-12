@@ -5,7 +5,7 @@ test.describe('Domain Health Endpoint', () => {
   test('should return healthy status', async ({ }) => {
     // Use domain base URL for this test
     const domainContext = await test.request.newContext({
-      baseURL: 'http://localhost:8766'
+      baseURL: process.env.DOMAIN_BASE_URL ?? 'http://localhost:8766'
     })
     
     const response = await domainContext.get('/domain/health')
@@ -21,7 +21,7 @@ test.describe('Domain Health Endpoint', () => {
   
   test('should include service information', async ({ }) => {
     const domainContext = await test.request.newContext({
-      baseURL: 'http://localhost:8766'
+      baseURL: process.env.DOMAIN_BASE_URL ?? 'http://localhost:8766'
     })
     
     const response = await domainContext.get('/domain/health')
