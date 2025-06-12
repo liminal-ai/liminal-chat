@@ -6,7 +6,7 @@ type ServerFixtures = {
 }
 
 export const serverTest = base.extend<ServerFixtures>({
-  ensureServersRunning: async ({}, use) => {
+  ensureServersRunning: async (_unused, use) => {
     const ensureRunning = async () => {
       // Check if servers are running by hitting health endpoints
       const edgeHealthUrl = 'http://localhost:8787/health'

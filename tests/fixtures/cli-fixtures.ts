@@ -6,7 +6,7 @@ type CLIFixtures = {
 }
 
 export const cliTest = base.extend<CLIFixtures>({
-  cli: async ({}, use) => {
+  cli: async (_unused, use) => {
     const helper = new CLITestHelper()
     await use(helper)
     await helper.cleanup()

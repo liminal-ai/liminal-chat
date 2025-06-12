@@ -30,7 +30,7 @@ export const test = base.extend<TestFixtures>({
     await use(token)
   },
 
-  testData: async ({}, use) => {
+  testData: async (_unused, use) => {
     const factory = new TestDataFactory()
     await use(factory)
     await factory.cleanup()
