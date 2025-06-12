@@ -2,9 +2,9 @@ import { test, expect } from '../../fixtures/base-fixtures'
 import { expectValidResponse } from '../../utils/assertions'
 
 test.describe('Domain Health Endpoint', () => {
-  test('should return healthy status', async ({ apiContext }) => {
+  test('should return healthy status', async ({ }) => {
     // Use domain base URL for this test
-    const domainContext = await apiContext.request.newContext({
+    const domainContext = await test.request.newContext({
       baseURL: 'http://localhost:8766'
     })
     
@@ -19,8 +19,8 @@ test.describe('Domain Health Endpoint', () => {
     await domainContext.dispose()
   })
   
-  test('should include service information', async ({ apiContext }) => {
-    const domainContext = await apiContext.request.newContext({
+  test('should include service information', async ({ }) => {
+    const domainContext = await test.request.newContext({
       baseURL: 'http://localhost:8766'
     })
     
