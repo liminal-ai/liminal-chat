@@ -1,5 +1,6 @@
 export class TestDataFactory {
-  private createdResources: string[] = []
+  // TODO: Implement resource tracking when test data creation requires cleanup
+  // private createdResources: string[] = []
 
   createPromptRequest(overrides = {}) {
     return {
@@ -30,7 +31,7 @@ export class TestDataFactory {
   }
 
   async cleanup() {
-    // Cleanup any created test resources
-    this.createdResources = []
+    // TODO: Implement cleanup logic when test data creation requires resource management
+    // Currently no resources need cleanup as methods only return static data
   }
 } 

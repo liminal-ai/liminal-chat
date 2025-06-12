@@ -26,8 +26,9 @@ export const test = base.extend<TestFixtures>({
     const response = await apiContext.post('/auth/login', {
       data: { username: 'test', password: 'test' }
     })
+    expect(response.ok()).toBeTruthy()
     const { token } = await response.json()
-    await use(token)
+    await use(token as string)
   },
 
   testData: async (_unused, use) => {
