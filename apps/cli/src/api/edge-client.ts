@@ -180,7 +180,7 @@ export class EdgeClient {
         headers['Last-Event-ID'] = options.lastEventId;
       }
       
-      const response = await fetch(`${this.baseUrl}/api/v1/llm/prompt/stream`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/llm/prompt`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),

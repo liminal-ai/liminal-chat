@@ -8,7 +8,6 @@ describe('EdgeClient Integration Tests', () => {
   beforeAll(async () => {
     // Skip in CI environment
     if (process.env.CI) {
-      console.log('CI environment detected, skipping integration tests');
       return;
     }
 
@@ -18,18 +17,14 @@ describe('EdgeClient Integration Tests', () => {
       await testClient.health();
       serverAvailable = true;
       client = testClient;
-      console.log('Edge server detected on port 8787, running integration tests');
     } catch (error) {
       // Server not running, skip integration tests
-      console.log('Edge server not running on port 8787, skipping integration tests');
-      console.log('To run integration tests, start the Edge server with: cd ../edge-server && npm run dev');
     }
   });
 
   it('should successfully call the health endpoint', async () => {
     // Skip if no server
     if (!serverAvailable) {
-      console.log('Skipping test - server not available');
       return;
     }
 
@@ -46,7 +41,6 @@ describe('EdgeClient Integration Tests', () => {
   it('should successfully call the prompt endpoint', async () => {
     // Skip if no server
     if (!serverAvailable) {
-      console.log('Skipping test - server not available');
       return;
     }
 
@@ -63,7 +57,6 @@ describe('EdgeClient Integration Tests', () => {
   it('should handle empty prompt error', async () => {
     // Skip if no server
     if (!serverAvailable) {
-      console.log('Skipping test - server not available');
       return;
     }
 
@@ -73,7 +66,6 @@ describe('EdgeClient Integration Tests', () => {
   it('should handle very long prompts', async () => {
     // Skip if no server
     if (!serverAvailable) {
-      console.log('Skipping test - server not available');
       return;
     }
 
@@ -87,7 +79,6 @@ describe('EdgeClient Integration Tests', () => {
   it('should respect timeout settings', async () => {
     // Skip if no server
     if (!serverAvailable) {
-      console.log('Skipping test - server not available');
       return;
     }
 

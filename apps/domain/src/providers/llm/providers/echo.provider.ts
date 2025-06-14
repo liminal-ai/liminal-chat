@@ -1,6 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
-import { ProviderStreamEvent } from "@liminal-chat/shared-types";
+import {
+  ProviderStreamEvent,
+  StreamErrorCode,
+} from "@liminal-chat/shared-types";
 
 @Injectable()
 export class EchoProvider implements ILLMProvider {
@@ -34,8 +37,7 @@ export class EchoProvider implements ILLMProvider {
 
   async *generateStream(
     input: string | Message[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _originalRequestParams?: any,
+    originalRequestParams?: any,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _lastEventId?: string,
   ): AsyncIterable<ProviderStreamEvent> {
@@ -53,23 +55,98 @@ export class EchoProvider implements ILLMProvider {
     const response = `Echo: ${textContent}`;
     const words = response.split(" ");
 
-    // Simulate streaming by yielding one word at a time
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      yield {
-        type: "content",
-        data: word + " ",
-        eventId: `echo-${Date.now()}-${i}`,
-      };
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
+    // Extract timeout and signal from request params
+    const timeout = originalRequestParams?.timeout || 30000; // Default 30s timeout
+    const signal = originalRequestParams?.signal;
+    const wordDelay = originalRequestParams?.wordDelay || 50; // Configurable delay per word
 
-    // Send completion event
-    yield {
-      type: "done",
-      eventId: `echo-${Date.now()}-done`,
-    };
+    // Set up timeout handling
+    const startTime = Date.now();
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), timeout);
+
+    try {
+      // Simulate streaming by yielding one word at a time
+      for (let i = 0; i < words.length; i++) {
+        // Check for external cancellation
+        if (signal?.aborted) {
+          yield {
+            type: "error",
+            data: {
+              message: "Request cancelled by client",
+              code: StreamErrorCode.CONNECTION_TIMEOUT,
+              retryable: false,
+            },
+            eventId: `echo-${Date.now()}-cancelled`,
+          };
+          return;
+        }
+
+        // Check for timeout
+        if (
+          timeoutController.signal.aborted ||
+          Date.now() - startTime > timeout
+        ) {
+          yield {
+            type: "error",
+            data: {
+              message: "Echo provider timeout",
+              code: StreamErrorCode.CONNECTION_TIMEOUT,
+              retryable: true,
+            },
+            eventId: `echo-${Date.now()}-timeout`,
+          };
+          return;
+        }
+
+        const word = words[i];
+        yield {
+          type: "content",
+          data: {
+            delta: word + " ",
+            model: "echo-1.0",
+          },
+          eventId: `echo-${Date.now()}-${i}`,
+        };
+
+        // Simulate network delay, but check for cancellation during delay
+        await new Promise<void>((resolve, reject) => {
+          const delayTimeout = setTimeout(() => resolve(), wordDelay);
+
+          // Listen for cancellation during delay
+          const checkCancellation = () => {
+            if (signal?.aborted || timeoutController.signal.aborted) {
+              clearTimeout(delayTimeout);
+              reject(new Error("Cancelled during delay"));
+            }
+          };
+
+          signal?.addEventListener("abort", checkCancellation);
+          timeoutController.signal.addEventListener("abort", checkCancellation);
+
+          // Clean up listeners after delay
+          setTimeout(() => {
+            signal?.removeEventListener("abort", checkCancellation);
+            timeoutController.signal.removeEventListener(
+              "abort",
+              checkCancellation,
+            );
+          }, wordDelay);
+        }).catch(() => {
+          // Cancellation occurred during delay, just return without yielding more
+          return;
+        });
+      }
+
+      // Send completion event if we made it through all words
+      yield {
+        type: "done",
+        data: "[DONE]",
+        eventId: `echo-${Date.now()}-done`,
+      };
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   getName(): string {

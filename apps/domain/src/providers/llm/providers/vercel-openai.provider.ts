@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
+import { scrubErrorForLogging } from "../../../utils/security";
 
 @Injectable()
 export class VercelOpenAIProvider implements ILLMProvider {
@@ -47,7 +48,8 @@ export class VercelOpenAIProvider implements ILLMProvider {
         },
       };
     } catch (error) {
-      this.logger.error("Error calling OpenAI API", error);
+      const scrubbedError = scrubErrorForLogging(error);
+      this.logger.error("Error calling OpenAI API", scrubbedError);
       throw error; // Will be mapped by error mapper
     }
   }
