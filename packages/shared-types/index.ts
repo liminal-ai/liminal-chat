@@ -54,9 +54,9 @@ export interface DomainHealthResponse {
 
 // Streaming types directly in main index
 export type ProviderStreamEvent = 
-  | { type: 'content'; data: string; eventId?: string }
+  | { type: 'content'; data: { delta: string; model: string }; eventId?: string }
   | { type: 'usage'; data: UsageData; eventId?: string }
-  | { type: 'done'; eventId?: string }
+  | { type: 'done'; data?: string; eventId?: string }
   | { type: 'error'; data: StreamError; eventId?: string };
 
 export interface UsageData {

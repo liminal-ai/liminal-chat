@@ -307,7 +307,7 @@ describe('EdgeClient', () => {
       }
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8787/api/v1/llm/prompt/stream',
+        'http://localhost:8787/api/v1/llm/prompt',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

@@ -201,3 +201,154 @@
 **QA Analysis Complete** - Ready for review.
 
 **Recommendation**: Address blocking coordination gaps before implementation begins. Stories are well-designed but require explicit coordination protocols to execute safely in parallel. 
+
+---
+
+# Argus QA Analysis - Feature 004 Story 3: Domain API Integration Tests
+**Analysis Date**: June 2025  
+**Analysis Type**: Implementation Review  
+**Focus**: Playwright‐based Domain API Integration Tests (`story3-domain-api-integration` worktree)
+
+## R.I.V.E.T. Analysis Summary
+
+### Requirements Deconstruction ⚠️
+*Specification vs Implementation drift detected.*
+
+### Implementation Scrutiny ⚠️
+*Tests pass against running services, but diverge from stated acceptance criteria.*
+
+### Vulnerability & Edge-Case Analysis 🟡
+*Good breadth of scenarios, but critical validation gaps remain.*
+
+### Evidence-Based Verdict 🔴
+*BLOCKING ISSUES PRESENT – specification mismatch and error-handling gaps.*
+
+### Ticket-Ready Report ✓
+*Detailed findings documented below.*
+
+---
+
+## Critical Findings
+
+| ID | Severity | Category | Description | Evidence |
+|----|----------|----------|-------------|----------|
+| F3-1 | 🔴 BLOCKER | Spec Drift | `GET /health` path & response schema in spec differs from implemented `/domain/health` path & fields (`status:"healthy"`, `service:"domain"`). | Spec lines 20-32 vs `tests/integration/domain/health.spec.ts` lines 16-34. |
+| F3-2 | 🔴 BLOCKER | Spec Drift | Streaming endpoint defined as `POST /domain/llm/prompt` with `stream=true` in spec, but tests target `/domain/llm/prompt/stream`. | Spec DomainEndpoints, Streaming section vs `streaming.spec.ts` lines 19-35. |
+| F3-3 | 🔴 BLOCKER | Validation Logic | Spec expects 400 with explicit validation message (`prompt or messages required`). Actual API returns `500 – INTERNAL_ERROR`; tests assert this internal error, masking bug. | `domain-api-integration-tests.md` Error Handling section vs `error-scenarios.spec.ts` lines 88-104, 233-259. |
+| F3-4 | 🟠 HIGH | Performance Criteria | Spec mandates `<100 ms` for Health and `<5 s` for LLM prompt. Health test loosens to `500 ms`; no performance assertion on non-stream LLM prompt. | `health.spec.ts` line 5 threshold 500; missing timing checks in `llm-prompt.spec.ts`. |
+| F3-5 | 🟠 HIGH | CI Reliability | Playwright config omits `webServer` section – tests assume Domain service pre-running. CI may fail if service isn't up, violating "CI/CD compatibility" AC. | `playwright.config.integration.ts` lines 40-55 (comment *No webServer*). |
+| F3-6 | 🟡 MEDIUM | Code Quality | Repeated inline `apiContext` overrides; violates DRY & increases maintenance risk. Should extend fixtures instead. | All domain spec files lines 7-22. |
+| F3-7 | 🟡 MEDIUM | Script Duplication | `package.json` defines duplicate `test:integration` and related scripts – potential maintenance confusion. | `package.json` lines ~25-70. |
+| F3-8 | 🟡 MEDIUM | Acceptance Criteria Coverage | No dedicated `performance.spec.ts`; streaming tests don't assert `delta`, `model` fields suggested by spec. | Spec Performance & Streaming sections vs `streaming.spec.ts`. |
+| F3-9 | 🟢 LOW | TestData Factory Usage | Factory exists but many tests construct payloads manually; inconsistent pattern usage. | `test-data.ts` vs `llm-prompt.spec.ts` etc. |
+
+---
+
+## Additional Observations
+
+1. **Event Terminology** – Spec uses `[DONE]` sentinel, implementation expects `event: done`. Confirm desired format.
+2. **Error-Code Taxonomy** – Tests allow wide range of provider error codes. Lack of deterministic expectation may hide regressions.
+3. **Logging in Tests** – `console.log` statements left in committed tests add noise to CI output.
+4. **Provider Health Logic** – Provider discovery tests assume Echo always healthy; ensure resilient to provider-specific downtimes.
+
+---
+
+## Risk Assessment
+
+*High risk of future integration breakage due to spec/implementation skew and missing CI server orchestration.*
+
+---
+
+## Recommended Actions (Ticket-Ready)
+
+1. Align API paths and response schemas with specification or update spec – choose single source of truth. (BLOCKER)
+2. Fix validation logic to return proper 400 with descriptive message; update tests accordingly. (BLOCKER)
+3. Standardise streaming endpoint path; ensure spec & code match. (BLOCKER)
+4. Tighten performance thresholds and add LLM prompt latency assertions. (HIGH)
+5. Add `webServer` startup in Playwright config (or equivalent) to guarantee CI reliability. (HIGH)
+6. Refactor repeated API context into shared fixture. (MEDIUM)
+7. Deduplicate `package.json` scripts to avoid confusion. (MEDIUM)
+8. Expand streaming assertions to include `delta`, `model`, and termination `[DONE]` sentinel. (MEDIUM)
+9. Enforce consistent use of `TestDataFactory` across tests. (LOW)
+10. Remove or downgrade `console.log` statements in committed tests. (LOW)
+
+---
+
+## Success Validation Checklist (Story 3)
+- [ ] All BLOCKER actions resolved.
+- [ ] Playwright suite green in CI with self-managed server lifecycle.
+- [ ] All endpoints conform to agreed specification (paths, status codes, payload schemas).
+- [ ] Performance assertions match spec thresholds.
+- [ ] Streaming tests validate chunk structure (`delta`, `model`, `[DONE]`).
+- [ ] No duplicate npm scripts; lint passes without warnings.
+
+---
+
+**QA Analysis Complete** - Ready for review.
+
+**Recommendation**: Address blocking coordination gaps before implementation begins. Stories are well-designed but require explicit coordination protocols to execute safely in parallel. 
+
+---
+
+# Argus QA Re-Validation – Feature 004 Story 3
+**Analysis Date**: June 2025 (post-fix review)  
+**Analysis Type**: Re-validation – Implementation
+
+## Summary of Fix Verification
+✔️ All 46 Playwright integration tests pass locally with new `webServer` startup.
+✔️ Validation errors now return proper 400 + `VALIDATION_ERROR` codes.
+✔️ Streaming endpoint aligned to `/domain/llm/prompt` with `stream:true` flag.
+✔️ Health endpoint path corrected to `/health` and response schema matches spec fields.
+
+## Remaining Gaps & New Observations
+
+| ID | Severity | Status | Description |
+|----|----------|--------|-------------|
+| VR3-1 | 🟠 HIGH | Open | Performance threshold in `health.spec.ts` still 400 ms (spec: 100 ms). Tests accommodate framework overhead rather than enforcing contract. |
+| VR3-2 | 🟡 MEDIUM | Open | Streaming tests still omit assertions for `delta`, `model`, and `[DONE]` sentinel per spec; only checks `data:` lines and `event: done`. |
+| VR3-3 | 🟡 MEDIUM | Open | Duplicate npm script keys remain in `package.json` (warnings logged during test run). |
+| VR3-4 | 🟡 MEDIUM | Open | DRY violation – per-file `apiContext` overrides persist instead of shared fixture extension. |
+| VR3-5 | 🟢 LOW | Note | `console.log` statements present in tests; not blocking but noisy for CI. |
+
+## Verdict
+No blocking issues detected after fixes. Suite is green and critical spec deviations resolved. Medium-level cleanup items remain for maintainability and performance contract adherence.
+
+**QA Analysis Complete** – Re-validation passed with minor follow-ups.
+
+---
+
+## Deep Code Quality Review – Story 3 Implementation
+
+### Methodology
+Focused scan of `apps/domain/src/**`, Playwright test harness, shared utilities, configuration, and package manifests. Criteria: linting hygiene, type-safety, security posture, performance, maintainability.
+
+### Findings Overview
+| ID | Severity | Category | Finding |
+|----|----------|----------|---------|
+| CQ3-1 | 🔴 BLOCKER (potential) | Security | `main.ts` enables CORS for a single hard-coded origin (`http://localhost:8765`). In prod this will fail legitimate origins or open risk if someone forgets to change it. Should be env-driven whitelist. |
+| CQ3-2 | 🟠 HIGH | Maintainability | Duplicate `test:integration*` npm scripts (package root) invoke same command string; esbuild warns every run. Risk of silent divergence if edits occur. |
+| CQ3-3 | 🟠 HIGH | Performance | `health.spec.ts` sets threshold 400 ms to mask Playwright overhead; spec contract is 100 ms. Consider measuring raw HTTP with light client or subtract harness overhead. |
+| CQ3-4 | 🟠 HIGH | Observability | Provider code uses `console.log` & `.debug` gated only by `NODE_ENV !== 'production'`. Cloud environments may set `production` but still need debug. Use structured logger with configurable level. |
+| CQ3-5 | 🟡 MEDIUM | Security | `OpenRouterProvider` passes `OPENROUTER_API_KEY` directly in `Authorization` header—OK—but logs stack traces including error message that may embed key if provider echoes it; ensure scrubber. |
+| CQ3-6 | 🟡 MEDIUM | Code Smell | `generateId()` comment says "base36" but implementation returns hex; minor inconsistency can mislead future devs. |
+| CQ3-7 | 🟡 MEDIUM | DRY | Each integration spec re-declares a local `apiContext` override duplicating boilerplate; recommend fixture composition. |
+| CQ3-8 | 🟢 LOW | Accuracy | SSE implementation sends empty `data:` for `done` event; spec calls for `[DONE]`. Non-fatal but breaks client assumptions. |
+| CQ3-9 | 🟢 LOW | Typings | Some DTO properties typed `any` (e.g. `_validator?: any`) to work around class-validator limitation. Acceptable but could use `unknown`. |
+
+### Positive Highlights
+• Robust global `AllExceptionsFilter` with provider-specific error mapping and validation error flattening.  
+• DTO validation comprehensive (class-validator) with custom constraint `oneOfPromptOrMessages`.  
+• `OpenRouterProvider` includes timeout, memory and latency telemetry; good observability.  
+• Streaming generator properly handles `[DONE]` sentinel and JSON parse failures.
+
+### Recommendations
+1. Replace hard-coded CORS origin with env-driven array or wildcard under config flag (BLOCKER for prod).  
+2. De-duplicate root `package.json` scripts.  
+3. Introduce lightweight latency metric (e.g. plain `fetch`) to assert true 100 ms contract while leaving harness overhead separate.  
+4. Standardise logging via NestJS `Logger` (already used) and remove stray `console.log` calls.  
+5. Sanitize any provider error messages before logging.  
+6. Harmonise `generateId()` comment with implementation; consider `nanoid`.  
+7. Create shared `domainContext` fixture to remove per-file duplication.  
+8. Update SSE `done` event to include `[DONE]` payload or align spec.
+
+**Code Quality Review Complete** – No new blocking issues for merge other than CORS configuration for production deployment. Minor/medium items created as recommendations. 

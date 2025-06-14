@@ -3,12 +3,13 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, Logger } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/http-exception.filter";
 
 async function bootstrap() {
+  const logger = new Logger("Bootstrap");
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
@@ -25,9 +26,13 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // CORS
+  // CORS - Environment-driven configuration
+  const corsOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
+    : ["http://localhost:8787"]; // Edge server default
+
   app.enableCors({
-    origin: "http://localhost:8765", // Edge server
+    origin: corsOrigins,
     credentials: true,
   });
 
@@ -42,6 +47,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 8766;
   await app.listen(port, "0.0.0.0");
-  console.log(`Domain server running on port ${port}`);
+  logger.log(`Domain server running on port ${port}`);
 }
 void bootstrap();

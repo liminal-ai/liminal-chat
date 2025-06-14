@@ -21,7 +21,7 @@ interface ErrorResponse {
     details?: ErrorDetails;
     provider?: string;
   };
-  message?: string;
+  message?: string | string[];
   code?: string;
   details?: ErrorDetails;
 }
@@ -49,7 +49,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         // Check if it has the error property (from vercel-error.mapper)
         const responseObj = exceptionResponse as ErrorResponse;
         const errorObj = responseObj.error;
-        if (errorObj) {
+        if (errorObj && typeof errorObj === "object" && errorObj.code) {
           message = errorObj.message || message;
           code = errorObj.code || code;
           details =
@@ -57,8 +57,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
               ? { provider: errorObj.provider }
               : details;
         } else {
-          message = responseObj.message || message;
-          code = responseObj.code || code;
+          // Handle validation errors where message can be an array
+          if (Array.isArray(responseObj.message)) {
+            // NestJS validation errors have message as array of strings
+            message = responseObj.message.join(". ");
+            code = "VALIDATION_ERROR";
+          } else {
+            message = responseObj.message || message;
+            code = responseObj.code || code;
+          }
           details = responseObj.details;
         }
       }
