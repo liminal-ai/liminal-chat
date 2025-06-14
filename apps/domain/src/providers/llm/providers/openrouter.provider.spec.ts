@@ -490,21 +490,22 @@ describe("OpenRouterProvider", () => {
         expect(events).toHaveLength(4);
         expect(events[0]).toEqual({
           type: "content",
-          data: "Hello",
+          data: { delta: "Hello", model: "openai/gpt-4.1" },
           eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[1]).toEqual({
           type: "content",
-          data: " world",
+          data: { delta: " world", model: "openai/gpt-4.1" },
           eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[2]).toEqual({
           type: "content",
-          data: "!",
+          data: { delta: "!", model: "openai/gpt-4.1" },
           eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
         expect(events[3]).toEqual({
           type: "done",
+          data: "[DONE]",
           eventId: expect.stringMatching(/^or-\d+-[a-zA-Z0-9_-]{6}$/) as string,
         });
 
@@ -565,8 +566,8 @@ describe("OpenRouterProvider", () => {
         // Should only get content events for non-empty content
         const contentEvents = events.filter((e) => e.type === "content");
         expect(contentEvents).toHaveLength(2);
-        expect(contentEvents[0].data).toBe("Start");
-        expect(contentEvents[1].data).toBe(" end");
+        expect(contentEvents[0].data.delta).toBe("Start");
+        expect(contentEvents[1].data.delta).toBe(" end");
       });
 
       it("should handle SSE comments and empty lines", async () => {

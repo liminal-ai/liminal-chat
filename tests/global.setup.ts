@@ -10,5 +10,4 @@ setup('ensure servers are running', async () => {
 setup('create auth state', async () => {
   // Placeholder for auth state creation
   // Will be implemented when authentication is added in Feature 003
-  console.log('Auth state setup placeholder')
 }) 

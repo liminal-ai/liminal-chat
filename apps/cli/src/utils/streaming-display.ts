@@ -25,8 +25,8 @@ export class StreamingDisplayHandler {
 
     switch (event.type) {
       case 'content':
-        this.content += event.data;
-        process.stdout.write(event.data);
+        this.content += event.data.delta;
+        process.stdout.write(event.data.delta);
         break;
 
       case 'usage':

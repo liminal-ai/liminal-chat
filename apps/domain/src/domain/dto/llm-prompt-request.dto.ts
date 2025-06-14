@@ -38,7 +38,7 @@ export class OneOfPromptOrMessagesConstraint
 
 export class LlmPromptRequestDto {
   @Validate(OneOfPromptOrMessagesConstraint)
-  private readonly _validator?: any;
+  private readonly _validator?: unknown;
   @ApiPropertyOptional({
     description: "Simple prompt string",
     minLength: 1,
