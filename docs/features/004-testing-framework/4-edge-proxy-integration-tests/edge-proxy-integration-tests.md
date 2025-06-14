@@ -21,6 +21,7 @@ Edge tier currently has minimal integration testing (6 basic unit tests). This s
 - CLI E2E testing (covered in Story 5)
 - Cloudflare Workers deployment testing
 - Performance/load testing
+- Network outage simulation tests (deferred; see Architecture Decisions, June 2025)
 
 ## Technical Requirements
 
@@ -32,6 +33,7 @@ interface EdgeEndpoints {
   llmPrompt: 'POST /api/v1/llm/prompt'
   llmProviders: 'GET /api/v1/llm/providers'
   llmStream: 'POST /api/v1/llm/prompt (streaming)'
+  corsOptions: 'OPTIONS /api/v1/llm/prompt'
   notFound: 'Any undefined route'
 }
 ```

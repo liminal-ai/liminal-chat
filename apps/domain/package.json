@@ -18,7 +18,7 @@
     "test:cov": "vitest run --coverage",
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:ui": "vitest --ui",
-    "test:e2e": "playwright test",
+    "test:integration": "playwright test --config=../../playwright.config.integration.ts --project=integration-domain",
     "agent": "./ai-agents/scripts/agent",
     "agent:ba": "./ai-agents/scripts/agent ba",
     "agent:tech-reviewer": "./ai-agents/scripts/agent tech-lead-reviewer",
