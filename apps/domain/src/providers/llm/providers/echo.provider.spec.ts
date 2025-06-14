@@ -1,11 +1,21 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { ConfigService } from "@nestjs/config";
 import { EchoProvider } from "./echo.provider";
 
 describe("EchoProvider", () => {
   let provider: EchoProvider;
+  let configService: ConfigService;
 
   beforeEach(() => {
-    provider = new EchoProvider();
+    configService = {
+      get: vi.fn((key: string) => {
+        if (key === "ECHO_PROVIDER_TIMEOUT") return 12345; // Test value
+        if (key === "ECHO_PROVIDER_WORD_DELAY") return 100; // Test value
+        return undefined;
+      }),
+    } as unknown as ConfigService;
+
+    provider = new EchoProvider(configService);
   });
 
   describe("with prompt string", () => {

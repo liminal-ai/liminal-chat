@@ -4,6 +4,9 @@ import { ERROR_CODES } from '@liminal-chat/shared-utils';
 
 type Bindings = {
   DOMAIN_URL: string;
+  CORS_ALLOW_ORIGIN?: string;
+  CORS_ALLOW_HEADERS?: string;
+  CORS_EXPOSE_HEADERS?: string;
 };
 
 type EdgeError = {
@@ -61,15 +64,19 @@ app.post('/api/v1/llm/prompt', async (c) => {
 
     // Handle streaming response
     if (response.headers.get('content-type')?.includes('text/event-stream')) {
-      // Pass through the stream with proper headers
+      // Pass through the stream with configurable CORS headers
+      const corsOrigin = c.env.CORS_ALLOW_ORIGIN || '*';
+      const corsHeaders = c.env.CORS_ALLOW_HEADERS || 'Last-Event-ID';
+      const corsExposeHeaders = c.env.CORS_EXPOSE_HEADERS || 'Last-Event-ID';
+      
       return new Response(response.body, {
         headers: {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Last-Event-ID',
-          'Access-Control-Expose-Headers': 'Last-Event-ID',
+          'Access-Control-Allow-Origin': corsOrigin,
+          'Access-Control-Allow-Headers': corsHeaders,
+          'Access-Control-Expose-Headers': corsExposeHeaders,
         },
       });
     }

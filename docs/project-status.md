@@ -82,6 +82,7 @@ pnpm check:all               # Verify both servers running
 - Some transient test failures in CI
 - Vercel AI SDK still present (to be removed)
 - Missing Edge ↔ Domain authentication
+- **TD-001**: Error event structure inconsistency between domain controller and provider errors (see [technical-debt.md](technical-debt.md))
 
 ## Recent Changes
 - Edge server implemented and functional

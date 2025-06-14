@@ -1,5 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
+import { ConfigService } from "@nestjs/config";
+import {
+  ILLMProvider,
+  LlmResponse,
+  Message,
+  StreamRequestParams,
+} from "../llm-provider.interface";
 import {
   ProviderStreamEvent,
   StreamErrorCode,
@@ -7,6 +13,7 @@ import {
 
 @Injectable()
 export class EchoProvider implements ILLMProvider {
+  constructor(private readonly configService: ConfigService) {}
   generate(input: string | Message[]): Promise<LlmResponse> {
     let textContent: string;
 
@@ -37,7 +44,7 @@ export class EchoProvider implements ILLMProvider {
 
   async *generateStream(
     input: string | Message[],
-    originalRequestParams?: any,
+    originalRequestParams?: StreamRequestParams,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _lastEventId?: string,
   ): AsyncIterable<ProviderStreamEvent> {
@@ -56,9 +63,17 @@ export class EchoProvider implements ILLMProvider {
     const words = response.split(" ");
 
     // Extract timeout and signal from request params
-    const timeout = originalRequestParams?.timeout || 30000; // Default 30s timeout
+    const defaultTimeout = this.configService.get<number>(
+      "ECHO_PROVIDER_TIMEOUT",
+      30000,
+    );
+    const timeout = originalRequestParams?.timeout || defaultTimeout;
     const signal = originalRequestParams?.signal;
-    const wordDelay = originalRequestParams?.wordDelay || 50; // Configurable delay per word
+    const defaultWordDelay = this.configService.get<number>(
+      "ECHO_PROVIDER_WORD_DELAY",
+      50,
+    );
+    const wordDelay = originalRequestParams?.wordDelay || defaultWordDelay;
 
     // Set up timeout handling
     const startTime = Date.now();
