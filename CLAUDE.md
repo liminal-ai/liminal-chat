@@ -20,7 +20,7 @@ Domain owns all intelligence & integration . Edge provides client access to doma
 
 <execution-rules>
 ALWAYS EXECTUE:
-- Scratchpad: Check liminal-chat/agent-management/agent-scratchpad/claude/current/ before starting work
+- Scratchpad: Check agent-management/agent-scratchpad/claude/current/ before starting work
 - File Discipline: Read files before editing
 - Task Updates: Update todos immediately upon task completion
 - Collaberate: Stop and ask when struggling or uncertain
@@ -73,7 +73,7 @@ Core testing principles:
 
 <information-hierarchy>
 ## Information Hierarchy
-1. /Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/claude/current/ - Active working memory
+1. agent-management/agent-scratchpad/claude/current/ - Active working memory
 2. docs/project-status.md - Current implementation state
 3. Quick Reference Index - Specific knowledge domains
 4. Never trust memory over source documents
@@ -125,7 +125,7 @@ Core testing principles:
 <qa-workflow>
 ### Argus QA Handoff Protocol
 **Context**: Integration with Argus QA agent for quality validation workflow  
-**Location**: Argus reports saved to `/Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/argus-qa-reports/latest.md`
+**Location**: Argus reports saved to `agent-management/agent-scratchpad/argus-qa-reports/latest.md`
 
 **Workflow Pattern**:
 1. Claude Code completes development work and announces completion
@@ -143,7 +143,7 @@ Core testing principles:
 - **NOTES**: Observations for consideration
 
 **Response Protocol**: 
-1. Read complete `/Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/argus-qa-reports/latest.md`
+1. Read complete `agent-management/agent-scratchpad/argus-qa-reports/latest.md`
 2. Address all CRITICAL findings first
 3. Respond to CONCERNS with fixes or technical rationale
 4. Acknowledge NOTES and incorporate relevant feedback
@@ -250,6 +250,7 @@ After outputting the Implementation Pause, proceed with the requested task.
 **Domain**: `domain:dev, domain:start, domain:stop, domain:restart, domain:test, domain:test:e2e`
 **Edge**: `edge:dev, edge:start, edge:stop, edge:restart, edge:test`
 **CLI**: `cli:dev, cli:build, cli:test, cli:test:e2e, cli:chat, cli:chat:echo, cli:chat:openrouter, cli:providers, cli:help`
+**Integration Testing**: `test:integration, test:integration:domain, test:integration:domain:health, test:integration:domain:real-providers, test:integration:domain:streaming, test:integration:domain:providers, test:integration:edge`
 **Multi-Service**: `start:all, stop:all, restart:all`
 
 **Key Command Notes**:
@@ -259,6 +260,12 @@ After outputting the Implementation Pause, proceed with the requested task.
 - Test specific file: `pnpm test -- path/to/test.ts`
 - Coverage report: `pnpm test:cov`
 - `check:error-codes` validates no generic Error usage (use AppError with specific codes)
+- `test:integration:*` commands require services to be running (use `start:all` first)
+- `test:integration:domain:real-providers` requires OPENROUTER_API_KEY environment variable
+- `test:integration:domain:streaming` tests real streaming with provider APIs
+- `test:integration:domain:show-report` opens browser with test results (for manual testing)
+- `test:integration:show-report` opens browser with test results for all integration tests
+- Regular `test:integration:*` commands suppress browser opening (for automated testing)
 
 #### CLI Operations
 ```bash

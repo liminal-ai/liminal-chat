@@ -1,16 +1,20 @@
 import { Injectable, HttpException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { randomBytes } from "crypto";
+import { nanoid } from "nanoid";
 import { ILLMProvider, LlmResponse, Message } from "../llm-provider.interface";
 import {
   ProviderStreamEvent,
   StreamErrorCode,
   StreamError,
 } from "@liminal-chat/shared-types";
-// Cryptographically secure ID generator for event IDs
+import {
+  scrubSensitiveData,
+  scrubErrorForLogging,
+} from "../../../utils/security";
+// Cryptographically secure ID generator for event IDs using nanoid
 const generateId = (): string => {
-  // Generate 4 random bytes and convert to base36 (better than Math.random)
-  return randomBytes(4).toString("hex").substring(0, 6);
+  // Generate a compact, URL-safe unique ID (6 characters default)
+  return nanoid(6);
 };
 import openRouterConfig from "../../../config/openrouter-models.json";
 
@@ -84,9 +88,17 @@ export class OpenRouterProvider implements ILLMProvider {
           .catch(() => ({}) as Record<string, unknown>)) as {
           error?: { message?: string };
         };
-        const errorMessage =
+        const rawErrorMessage =
           errorData.error?.message ||
           `HTTP ${response.status}: ${response.statusText}`;
+        const errorMessage = scrubSensitiveData(rawErrorMessage);
+
+        // Log the scrubbed error for debugging
+        this.logger.error("OpenRouter API error", {
+          status: response.status,
+          message: errorMessage,
+          model: this.model,
+        });
 
         // Map specific HTTP status codes to appropriate errors
         if (response.status === 401) {
@@ -199,11 +211,14 @@ export class OpenRouterProvider implements ILLMProvider {
       }
 
       // Map any other errors
+      const scrubbedError = scrubErrorForLogging(error);
+      this.logger.error("OpenRouter unexpected error", scrubbedError);
+
       throw new HttpException(
         {
           error: {
             code: "PROVIDER_API_ERROR",
-            message: `OpenRouter error: ${(error as Error).message}`,
+            message: `OpenRouter error: ${scrubbedError.message}`,
           },
         },
         500,
@@ -266,7 +281,11 @@ export class OpenRouterProvider implements ILLMProvider {
             // Handle special [DONE] signal
             if (chunk.data === "[DONE]") {
               // Reuse the last content event's eventId for resumption continuity
-              yield { type: "done", eventId: lastContentEventId || eventId };
+              yield {
+                type: "done",
+                data: "[DONE]",
+                eventId: lastContentEventId || eventId,
+              };
               break;
             }
 
@@ -311,7 +330,14 @@ export class OpenRouterProvider implements ILLMProvider {
 
               lastChunkTime = chunkTime;
               lastContentEventId = eventId; // Track for done event continuity
-              yield { type: "content", data: content, eventId };
+              yield {
+                type: "content",
+                data: {
+                  delta: content,
+                  model: data.model || this.model,
+                },
+                eventId,
+              };
             }
 
             // Check for usage data
@@ -405,7 +431,13 @@ export class OpenRouterProvider implements ILLMProvider {
           errorData.error?.message ||
           `HTTP ${response.status}: ${response.statusText}`;
 
-        throw new Error(`OpenRouter API Error: ${errorMessage}`);
+        const scrubbedMessage = scrubSensitiveData(errorMessage);
+        this.logger.error("OpenRouter streaming API error", {
+          status: response.status,
+          message: scrubbedMessage,
+          model: this.model,
+        });
+        throw new Error(`OpenRouter API Error: ${scrubbedMessage}`);
       }
 
       return response;
@@ -469,6 +501,10 @@ export class OpenRouterProvider implements ILLMProvider {
   }
 
   private mapErrorToStreamError(error: unknown): StreamError {
+    // Scrub the error for logging
+    const scrubbedError = scrubErrorForLogging(error);
+    this.logger.error("OpenRouter stream error", scrubbedError);
+
     // Handle timeout specifically
     if (error instanceof Error && error.name === "AbortError") {
       return {
@@ -487,9 +523,8 @@ export class OpenRouterProvider implements ILLMProvider {
       };
     }
 
-    // Handle general errors
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+    // Handle general errors - use scrubbed message
+    const errorMessage = scrubbedError.message;
 
     if (errorMessage.includes("401") || errorMessage.includes("Unauthorized")) {
       return {

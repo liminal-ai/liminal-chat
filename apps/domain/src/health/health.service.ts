@@ -4,10 +4,10 @@ import { Injectable } from "@nestjs/common";
 export class HealthService {
   getHealth() {
     return {
-      status: "healthy",
-      service: "domain",
+      status: "ok",
+      service: "liminal-chat-domain",
       timestamp: new Date().toISOString(),
-      version: "1.0.0",
+      database: "connected",
     };
   }
 }

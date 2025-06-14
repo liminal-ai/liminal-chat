@@ -9,7 +9,7 @@ test.describe('Edge Health Endpoint', () => {
     
     const data = await response.json()
     expect(data).toHaveProperty('status')
-    expect(data.status).toBe('healthy')
+    expect(data.status).toBe('ok')
   })
 
   test('should respond quickly', async ({ apiContext }) => {
@@ -18,6 +18,9 @@ test.describe('Edge Health Endpoint', () => {
     const endTime = Date.now()
     
     expectValidResponse(response)
-    expect(endTime - startTime).toBeLessThan(1000) // Should respond within 1 second
+    expect(endTime - startTime).toBeLessThan(100) // Should respond within 100ms per spec
+    
+    // Log performance for baseline data collection
+    console.log(`Edge health endpoint response time: ${endTime - startTime}ms`)
   })
 }) 
