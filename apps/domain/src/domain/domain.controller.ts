@@ -8,6 +8,7 @@ import {
   Res,
   Headers,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { FastifyReply } from "fastify";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { LlmService } from "../llm/llm.service";
@@ -21,6 +22,7 @@ export class DomainController {
   constructor(
     private readonly llmService: LlmService,
     private readonly providerHealthService: ProviderHealthService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post("llm/prompt")
@@ -50,11 +52,19 @@ export class DomainController {
       response.raw.setHeader("Content-Type", "text/event-stream");
       response.raw.setHeader("Cache-Control", "no-cache");
       response.raw.setHeader("Connection", "keep-alive");
-      response.raw.setHeader("Access-Control-Allow-Origin", "*");
-      response.raw.setHeader(
-        "Access-Control-Allow-Headers",
+
+      // Environment-configurable CORS headers
+      const corsOrigin = this.configService.get<string>(
+        "CORS_ALLOW_ORIGIN",
+        "*",
+      );
+      const corsHeaders = this.configService.get<string>(
+        "CORS_ALLOW_HEADERS",
         "Content-Type, Last-Event-ID",
       );
+
+      response.raw.setHeader("Access-Control-Allow-Origin", corsOrigin);
+      response.raw.setHeader("Access-Control-Allow-Headers", corsHeaders);
 
       // Flush headers immediately to establish SSE stream with proxies
       if (typeof response.raw.flushHeaders === "function") {

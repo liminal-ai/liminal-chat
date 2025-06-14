@@ -3,6 +3,14 @@ export interface Message {
   content: string;
 }
 
+export interface StreamRequestParams {
+  timeout?: number;
+  signal?: AbortSignal;
+  wordDelay?: number;
+  stream?: boolean;
+  [key: string]: unknown;
+}
+
 export interface LlmResponse {
   content: string;
   model: string;
@@ -19,7 +27,7 @@ export interface ILLMProvider {
   generate(input: string | Message[]): Promise<LlmResponse>;
   generateStream?(
     input: string | Message[],
-    originalRequestParams?: any,
+    originalRequestParams?: StreamRequestParams,
     lastEventId?: string,
   ): AsyncIterable<ProviderStreamEvent>;
   getName(): string;
