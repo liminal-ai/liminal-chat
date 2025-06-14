@@ -8,6 +8,11 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./filters/http-exception.filter";
 
+/**
+ * Initializes and starts the NestJS application with Fastify, applying global validation, exception handling, CORS, and Swagger documentation.
+ *
+ * Configures CORS origins based on the `CORS_ORIGINS` environment variable or defaults to `http://localhost:8787`. Sets up Swagger at `/api-docs` and listens on the port specified by the `PORT` environment variable or 8766.
+ */
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create<NestFastifyApplication>(
