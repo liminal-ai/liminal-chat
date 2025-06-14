@@ -358,7 +358,7 @@ test.describe('Edge Security Headers', () => {
 - [ ] **Success scenarios**: All happy path flows Edge → Domain working
 - [ ] **Error propagation**: Domain errors properly bubbled up through Edge
 - [ ] **Timeout handling**: Long-running requests handled appropriately
-- [ ] **Connection resilience**: Network issues handled gracefully
+- [ ] **Connection resilience**: Deferred to future chaos-testing story (see Out-of-Scope & Architecture Decisions §10)
 - [ ] **Performance preservation**: Minimal overhead added by Edge layer
 
 ### Security and Headers

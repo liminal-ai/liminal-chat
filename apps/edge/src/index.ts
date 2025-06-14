@@ -1,6 +1,13 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { ERROR_CODES } from '@liminal-chat/shared-utils';
+import { 
+  validateContentType, 
+  validateRequestSize, 
+  validatePromptRequest, 
+  parseDomainError,
+  type EdgeError 
+} from './validation';
 
 type Bindings = {
   DOMAIN_URL: string;
@@ -9,132 +16,7 @@ type Bindings = {
   CORS_EXPOSE_HEADERS?: string;
 };
 
-type EdgeError = {
-  error: string;
-  code: string;
-  message: string;
-  details?: unknown;
-};
 
-/**
- * Parses Domain error response and extracts proper error structure
- * Falls back to raw text if JSON parsing fails
- */
-function parseDomainError(errorText: string, statusCode: number, statusText: string): EdgeError {
-  try {
-    const parsed = JSON.parse(errorText);
-    
-    // If Domain returned a structured error, extract the fields
-    if (parsed && typeof parsed === 'object' && parsed.error && parsed.code) {
-      return {
-        error: parsed.error,
-        code: parsed.code,
-        message: parsed.message || `Domain service error: ${statusCode} ${statusText}`,
-        details: parsed.details
-      };
-    }
-    
-    // If JSON but not structured error, treat as raw content
-    return {
-      error: `Domain server error: ${errorText}`,
-      code: ERROR_CODES.DOMAIN.INVALID_RESPONSE,
-      message: `Domain service returned error: ${statusCode} ${statusText}`
-    };
-  } catch {
-    // Not JSON, treat as raw text
-    return {
-      error: `Domain server error: ${errorText}`,
-      code: ERROR_CODES.DOMAIN.INVALID_RESPONSE,
-      message: `Domain service returned error: ${statusCode} ${statusText}`
-    };
-  }
-}
-
-/**
- * Validates request content type
- */
-function validateContentType(request: Request): EdgeError | null {
-  const contentType = request.headers.get('Content-Type');
-  if (!contentType || !contentType.includes('application/json')) {
-    return {
-      error: 'Invalid Content-Type',
-      code: ERROR_CODES.EDGE.INVALID_REQUEST,
-      message: 'Content-Type must be application/json'
-    };
-  }
-  return null;
-}
-
-/**
- * Validates request body for prompt endpoints
- * Matches Domain's OneOfPromptOrMessagesConstraint logic
- */
-function validatePromptRequest(body: any): EdgeError | null {
-  // Check if request body is valid
-  if (!body || typeof body !== 'object') {
-    return {
-      error: 'Invalid request body',
-      code: ERROR_CODES.EDGE.INVALID_REQUEST,
-      message: 'Request body must be a valid JSON object'
-    };
-  }
-
-  const hasPrompt = body.prompt !== undefined && body.prompt !== null;
-  const hasMessages = body.messages !== undefined && body.messages !== null;
-
-  // Exactly one should be provided (matching Domain's OneOfPromptOrMessagesConstraint)
-  if (!(hasPrompt && !hasMessages) && !(!hasPrompt && hasMessages)) {
-    return {
-      error: 'Invalid request format',
-      code: ERROR_CODES.EDGE.INVALID_REQUEST,
-      message: 'Either prompt or messages must be provided, but not both'
-    };
-  }
-
-  // Validate prompt if provided
-  if (hasPrompt) {
-    if (typeof body.prompt !== 'string' || body.prompt.trim() === '') {
-      return {
-        error: 'Invalid prompt',
-        code: ERROR_CODES.EDGE.VALIDATION_ERROR,
-        message: 'Prompt cannot be empty or whitespace only'
-      };
-    }
-  }
-
-  // Validate messages if provided
-  if (hasMessages) {
-    if (!Array.isArray(body.messages) || body.messages.length === 0) {
-      return {
-        error: 'Invalid messages',
-        code: ERROR_CODES.EDGE.VALIDATION_ERROR,
-        message: 'Messages must be a non-empty array'
-      };
-    }
-  }
-
-  return null;
-}
-
-/**
- * Max request size in bytes (1MB)
- */
-const MAX_REQUEST_SIZE = 1024 * 1024;
-
-/**
- * Validates request size
- */
-function validateRequestSize(request: Request): EdgeError | null {
-  const contentLength = request.headers.get('Content-Length');
-  if (contentLength && parseInt(contentLength) > MAX_REQUEST_SIZE) {
-    return {
-      error: 'Request too large',
-      code: ERROR_CODES.EDGE.INVALID_REQUEST,
-      message: `Request size cannot exceed ${MAX_REQUEST_SIZE} bytes`
-    };
-  }
-  return null;
-}
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -155,20 +37,42 @@ app.get('/health', (c) => {
 app.post('/api/v1/llm/prompt', async (c) => {
   try {
     // Validate Content-Type
-    const contentTypeError = validateContentType(c.req.raw);
-    if (contentTypeError) {
-      return c.json(contentTypeError, 415);
+    const contentTypeValidation = validateContentType(c.req.raw.headers.get('Content-Type') || '');
+    if (!contentTypeValidation.isValid) {
+      const errorResponse: EdgeError = {
+        error: 'Invalid Content-Type',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: contentTypeValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 415);
+    }
+
+    let bodyText: string;
+    try {
+      bodyText = await c.req.text();
+    } catch (error) {
+      const parseError: EdgeError = {
+        error: 'Failed to read request body',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: 'Unable to read request body'
+      };
+      return c.json(parseError, 400);
     }
 
     // Validate request size
-    const sizeError = validateRequestSize(c.req.raw);
-    if (sizeError) {
-      return c.json(sizeError, 413);
+    const sizeValidation = validateRequestSize(bodyText);
+    if (!sizeValidation.isValid) {
+      const errorResponse: EdgeError = {
+        error: 'Request too large',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: sizeValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 413);
     }
 
     let body: any;
     try {
-      body = await c.req.json();
+      body = JSON.parse(bodyText);
     } catch (error) {
       const parseError: EdgeError = {
         error: 'Invalid JSON',
@@ -179,9 +83,22 @@ app.post('/api/v1/llm/prompt', async (c) => {
     }
 
     // Validate prompt request
-    const validationError = validatePromptRequest(body);
-    if (validationError) {
-      return c.json(validationError, 400);
+    const promptValidation = validatePromptRequest(body);
+    if (!promptValidation.isValid) {
+      // Use VALIDATION_ERROR code for prompt/message validation issues
+      const isEmptyPromptOrMessages = promptValidation.errors.some(err => 
+        err.includes('empty') || err.includes('whitespace') || err.includes('non-empty array')
+      );
+      const errorCode = isEmptyPromptOrMessages ? ERROR_CODES.EDGE.VALIDATION_ERROR : ERROR_CODES.EDGE.INVALID_REQUEST;
+      
+      const errorResponse: EdgeError = {
+        error: promptValidation.errors[0].includes('must be provided') ? 'Invalid request format' : 
+               promptValidation.errors[0].includes('empty') || promptValidation.errors[0].includes('whitespace') ? 'Invalid prompt' :
+               promptValidation.errors[0].includes('non-empty array') ? 'Invalid messages' : 'Invalid request format',
+        code: errorCode,
+        message: promptValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 400);
     }
 
     const domainUrl = c.env.DOMAIN_URL;
@@ -192,12 +109,12 @@ app.post('/api/v1/llm/prompt', async (c) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: bodyText,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      const errorResponse = parseDomainError(errorText, response.status, response.statusText);
+      const errorResponse = parseDomainError(response, errorText);
       return c.json(errorResponse, response.status as any);
     }
 
@@ -220,20 +137,42 @@ app.post('/api/v1/llm/prompt', async (c) => {
 app.post('/api/v1/llm/prompt/stream', async (c) => {
   try {
     // Validate Content-Type
-    const contentTypeError = validateContentType(c.req.raw);
-    if (contentTypeError) {
-      return c.json(contentTypeError, 415);
+    const contentTypeValidation = validateContentType(c.req.raw.headers.get('Content-Type') || '');
+    if (!contentTypeValidation.isValid) {
+      const errorResponse: EdgeError = {
+        error: 'Invalid Content-Type',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: contentTypeValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 415);
+    }
+
+    let bodyText: string;
+    try {
+      bodyText = await c.req.text();
+    } catch (error) {
+      const parseError: EdgeError = {
+        error: 'Failed to read request body',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: 'Unable to read request body'
+      };
+      return c.json(parseError, 400);
     }
 
     // Validate request size
-    const sizeError = validateRequestSize(c.req.raw);
-    if (sizeError) {
-      return c.json(sizeError, 413);
+    const sizeValidation = validateRequestSize(bodyText);
+    if (!sizeValidation.isValid) {
+      const errorResponse: EdgeError = {
+        error: 'Request too large',
+        code: ERROR_CODES.EDGE.INVALID_REQUEST,
+        message: sizeValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 413);
     }
 
     let body: any;
     try {
-      body = await c.req.json();
+      body = JSON.parse(bodyText);
     } catch (error) {
       const parseError: EdgeError = {
         error: 'Invalid JSON',
@@ -244,9 +183,22 @@ app.post('/api/v1/llm/prompt/stream', async (c) => {
     }
 
     // Validate prompt request
-    const validationError = validatePromptRequest(body);
-    if (validationError) {
-      return c.json(validationError, 400);
+    const promptValidation = validatePromptRequest(body);
+    if (!promptValidation.isValid) {
+      // Use VALIDATION_ERROR code for prompt/message validation issues
+      const isEmptyPromptOrMessages = promptValidation.errors.some(err => 
+        err.includes('empty') || err.includes('whitespace') || err.includes('non-empty array')
+      );
+      const errorCode = isEmptyPromptOrMessages ? ERROR_CODES.EDGE.VALIDATION_ERROR : ERROR_CODES.EDGE.INVALID_REQUEST;
+      
+      const errorResponse: EdgeError = {
+        error: promptValidation.errors[0].includes('must be provided') ? 'Invalid request format' : 
+               promptValidation.errors[0].includes('empty') || promptValidation.errors[0].includes('whitespace') ? 'Invalid prompt' :
+               promptValidation.errors[0].includes('non-empty array') ? 'Invalid messages' : 'Invalid request format',
+        code: errorCode,
+        message: promptValidation.errors.join(', ')
+      };
+      return c.json(errorResponse, 400);
     }
 
     const domainUrl = c.env.DOMAIN_URL;
@@ -275,13 +227,13 @@ app.post('/api/v1/llm/prompt/stream', async (c) => {
     const response = await fetch(`${domainUrl}/domain/llm/prompt`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(body),
+      body: bodyText,
     });
 
     if (!response.ok) {
       // For streaming endpoints, we need to handle errors carefully
       const errorText = await response.text();
-      const errorData = parseDomainError(errorText, response.status, response.statusText);
+      const errorData = parseDomainError(response, errorText);
       
       // Check if this is a validation error that should return JSON
       if (response.status >= 400 && response.status < 500) {
