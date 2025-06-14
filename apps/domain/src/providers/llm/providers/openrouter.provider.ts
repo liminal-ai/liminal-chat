@@ -419,7 +419,7 @@ export class OpenRouterProvider implements ILLMProvider {
           model: this.model,
           messages: messages,
           stream: true,
-          ...requestParams,
+          ...this.getApiSafeParams(requestParams),
         }),
         signal: controller.signal,
       });
@@ -503,6 +503,21 @@ export class OpenRouterProvider implements ILLMProvider {
     } finally {
       reader.releaseLock();
     }
+  }
+
+  /**
+   * Filter out non-API parameters that should not be sent to OpenRouter
+   * Removes local parameters like timeout, signal, wordDelay, stream, etc.
+   */
+  private getApiSafeParams(
+    requestParams: StreamRequestParams,
+  ): Record<string, unknown> {
+    // Filter out non-serializable and non-API parameters before JSON serialization
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { timeout, signal, wordDelay, stream, ...apiSafeParams } =
+      requestParams;
+
+    return apiSafeParams;
   }
 
   private mapErrorToStreamError(error: unknown): StreamError {

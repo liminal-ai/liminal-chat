@@ -8,12 +8,10 @@ describe("EchoProvider", () => {
 
   beforeEach(() => {
     configService = {
-      get: vi.fn((key: string, defaultValue?: unknown) => {
-        if (key === "ECHO_PROVIDER_TIMEOUT")
-          return (defaultValue as number) || 30000;
-        if (key === "ECHO_PROVIDER_WORD_DELAY")
-          return (defaultValue as number) || 50;
-        return defaultValue;
+      get: vi.fn((key: string) => {
+        if (key === "ECHO_PROVIDER_TIMEOUT") return 12345; // Test value
+        if (key === "ECHO_PROVIDER_WORD_DELAY") return 100; // Test value
+        return undefined;
       }),
     } as unknown as ConfigService;
 
