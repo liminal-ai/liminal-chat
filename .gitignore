@@ -88,4 +88,7 @@ tests/reports/
 # Additional IDE files
 *.sublime-workspace
 *.sublime-project
-.history/worktrees/
+.history/
+
+# Worktrees
+worktrees/
