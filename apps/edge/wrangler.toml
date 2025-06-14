@@ -4,11 +4,22 @@ compatibility_date = "2024-12-01"
 
 [vars]
 DOMAIN_URL = "http://localhost:8766"
+CORS_ALLOW_ORIGIN = "*"
+CORS_ALLOW_HEADERS = "Last-Event-ID"
+CORS_EXPOSE_HEADERS = "Last-Event-ID"
 
 # For local development
 [env.development]
-vars = { DOMAIN_URL = "http://localhost:8766" }
+[env.development.vars]
+DOMAIN_URL = "http://localhost:8766"
+CORS_ALLOW_ORIGIN = "*"
+CORS_ALLOW_HEADERS = "Last-Event-ID"
+CORS_EXPOSE_HEADERS = "Last-Event-ID"
 
 # For production (update this when deploying)
 [env.production]
-vars = { DOMAIN_URL = "https://your-domain-server.com" }
+[env.production.vars]
+DOMAIN_URL = "https://your-domain-server.com"
+CORS_ALLOW_ORIGIN = "*"
+CORS_ALLOW_HEADERS = "Last-Event-ID"
+CORS_EXPOSE_HEADERS = "Last-Event-ID"
