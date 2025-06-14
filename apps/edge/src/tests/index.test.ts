@@ -53,17 +53,22 @@ describe('Edge Server', () => {
     });
 
     it('should handle streaming responses', async () => {
-      const mockStream = new ReadableStream();
+      // Create a mock readable stream that will close immediately
+      const mockStream = new ReadableStream({
+        start(controller) {
+          controller.close();
+        }
+      });
       const mockResponse = new Response(mockStream, {
         headers: { 'Content-Type': 'text/event-stream' },
       });
       
       vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
       
-      const req = new Request('http://localhost/api/v1/llm/prompt', {
+      const req = new Request('http://localhost/api/v1/llm/prompt/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [], stream: true }),
+        body: JSON.stringify({ messages: [{ content: 'Hello', role: 'user' }], stream: true }),
       });
       
       const env = { DOMAIN_URL: 'http://localhost:8766' };
@@ -80,7 +85,7 @@ describe('Edge Server', () => {
       const req = new Request('http://localhost/api/v1/llm/prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [] }),
+        body: JSON.stringify({ messages: [{ content: 'Hello', role: 'user' }] }),
       });
       
       const env = { DOMAIN_URL: 'http://localhost:8766' };
@@ -115,6 +120,166 @@ describe('Edge Server', () => {
     });
   });
 
+  describe('Request validation', () => {
+    describe('POST /api/v1/llm/prompt', () => {
+      it('should reject requests with missing Content-Type', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          body: JSON.stringify({ prompt: 'Hello' }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(415);
+        expect(json.code).toBe('EDGE_INVALID_REQUEST');
+        expect(json.message).toBe('Content-Type must be application/json');
+      });
+
+      it('should reject requests with invalid JSON', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: 'invalid json',
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_INVALID_REQUEST');
+        expect(json.message).toBe('Request body must be valid JSON');
+      });
+
+      it('should reject requests with neither prompt nor messages', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: 'echo' }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_INVALID_REQUEST');
+        expect(json.message).toBe('Either prompt or messages must be provided, but not both');
+      });
+
+      it('should reject requests with both prompt and messages', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            prompt: 'Hello',
+            messages: [{ content: 'Hi', role: 'user' }]
+          }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_INVALID_REQUEST');
+        expect(json.message).toBe('Either prompt or messages must be provided, but not both');
+      });
+
+      it('should reject requests with empty prompt', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: '' }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_VALIDATION_ERROR');
+        expect(json.message).toBe('Prompt cannot be empty or whitespace only');
+      });
+
+      it('should reject requests with whitespace-only prompt', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: '   \n\t  ' }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_VALIDATION_ERROR');
+        expect(json.message).toBe('Prompt cannot be empty or whitespace only');
+      });
+
+      it('should reject requests with empty messages array', async () => {
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [] }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json() as any;
+        
+        expect(res.status).toBe(400);
+        expect(json.code).toBe('EDGE_VALIDATION_ERROR');
+        expect(json.message).toBe('Messages must be a non-empty array');
+      });
+
+      it('should accept valid prompt request', async () => {
+        const mockResponse = new Response(JSON.stringify({ response: 'Hello' }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+        
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: 'Hello' }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json();
+        
+        expect(res.status).toBe(200);
+        expect(json).toEqual({ response: 'Hello' });
+      });
+
+      it('should accept valid messages request', async () => {
+        const mockResponse = new Response(JSON.stringify({ response: 'Hello' }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        vi.mocked(global.fetch).mockResolvedValueOnce(mockResponse);
+        
+        const req = new Request('http://localhost/api/v1/llm/prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ content: 'Hello', role: 'user' }] }),
+        });
+        const env = { DOMAIN_URL: 'http://localhost:8766' };
+        
+        const res = await app.fetch(req, env);
+        const json = await res.json();
+        
+        expect(res.status).toBe(200);
+        expect(json).toEqual({ response: 'Hello' });
+      });
+    });
+  });
+
   describe('Undefined routes', () => {
     it('should return 404 for unknown routes', async () => {
       const req = new Request('http://localhost/unknown');
@@ -126,7 +291,8 @@ describe('Edge Server', () => {
       expect(res.status).toBe(404);
       expect(json).toEqual({ 
         error: 'Not found',
-        code: 'EDGE_NOT_FOUND'
+        code: 'EDGE_NOT_FOUND',
+        message: 'The requested endpoint /unknown was not found'
       });
     });
   });

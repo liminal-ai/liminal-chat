@@ -294,41 +294,6 @@ test.describe('Edge Security', () => {
     })
   })
 
-  test.describe('Authentication and Authorization', () => {
-    // TODO: Test authentication bypass attempts
-    test.skip('should prevent authentication bypass attempts', async ({ 
-      edgeApiContext, 
-      edgeTestData 
-    }) => {
-      // Implementation placeholder
-      // 1. Send request with forged auth headers
-      // 2. Validate authentication is properly enforced
-      // 3. Ensure no bypass through header manipulation
-    })
-
-    // TODO: Test authorization validation
-    test.skip('should properly validate user authorization', async ({ 
-      edgeApiContext, 
-      edgeTestData 
-    }) => {
-      // Implementation placeholder
-      // 1. Send request with invalid/expired auth
-      // 2. Validate proper authorization checking
-      // 3. Ensure appropriate error responses
-    })
-
-    // TODO: Test session security
-    test.skip('should handle session security appropriately', async ({ 
-      edgeApiContext, 
-      edgeTestData 
-    }) => {
-      // Implementation placeholder
-      // 1. Test session handling if implemented
-      // 2. Validate session security measures
-      // 3. Check for session fixation vulnerabilities
-    })
-  })
-
   test.describe('Rate Limiting and DoS Protection', () => {
     // TODO: Test rate limiting enforcement
     test.skip('should enforce rate limits appropriately', async ({ 

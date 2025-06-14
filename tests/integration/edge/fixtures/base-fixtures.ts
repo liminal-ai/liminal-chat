@@ -23,7 +23,7 @@ export class NetworkInterceptor {
    * Intercept requests to Domain service to simulate failures
    */
   async interceptDomainRequests(mockResponse: { status: number; body: any }) {
-    await this.page.route('**/api/v1/llm/**', (route) => {
+    await this.page.route('**/domain/llm/**', (route) => {
       this.routes.push(route)
       route.fulfill({
         status: mockResponse.status,
@@ -37,7 +37,7 @@ export class NetworkInterceptor {
    * Simulate network timeout for Domain requests
    */
   async simulateNetworkTimeout(delayMs = 30000) {
-    await this.page.route('**/api/v1/llm/**', async (route) => {
+    await this.page.route('**/domain/llm/**', async (route) => {
       this.routes.push(route)
       // Wait for timeout then abort
       await new Promise(resolve => setTimeout(resolve, delayMs))
@@ -49,7 +49,7 @@ export class NetworkInterceptor {
    * Simulate intermittent network failures
    */
   async simulateIntermittentFailures(failureRate = 0.5) {
-    await this.page.route('**/api/v1/llm/**', (route) => {
+    await this.page.route('**/domain/llm/**', (route) => {
       this.routes.push(route)
       if (Math.random() < failureRate) {
         route.abort('failed')
