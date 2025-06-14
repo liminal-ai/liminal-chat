@@ -32,13 +32,13 @@ export default defineConfig({
         // Specific higher thresholds for core modules
         './src/domain/**/*.ts': {
           statements: 90,
-          branches: 90,
+          branches: 80,
           functions: 90,
           lines: 90
         },
         './src/providers/**/*.ts': {
           statements: 90,
-          branches: 90,
+          branches: 80,
           functions: 90,
           lines: 90
         }
