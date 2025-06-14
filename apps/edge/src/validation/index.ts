@@ -13,9 +13,12 @@ export interface EdgeError {
 }
 
 /**
- * Validates request content type
- * Should accept: application/json, application/json; charset=utf-8
- * Should reject: text/plain, undefined, etc.
+ * Validates that the provided content type is JSON.
+ *
+ * Accepts content types containing 'application/json' and rejects others.
+ *
+ * @param contentType - The value of the Content-Type header to validate.
+ * @returns A {@link ValidationResult} indicating whether the content type is valid.
  */
 export function validateContentType(contentType: string): ValidationResult {
   if (!contentType || !contentType.includes('application/json')) {
@@ -32,8 +35,11 @@ export function validateContentType(contentType: string): ValidationResult {
 }
 
 /**
- * Validates request size against maximum limit
- * Default max size is 1MB to enforce Cloudflare Workers limits
+ * Validates that the request body does not exceed the specified maximum byte size.
+ *
+ * @param body - The request body as a string.
+ * @param maxBytes - The maximum allowed size in bytes. Defaults to 1MB.
+ * @returns A {@link ValidationResult} indicating whether the body size is within the allowed limit.
  */
 export function validateRequestSize(body: string, maxBytes: number = 1024 * 1024): ValidationResult {
   const bodySize = new TextEncoder().encode(body).length;
@@ -52,11 +58,9 @@ export function validateRequestSize(body: string, maxBytes: number = 1024 * 1024
 }
 
 /**
- * Validates prompt request body structure
- * Rules:
- * - Must have either 'prompt' XOR 'messages' (not both, not neither)
- * - 'prompt' must be non-empty string if present
- * - 'messages' must be non-empty array with valid message objects if present
+ * Validates that the input object for a prompt request contains exactly one of a non-empty string `prompt` or a non-empty array `messages`.
+ *
+ * Returns a validation result indicating whether the structure is valid, with error messages for any violations.
  */
 export function validatePromptRequest(data: any): ValidationResult {
   // Check if request body is valid
@@ -105,9 +109,13 @@ export function validatePromptRequest(data: any): ValidationResult {
 }
 
 /**
- * Parses Domain error response and extracts proper error structure
- * Handles both JSON error responses and plain text responses
- * Returns consistent error structure for Edge client consumption
+ * Parses a domain service error response and returns a standardized error object.
+ *
+ * Attempts to extract structured error information from a JSON response. If the response is not valid JSON or lacks expected fields, returns a generic error object with status information.
+ *
+ * @param response - The HTTP response object from the domain service.
+ * @param text - The response body as a string.
+ * @returns An object containing `error`, `code`, and `message` fields for consistent error handling.
  */
 export function parseDomainError(response: Response, text: string): { error: string; code: string; message: string } {
   try {
