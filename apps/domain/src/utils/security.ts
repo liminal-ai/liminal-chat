@@ -27,9 +27,12 @@ const SENSITIVE_PATTERNS = [
 const REPLACEMENT_TEXT = "[REDACTED]";
 
 /**
- * Scrubs sensitive information from error messages and logs
- * @param input - The string to scrub (error message, log message, etc.)
- * @returns Scrubbed string with sensitive data replaced
+ * Replaces sensitive data in a string with a redaction marker.
+ *
+ * Scans the input for known sensitive patterns (such as API keys, tokens, passwords, and secrets) and replaces any matches with "[REDACTED]".
+ *
+ * @param input - The string to sanitize.
+ * @returns The input string with sensitive data redacted. If the input is not a string, it is returned unchanged.
  */
 export function scrubSensitiveData(input: string): string {
   if (typeof input !== "string") {
@@ -46,9 +49,12 @@ export function scrubSensitiveData(input: string): string {
 }
 
 /**
- * Scrubs sensitive data from an Error object, including message and stack trace
- * @param error - The error to scrub
- * @returns A scrubbed error object safe for logging
+ * Returns a sanitized error object with sensitive data redacted from message, stack trace, and name fields.
+ *
+ * Accepts any error-like input and produces an object safe for logging by removing sensitive information from string properties. Handles standard Error instances, string errors, and generic objects with string fields. For unrecognized types, returns a generic error message.
+ *
+ * @param error - The error or value to sanitize for logging.
+ * @returns An object containing the scrubbed message, optional stack and name, and the original type of the input.
  */
 export function scrubErrorForLogging(error: unknown): {
   message: string;
