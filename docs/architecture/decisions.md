@@ -469,3 +469,17 @@ This separation ensures each tier has a single, clear responsibility.
 3. **Streaming is Core**: Not an afterthought - design for it from day one
 4. **Mixed Vendors**: Security through diversity in auth providers
 5. **Developer Experience Matters**: Three-mode auth system balances security and productivity
+
+## 10. Testing Strategy Adjustment (June 2025)
+
+**Decision: Defer automated network-outage simulation tests for Edge → Domain API until a suitable tooling strategy is available.**
+
+**Context & Rationale**:
+- Playwright's `APIRequestContext` cannot currently inject lower-level network failures (e.g., connection drops, DNS timeouts) that would be required to validate Edge's resilience behaviour.
+- Implementing a bespoke proxy or chaos-testing harness is out of scope for Story 004 due to time and complexity constraints.
+- Functional error-handling paths remain testable via controlled Domain responses; only _network-level_ outage scenarios are postponed.
+
+**Consequences**:
+1. Acceptance-criteria items related to "Connection resilience" are partially covered (Domain error propagation ✅, network-outage ❌ deferred).
+2. A follow-up story will introduce chaos-testing using a dedicated proxy or Cloudflare Workers Durable Object to simulate outages.
+3. Risk acknowledged: real network failures may surface untested behaviours until the follow-up story is complete. Mitigation is manual smoke testing before releases.

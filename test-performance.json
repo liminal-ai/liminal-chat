@@ -1,0 +1,19 @@
+{
+  "history": [
+    {
+      "command": "edge:test:unit",
+      "duration": 1590,
+      "success": false,
+      "timestamp": "2025-06-14T21:06:24.069Z",
+      "target": 2000
+    },
+    {
+      "command": "edge:test:unit",
+      "duration": 1210,
+      "success": false,
+      "timestamp": "2025-06-14T21:06:38.605Z",
+      "target": 2000
+    }
+  ],
+  "baselines": {}
+}

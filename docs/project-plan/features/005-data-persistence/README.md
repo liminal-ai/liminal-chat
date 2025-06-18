@@ -1,4 +1,59 @@
-# Feature 005: Data Persistence Foundation
+# Feature 005 • Data Persistence Foundation
+
+## Status & Scope
+This feature provides durable, chunk-based storage for all conversation data and exposes read APIs for the Edge tier.  It is **actively in development** – Stories 4 and 5 are currently underway.
+
+### Story Index
+| # | Story Title | Status |
+|---|-------------|--------|
+| 01 | File-system structure & user management | ⏳ not-started |
+| 02 | Message chunk storage | ⏳ not-started |
+| 03 | Edge message reconstruction | ⏳ not-started |
+| 04 | Streaming bundle optimisation | 🚧 in-progress |
+| 05 | Conversation management API | 🚧 in-progress |
+
+*Each story now lives in its own file set (story, design, work-plan, agent-prompts) e.g. `01-file-system-structure.story.md`.*
+
+---
+
+## Gaps & Concerns (raised during Story 4 & 5 work)
+1. **End-to-End Test Harness (Feature 004 dependency)**  
+   • Existing Vitest migration does not yet offer a *stream-with-persistence* fixture.  
+   • Requires in-process file-system sandbox (tmpdir + teardown).  
+   • Playwright E2E test must simulate multi-stream SSE to assert 3-to-1 bundling.
+2. **Coverage Instrumentation**  
+   • Persisted chunk writes are currently skipped in coverage because they execute inside stream callbacks.  
+   • Need `vitest --coverage.provider=v8` + manual instrumentation to include async iterators.
+3. **Race-Condition Guarding**  
+   • File locking strategy undecided (fcntl vs advisory rename).  
+   • Must add concurrency stress tests in Feature 004 to detect write-collision.
+4. **API Contract Validation**  
+   • JSON-schema draft for `/api/conversations` responses incomplete.  
+   • Story 5 cannot be signed off until schema is locked and test fixtures generated.
+5. **Observability Hooks**  
+   • No structured logging for chunk write/read yet.  
+   • Feature 006 logging layer should be stubbed now to avoid refactor later.
+
+> Action: Fold the above into Feature 004's task list so tests and coverage are ready **before** Story 4 & 5 merge.
+
+---
+
+## Business Context (Why it matters)
+Persistent storage is the prerequisite for:  
+• **Cross-session continuity** – users can leave and resume conversations.  
+• **Round-table analytics** – routing accuracy metrics rely on historical messages.  
+• **Enterprise compliance** – durable audit trail for sensitive data.  
+• **Offline-first philosophy** – FS storage aligns with local-first privacy stance; later DB upgrade remains optional.
+
+Failure to deliver this feature delays AI Round-table (Feature 007) and Web UI (Feature 008).
+
+---
+
+## Definition of Done (Feature-level)
+- All five stories accepted individually per criteria files.
+- ≥ 80% statement coverage across persistence modules.
+- E2E test proves conversation survives restart with ≤ 50 ms reconstruction latency.
+- README updated with SQLite migration notes.
 
 ## Overview
 Implement chunk-based filesystem storage for conversations with Edge message reconstruction. Replaces in-memory conversation storage with persistent, recoverable conversation history.

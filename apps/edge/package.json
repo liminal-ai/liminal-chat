@@ -4,8 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc && wrangler build",
     "deploy": "wrangler deploy",
-    "test": "vitest",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run src",
+    "test:integration": "playwright test --config=../../playwright.config.integration.ts --project=integration-edge",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:all": "pnpm test:unit && pnpm test:integration",
+    "lint": "eslint src --fix",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -14,8 +21,15 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250102.0",
+    "@eslint/js": "^9.0.0",
     "@types/node": "^20.11.5",
+    "@vitest/coverage-v8": "^3.2.2",
+    "eslint": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.0.0",
     "typescript": "^5.3.3",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^3.2.2",
     "wrangler": "^3.102.0"
   }

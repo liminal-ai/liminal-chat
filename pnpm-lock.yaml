@@ -10,7 +10,7 @@ importers:
     devDependencies:
       '@playwright/experimental-ct-react':
         specifier: ^1.48.2
-        version: 1.53.0(vite@5.4.19)
+        version: 1.53.0(vite@6.3.5)
       '@playwright/test':
         specifier: ^1.48.2
         version: 1.53.0
@@ -203,6 +203,9 @@ importers:
       '@types/node':
         specifier: ^20.11.5
         version: 20.19.0
+      '@vitest/coverage-v8':
+        specifier: ^3.2.2
+        version: 3.2.3(vitest@3.2.2)
       typescript:
         specifier: ^5.3.3
         version: 5.8.3
@@ -2634,13 +2637,13 @@ packages:
       - yaml
     dev: true
 
-  /@playwright/experimental-ct-react@1.53.0(vite@5.4.19):
+  /@playwright/experimental-ct-react@1.53.0(vite@6.3.5):
     resolution: {integrity: sha512-t7mRr0J1LrhrKAc8kuQQ5kGbY2LrEvdR7munYXMZzWbR6+w1Dtoko7NFf+faMoReunAPxV5Qj7rKhag4AcG2Fg==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
       '@playwright/experimental-ct-core': 1.53.0
-      '@vitejs/plugin-react': 4.5.2(vite@5.4.19)
+      '@vitejs/plugin-react': 4.5.2(vite@6.3.5)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -3431,7 +3434,7 @@ packages:
       eslint-visitor-keys: 4.2.0
     dev: true
 
-  /@vitejs/plugin-react@4.5.2(vite@5.4.19):
+  /@vitejs/plugin-react@4.5.2(vite@6.3.5):
     resolution: {integrity: sha512-QNVT3/Lxx99nMQWJWF7K4N6apUEuT0KlZA3mx/mVaoGj3smm/8rc8ezz15J1pcbcjDK0V15rpHetVfya08r76Q==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -3443,7 +3446,34 @@ packages:
       '@rolldown/pluginutils': 1.0.0-beta.11
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 5.4.19(@types/node@22.15.30)
+      vite: 6.3.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@vitest/coverage-v8@3.2.3(vitest@3.2.2):
+    resolution: {integrity: sha512-D1QKzngg8PcDoCE8FHSZhREDuEy+zcKmMiMafYse41RZpBE5EDJyKOTdqK3RQfsV2S2nyKor5KCs8PyPRFqKPg==}
+    peerDependencies:
+      '@vitest/browser': 3.2.3
+      vitest: 3.2.3
+    peerDependenciesMeta:
+      '@vitest/browser':
+        optional: true
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 1.0.2
+      ast-v8-to-istanbul: 0.3.3
+      debug: 4.4.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.1.7
+      magic-string: 0.30.17
+      magicast: 0.3.5
+      std-env: 3.9.0
+      test-exclude: 7.0.1
+      tinyrainbow: 2.0.0
+      vitest: 3.2.2(@types/node@20.19.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
