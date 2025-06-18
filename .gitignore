@@ -31,6 +31,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
@@ -49,6 +50,9 @@ coverage/
 
 # AI Agent temporary files
 agent-management/agent-scratchpad/
+
+# Agent runtime data
+data/agents/
 
 # Application logs
 apps/domain/domain.log
@@ -93,3 +97,25 @@ tests/reports/
 # Worktrees
 worktrees/
 worktrees/
+
+# Added by Task Master AI
+logs
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+
+# Downloaded source code
+vercel-ai-main/
+opencode-dev/
+
+# Domain data directory
+apps/domain-data/

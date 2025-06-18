@@ -34,7 +34,7 @@ async function bootstrap() {
   // CORS - Environment-driven configuration
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim())
-    : ["http://localhost:8787"]; // Edge server default
+    : ["http://localhost:3000"]; // Next.js web app default
 
   app.enableCors({
     origin: corsOrigins,
