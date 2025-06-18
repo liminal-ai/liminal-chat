@@ -119,3 +119,6 @@ opencode-dev/
 
 # Domain data directory
 apps/domain-data/
+
+# Claude Max app
+apps/claude-max/
