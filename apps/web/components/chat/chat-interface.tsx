@@ -18,11 +18,11 @@ import { Send, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const PROVIDERS: Provider[] = [
-  { id: 'openai', name: 'OpenAI GPT-4' },
-  { id: 'anthropic', name: 'Anthropic Claude' },
-  { id: 'google', name: 'Google Gemini' },
-  { id: 'openrouter', name: 'OpenRouter' },
-  { id: 'vercel', name: 'Vercel v0' },
+  { id: 'openai', name: 'OpenAI GPT-4', model: 'gpt-4o-mini' },
+  { id: 'anthropic', name: 'Anthropic Claude', model: 'claude-3-5-sonnet-20241022' },
+  { id: 'google', name: 'Google Gemini', model: 'gemini-2.0-flash-exp' },
+  { id: 'openrouter', name: 'OpenRouter', model: 'openai/gpt-4o-mini' },
+  { id: 'vercel', name: 'Vercel v0', model: 'v0-1.0-md' },
 ]
 
 export default function ChatInterface() {

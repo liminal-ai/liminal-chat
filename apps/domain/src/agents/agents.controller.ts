@@ -8,8 +8,6 @@ import {
   Param,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
-  UsePipes,
   NotFoundException,
 } from "@nestjs/common";
 import { AgentsService } from "./agents.service";
@@ -23,7 +21,6 @@ import type {
 } from "./dto";
 
 @Controller("agents")
-@UsePipes(new ValidationPipe({ transform: true }))
 export class AgentsController {
   constructor(
     private readonly agentsService: AgentsService,
