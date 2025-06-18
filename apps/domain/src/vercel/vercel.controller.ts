@@ -102,7 +102,12 @@ export class VercelController {
   async completion(@Body() body: CompletionRequest, @Res() res: FastifyReply) {
     try {
       const model = await this.getModel(body.provider, body.model);
-      console.log(`Testing ${body.provider} with model:`, model);
+      // Avoid logging full provider object – it may contain secrets.
+      console.debug(
+        `[completion] provider=%s modelName=%s`,
+        body.provider ?? "openai",
+        body.model ?? "(default)",
+      );
       const result = streamText({
         model,
         prompt: body.prompt,
