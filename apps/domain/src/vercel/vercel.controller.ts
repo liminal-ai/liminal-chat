@@ -14,32 +14,52 @@ interface ChatRequest {
     content: string;
   }>;
   id?: string;
-  provider?: "openai" | "anthropic" | "google" | "openrouter" | "vercel";
+  provider?:
+    | "openai"
+    | "anthropic"
+    | "google"
+    | "openrouter"
+    | "vercel";
   model?: string;
 }
 
 interface CompletionRequest {
   prompt: string;
-  provider?: "openai" | "anthropic" | "google" | "openrouter" | "vercel";
+  provider?:
+    | "openai"
+    | "anthropic"
+    | "google"
+    | "openrouter"
+    | "vercel";
   model?: string;
 }
 
 interface UseObjectRequest {
   prompt: string;
   schema?: z.ZodType<unknown>;
-  provider?: "openai" | "anthropic" | "google" | "openrouter" | "vercel";
+  provider?:
+    | "openai"
+    | "anthropic"
+    | "google"
+    | "openrouter"
+    | "vercel";
   model?: string;
 }
 
 interface GenerateTextRequest {
   prompt: string;
-  provider?: "openai" | "anthropic" | "google" | "openrouter" | "vercel";
+  provider?:
+    | "openai"
+    | "anthropic"
+    | "google"
+    | "openrouter"
+    | "vercel";
   model?: string;
 }
 
 @Controller("api")
 export class VercelController {
-  private getModel(provider: string = "openai", model?: string) {
+  private async getModel(provider: string = "openai", model?: string) {
     switch (provider) {
       case "openai":
         return openai(model || "gpt-4.1");
@@ -68,7 +88,7 @@ export class VercelController {
   @Post("chat")
   async chat(@Body() body: ChatRequest, @Res() res: FastifyReply) {
     const result = streamText({
-      model: this.getModel(body.provider, body.model),
+      model: await this.getModel(body.provider, body.model),
       messages: body.messages,
     });
 
@@ -81,12 +101,10 @@ export class VercelController {
   @Post("completion")
   async completion(@Body() body: CompletionRequest, @Res() res: FastifyReply) {
     try {
-      console.log(
-        `Testing ${body.provider} with model:`,
-        this.getModel(body.provider, body.model),
-      );
+      const model = await this.getModel(body.provider, body.model);
+      console.log(`Testing ${body.provider} with model:`, model);
       const result = streamText({
-        model: this.getModel(body.provider, body.model),
+        model,
         prompt: body.prompt,
       });
 
@@ -114,7 +132,7 @@ export class VercelController {
       });
 
     const result = streamObject({
-      model: this.getModel(body.provider, body.model),
+      model: await this.getModel(body.provider, body.model),
       prompt: body.prompt,
       schema,
     });
@@ -132,7 +150,7 @@ export class VercelController {
   ) {
     try {
       const result = await generateText({
-        model: this.getModel(body.provider, body.model),
+        model: await this.getModel(body.provider, body.model),
         prompt: body.prompt,
       });
 
