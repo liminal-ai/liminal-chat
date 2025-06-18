@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { DomainModule } from "./domain/domain.module";
+import { HealthModule } from "./health/health.module";
+import { AgentsModule } from "./agents/agents.module";
+import { VercelController } from "./vercel/vercel.controller";
 
 @Module({
   imports: [
@@ -8,7 +10,9 @@ import { DomainModule } from "./domain/domain.module";
       isGlobal: true,
       envFilePath: ".env",
     }),
-    DomainModule,
+    HealthModule,
+    AgentsModule,
   ],
+  controllers: [VercelController],
 })
 export class AppModule {}

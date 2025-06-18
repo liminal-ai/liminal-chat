@@ -13,9 +13,14 @@ describe("HealthService", () => {
     service = module.get<HealthService>(HealthService);
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe("getHealth", () => {
     it("should return health status object", () => {
       // Arrange - Mock the date to make it predictable
+      vi.useFakeTimers();
       const mockDate = new Date("2024-01-01T00:00:00.000Z");
       vi.setSystemTime(mockDate);
 
