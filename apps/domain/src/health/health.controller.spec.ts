@@ -3,6 +3,7 @@ import {
   it,
   expect,
   beforeEach,
+  afterEach,
   vi,
   type MockedFunction,
 } from "vitest";
@@ -35,12 +36,16 @@ describe("HealthController", () => {
       providers: [
         {
           provide: HealthService,
-          useValue: mockHealthService as unknown as HealthService,
+          useValue: mockHealthService as Partial<HealthService>,
         },
       ],
     }).compile();
 
     controller = module.get<HealthController>(HealthController);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe("getHealth", () => {
@@ -77,7 +82,7 @@ describe("HealthController", () => {
       controller.getHealth();
 
       // Assert
-      expect(mockHealthService.getHealth).toHaveBeenCalledOnce();
+      expect(mockHealthService.getHealth).toHaveBeenCalledTimes(1);
     });
 
     it("should return exact response from service", () => {
