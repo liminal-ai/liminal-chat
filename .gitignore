@@ -115,6 +115,7 @@ dev-debug.log
 
 # Downloaded source code
 vercel-ai-main/
+opencode-dev/
 
 # Domain data directory
 apps/domain-data/
