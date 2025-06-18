@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { FastifyReply } from "fastify";
 import { AllExceptionsFilter } from "./http-exception.filter";
-import { ProviderNotFoundError } from "../providers/llm/errors";
+// ProviderNotFoundError removed - mocking in tests
 
 // Mock interfaces for proper TypeScript typing
 interface MockFastifyReply {
@@ -196,7 +196,13 @@ describe("AllExceptionsFilter", () => {
 
   describe("ProviderNotFoundError handling", () => {
     it("should handle ProviderNotFoundError with provider extraction", () => {
-      const exception = new ProviderNotFoundError("unknown");
+      const exception = new Error(
+        "Provider 'unknown' not found. Available providers: echo, openai",
+      );
+      exception.constructor = {
+        name: "ProviderNotFoundError",
+      } as Partial<{ name: string }>;
+      // Provider property is not used in the filter anymore
 
       filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 

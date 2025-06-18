@@ -1,63 +1,63 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Body, 
-  Param, 
-  HttpCode, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
   HttpStatus,
   ValidationPipe,
   UsePipes,
-  NotFoundException
-} from '@nestjs/common';
-import { AgentsService } from './agents.service';
-import { ToolRegistryService } from './tools/tool-registry.service';
-import type { 
-  CreateAgentTypeDto, 
+  NotFoundException,
+} from "@nestjs/common";
+import { AgentsService } from "./agents.service";
+import { ToolRegistryService } from "./tools/tool-registry.service";
+import type {
+  CreateAgentTypeDto,
   UpdateAgentTypeDto,
   CreateAgentInstanceDto,
   UpdateAgentInstanceDto,
-  ExecuteAgentDto
-} from './dto';
+  ExecuteAgentDto,
+} from "./dto";
 
-@Controller('agents')
+@Controller("agents")
 @UsePipes(new ValidationPipe({ transform: true }))
 export class AgentsController {
   constructor(
     private readonly agentsService: AgentsService,
-    private readonly toolRegistry: ToolRegistryService
+    private readonly toolRegistry: ToolRegistryService,
   ) {}
 
   // Agent Type Endpoints
-  
-  @Get('types')
+
+  @Get("types")
   async listAgentTypes() {
     return this.agentsService.listAgentTypes();
   }
 
-  @Get('types/:typeName')
-  async getAgentType(@Param('typeName') typeName: string) {
+  @Get("types/:typeName")
+  async getAgentType(@Param("typeName") typeName: string) {
     return this.agentsService.getAgentType(typeName);
   }
 
-  @Post('types')
+  @Post("types")
   async createAgentType(@Body() dto: CreateAgentTypeDto) {
     return this.agentsService.createAgentType(dto);
   }
 
-  @Put('types/:typeName')
+  @Put("types/:typeName")
   async updateAgentType(
-    @Param('typeName') typeName: string,
-    @Body() dto: UpdateAgentTypeDto
+    @Param("typeName") typeName: string,
+    @Body() dto: UpdateAgentTypeDto,
   ) {
     return this.agentsService.updateAgentType(typeName, dto);
   }
 
-  @Delete('types/:typeName')
+  @Delete("types/:typeName")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteAgentType(@Param('typeName') typeName: string) {
+  async deleteAgentType(@Param("typeName") typeName: string) {
     await this.agentsService.deleteAgentType(typeName);
   }
 
@@ -68,8 +68,8 @@ export class AgentsController {
     return this.agentsService.listAgentInstances();
   }
 
-  @Get(':agentId')
-  async getAgentInstance(@Param('agentId') agentId: string) {
+  @Get(":agentId")
+  async getAgentInstance(@Param("agentId") agentId: string) {
     return this.agentsService.getAgentInstance(agentId);
   }
 
@@ -78,39 +78,39 @@ export class AgentsController {
     return this.agentsService.createAgentInstance(dto);
   }
 
-  @Put(':agentId')
+  @Put(":agentId")
   async updateAgentInstance(
-    @Param('agentId') agentId: string,
-    @Body() dto: UpdateAgentInstanceDto
+    @Param("agentId") agentId: string,
+    @Body() dto: UpdateAgentInstanceDto,
   ) {
     return this.agentsService.updateAgentInstance(agentId, dto);
   }
 
-  @Delete(':agentId')
+  @Delete(":agentId")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteAgentInstance(@Param('agentId') agentId: string) {
+  async deleteAgentInstance(@Param("agentId") agentId: string) {
     await this.agentsService.deleteAgentInstance(agentId);
   }
 
   // Agent Execution
 
-  @Post(':agentId/execute')
+  @Post(":agentId/execute")
   async executeAgent(
-    @Param('agentId') agentId: string,
-    @Body() dto: ExecuteAgentDto
+    @Param("agentId") agentId: string,
+    @Body() dto: ExecuteAgentDto,
   ) {
     return this.agentsService.executeAgent(agentId, dto);
   }
 
   // Tool Registry Endpoints
 
-  @Get('tools')
-  async listAvailableTools() {
+  @Get("tools")
+  listAvailableTools() {
     return this.toolRegistry.listAvailableTools();
   }
 
-  @Get('tools/:toolName')
-  async getToolDefinition(@Param('toolName') toolName: string) {
+  @Get("tools/:toolName")
+  getToolDefinition(@Param("toolName") toolName: string) {
     const tool = this.toolRegistry.getToolDefinition(toolName);
     if (!tool) {
       throw new NotFoundException(`Tool '${toolName}' not found`);
