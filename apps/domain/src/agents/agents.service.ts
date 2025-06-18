@@ -59,10 +59,21 @@ export class AgentsService {
     }
   }
 
+  private validateTypeName(typeName: string): void {
+    if (!/^[\w-]+$/.test(typeName)) {
+      throw new BadRequestException(
+        'typeName contains illegal characters. Only alphanumeric characters, underscores, and hyphens are allowed.',
+      );
+    }
+  }
+
   // Agent Type CRUD Operations
 
   async createAgentType(dto: CreateAgentTypeDto): Promise<AgentType> {
     const validatedDto = AgentTypeSchema.parse(dto);
+
+    // Validate typeName for path safety - prevent path traversal
+    this.validateTypeName(validatedDto.typeName);
 
     // Validate tool access
     const invalidTools = this.toolRegistry.validateToolAccess(
@@ -92,6 +103,9 @@ export class AgentsService {
   }
 
   async getAgentType(typeName: string): Promise<AgentType> {
+    // Validate typeName for path safety - prevent path traversal
+    this.validateTypeName(typeName);
+    
     const typePath = join(this.typesPath, `${typeName}.json`);
 
     try {
@@ -141,6 +155,9 @@ export class AgentsService {
     typeName: string,
     dto: UpdateAgentTypeDto,
   ): Promise<AgentType> {
+    // Validate typeName for path safety - prevent path traversal
+    this.validateTypeName(typeName);
+    
     const existing = await this.getAgentType(typeName);
     const updated = { ...existing, ...dto };
     const validatedDto = AgentTypeSchema.parse(updated);
@@ -152,6 +169,9 @@ export class AgentsService {
   }
 
   async deleteAgentType(typeName: string): Promise<void> {
+    // Validate typeName for path safety - prevent path traversal
+    this.validateTypeName(typeName);
+    
     // Check if any instances use this type
     const instances = await this.listAgentInstances();
     const dependentInstances = instances.filter(
