@@ -15,12 +15,12 @@ interface MockFastifyReply {
   send: ReturnType<typeof vi.fn>;
 }
 
-interface MockArgumentsHost {
-  switchToHttp: ReturnType<typeof vi.fn>;
-}
-
 interface MockHttpContext {
   getResponse: ReturnType<typeof vi.fn>;
+}
+
+interface MockArgumentsHost {
+  switchToHttp: ReturnType<typeof vi.fn>;
 }
 
 describe("AllExceptionsFilter", () => {
@@ -40,9 +40,7 @@ describe("AllExceptionsFilter", () => {
 
     // Mock HTTP context
     mockHttpContext = {
-      getResponse: vi
-        .fn()
-        .mockReturnValue(mockReply as unknown as FastifyReply),
+      getResponse: vi.fn().mockReturnValue(mockReply as Partial<FastifyReply>),
     };
 
     // Mock ArgumentsHost
@@ -59,11 +57,15 @@ describe("AllExceptionsFilter", () => {
     filter = new AllExceptionsFilter();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe("HttpException handling", () => {
     it("should handle HttpException with string response", () => {
       const exception = new HttpException("Not found", HttpStatus.NOT_FOUND);
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -88,7 +90,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_GATEWAY,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -116,7 +118,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -137,7 +139,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -160,7 +162,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -179,7 +181,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.UNAUTHORIZED,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -196,7 +198,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle ProviderNotFoundError with provider extraction", () => {
       const exception = new ProviderNotFoundError("unknown");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -216,9 +218,9 @@ describe("AllExceptionsFilter", () => {
       const customError = new Error("Invalid provider configuration");
       customError.constructor = {
         name: "ProviderNotFoundError",
-      } as unknown as { name: string };
+      } as Partial<{ name: string }>;
 
-      filter.catch(customError, mockHost as unknown as ArgumentsHost);
+      filter.catch(customError, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -235,7 +237,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle 'not configured' error message", () => {
       const exception = new Error("Provider 'openai' not configured");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -251,7 +253,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle 'requires configuration' error message", () => {
       const exception = new Error("OpenAI provider requires configuration");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -267,7 +269,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle configuration error with specific provider name in quotes", () => {
       const exception = new Error("Provider 'custom-provider' not configured");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -283,7 +285,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle configuration error without provider name extraction", () => {
       const exception = new Error("Configuration error not configured");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -301,7 +303,7 @@ describe("AllExceptionsFilter", () => {
         "Provider not configured. Set OPENAI_API_KEY environment variable.",
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -319,7 +321,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle API error from provider", () => {
       const exception = new Error("API error from provider: request failed");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(HttpStatus.BAD_GATEWAY);
       expect(mockReply.send).toHaveBeenCalledWith({
@@ -336,7 +338,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle generic Error with default values", () => {
       const exception = new Error("Something went wrong");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -355,7 +357,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle non-Error exceptions", () => {
       const exception = "String exception";
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -372,7 +374,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle null exception", () => {
       const exception = null;
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -389,7 +391,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle undefined exception", () => {
       const exception = undefined;
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.status).toHaveBeenCalledWith(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -408,7 +410,7 @@ describe("AllExceptionsFilter", () => {
     it("should log error with stack trace for Error instances", () => {
       const exception = new Error("Test error");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(loggerErrorSpy).toHaveBeenCalledWith(
         "HTTP 500 Error: Test error",
@@ -419,7 +421,7 @@ describe("AllExceptionsFilter", () => {
     it("should log error without stack trace for non-Error instances", () => {
       const exception = "String exception";
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(loggerErrorSpy).toHaveBeenCalledWith(
         "HTTP 500 Error: Internal server error",
@@ -439,7 +441,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(loggerDebugSpy).toHaveBeenCalledWith(
         `Full validation error: ${JSON.stringify(errorResponse, null, 2)}`,
@@ -460,7 +462,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(loggerDebugSpy).not.toHaveBeenCalled();
 
@@ -479,7 +481,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(loggerDebugSpy).not.toHaveBeenCalled();
 
@@ -493,7 +495,7 @@ describe("AllExceptionsFilter", () => {
         "Provider 'first' and Provider 'second' not configured",
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.send).toHaveBeenCalledWith({
         error: {
@@ -508,7 +510,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle second regex group match for provider name", () => {
       const exception = new Error("OpenAI provider not configured");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.send).toHaveBeenCalledWith({
         error: {
@@ -523,7 +525,7 @@ describe("AllExceptionsFilter", () => {
     it("should handle case insensitive provider extraction", () => {
       const exception = new Error("OPENROUTER provider requires configuration");
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.send).toHaveBeenCalledWith({
         error: {
@@ -540,7 +542,7 @@ describe("AllExceptionsFilter", () => {
     it("should always send error response with consistent structure", () => {
       const exception = new HttpException("Test", HttpStatus.NOT_FOUND);
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       const sentResponse = mockReply.send.mock.calls[0][0] as {
         error: { code: string; message: string; details: unknown };
@@ -562,7 +564,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.send).toHaveBeenCalledWith({
         error: {
@@ -585,7 +587,7 @@ describe("AllExceptionsFilter", () => {
         HttpStatus.BAD_REQUEST,
       );
 
-      filter.catch(exception, mockHost as unknown as ArgumentsHost);
+      filter.catch(exception, mockHost as Partial<ArgumentsHost>);
 
       expect(mockReply.send).toHaveBeenCalledWith({
         error: {
