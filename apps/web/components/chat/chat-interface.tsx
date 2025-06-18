@@ -91,6 +91,15 @@ export default function ChatInterface() {
           }
         }
       }
+      // Process any residual data left in the buffer
+      if (buffer.startsWith('0:')) {
+        const content = JSON.parse(buffer.slice(2))
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === messageId ? { ...msg, content: msg.content + content } : msg
+          ),
+        )
+      }
     } catch (error) {
       console.error('Streaming error:', error)
     }
