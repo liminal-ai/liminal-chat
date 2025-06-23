@@ -9,7 +9,7 @@ const http = httpRouter();
 http.route({
   path: "/test",
   method: "GET",
-  handler: httpAction(async (ctx, request) => {
+  handler: httpAction(async (ctx, _request) => {
     try {
       // Get authentication status
       const identity = await ctx.auth.getUserIdentity();
