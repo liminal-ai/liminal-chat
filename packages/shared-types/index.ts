@@ -91,3 +91,56 @@ export const StreamErrorCode = {
 } as const;
 
 export type StreamErrorCode = typeof StreamErrorCode[keyof typeof StreamErrorCode];
+
+// Model Configuration Types
+export interface ModelCost {
+  input: number;
+  output: number;
+}
+
+export type ModelLatencyClass = 'fast' | 'standard' | 'slow';
+export type ModelStatus = 'active' | 'beta' | 'deprecated';
+
+export interface ModelConfig {
+  key: string;
+  name: string;
+  modelString: string;
+  providerKey: string;
+  description: string;
+  contextWindow: number;
+  outputWindow?: number;
+  knowledgeCutoff?: string;
+  isDefault?: boolean;
+  capabilities?: string[];
+  supportedModes?: string[];
+  costPer1kTokens?: ModelCost;
+  latencyClass?: ModelLatencyClass;
+  status?: ModelStatus;
+  features?: string[];
+  limitations?: string[];
+  warning?: string;
+}
+
+export interface ModelsMap {
+  [key: string]: ModelConfig;
+}
+
+// Provider Configuration Types
+export type ProviderStatus = 'active' | 'beta' | 'deprecated';
+
+export interface ProviderConfig {
+  key: string;
+  name: string;
+  description: string;
+  requiresApiKey: boolean;
+  apiKeyEnvVar?: string;
+  defaultModel?: string;
+  status: ProviderStatus;
+  capabilities?: string[];
+  requiresPaidPlan?: boolean;
+  planDetails?: string;
+}
+
+export interface ProvidersMap {
+  [key: string]: ProviderConfig;
+}

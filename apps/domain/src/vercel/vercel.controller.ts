@@ -5,6 +5,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { createVercel } from "@ai-sdk/vercel";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createPerplexity } from "@ai-sdk/perplexity";
 import { streamText, streamObject, generateText } from "ai";
 import { z } from "zod";
 
@@ -19,7 +20,8 @@ interface ChatRequest {
     | "anthropic"
     | "google"
     | "openrouter"
-    | "vercel";
+    | "vercel"
+    | "perplexity";
   model?: string;
 }
 
@@ -30,7 +32,8 @@ interface CompletionRequest {
     | "anthropic"
     | "google"
     | "openrouter"
-    | "vercel";
+    | "vercel"
+    | "perplexity";
   model?: string;
 }
 
@@ -42,7 +45,8 @@ interface UseObjectRequest {
     | "anthropic"
     | "google"
     | "openrouter"
-    | "vercel";
+    | "vercel"
+    | "perplexity";
   model?: string;
 }
 
@@ -53,7 +57,8 @@ interface GenerateTextRequest {
     | "anthropic"
     | "google"
     | "openrouter"
-    | "vercel";
+    | "vercel"
+    | "perplexity";
   model?: string;
 }
 
@@ -79,9 +84,15 @@ export class VercelController {
         });
         return vercelProvider(model || "v0-1.0-md");
       }
+      case "perplexity": {
+        const perplexity = createPerplexity({
+          apiKey: process.env.PERPLEXITY_API_KEY,
+        });
+        return perplexity(model || "sonar-pro");
+      }
       default:
         throw new Error(
-          `Unsupported provider: ${provider}. Only 'openai', 'anthropic', 'google', 'openrouter', and 'vercel' are currently enabled.`,
+          `Unsupported provider: ${provider}. Only 'openai', 'anthropic', 'google', 'openrouter', 'vercel', and 'perplexity' are currently enabled.`,
         );
     }
   }
