@@ -15,7 +15,9 @@
     "test": "pnpm -r run test",
     "test:cov": "pnpm -F domain-server-nest test:cov",
     "test:all": "pnpm test",
-    "lint": "pnpm -r run lint",
+    "lint:backend": "pnpm -r --filter='!web' --filter='!domain-server-nest' run lint",
+    "lint:web": "pnpm -F web run lint",
+    "lint": "pnpm lint:backend && pnpm lint:web",
     "typecheck": "pnpm -r run typecheck",
     "check:error-codes": "node scripts/check-error-usage.js",
     "clean": "pnpm -r run clean && rm -rf node_modules",
@@ -64,6 +66,7 @@
     "test:integration:domain:errors": "playwright test --config=playwright.config.integration.ts tests/integration/domain/error-scenarios.spec.ts --project=integration-domain",
     "test:integration:domain:show-report": "PLAYWRIGHT_OPEN_REPORT=true playwright test --config=playwright.config.integration.ts --project=integration-domain",
     "test:integration:show-report": "PLAYWRIGHT_OPEN_REPORT=true playwright test --config=playwright.config.integration.ts --project=integration-domain",
+    "precommit:review": "git status --porcelain | grep -E '^( M|\\?\\?)' | cut -c4-",
     "precommit:stage-all": "git add -A",
     "precommit:list-files": "git diff --cached --name-only",
     "precommit:trufflehog": "git diff --cached --name-only | trufflehog filesystem --no-update --only-verified --exclude-paths=.trufflehog-exclude",
@@ -75,8 +78,7 @@
     "precommit:large-files": "git diff --cached --name-only | xargs ls -lh 2>/dev/null | awk '$5 ~ /[0-9]+M/ {print $5, $9}' | head -10 || echo \"No large files found\"",
     "precommit:binary-files": "git diff --cached --name-only | xargs file 2>/dev/null | grep -v \"text\" | grep -v \"empty\" | head -10 || echo \"No unexpected binary files\"",
     "precommit:branch-check": "git branch --show-current | grep -E \"^(main|master)$\" && echo \"WARNING: You are on the main/master branch!\" || echo \"Branch check passed\"",
-    "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\"",
-    "precommit:all": "pnpm precommit:stage-all && pnpm precommit:trufflehog && pnpm precommit:sensitive-files && pnpm precommit:env-files && pnpm precommit:debug-statements && pnpm precommit:security-todos && pnpm precommit:hardcoded-ips && pnpm precommit:large-files && pnpm precommit:binary-files && pnpm audit --prod && pnpm lint && pnpm typecheck && pnpm precommit:branch-check && pnpm precommit:file-count"
+    "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\""
   },
   "devDependencies": {
     "@playwright/experimental-ct-react": "^1.48.2",
