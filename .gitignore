@@ -118,4 +118,7 @@ vercel-ai-main/
 opencode-dev/
 
 # Domain data directory
-apps/domain-data/
+apps/domain-data/augy-scratchpad/
+
+# Legacy code - migrating away from this
+apps/domain/

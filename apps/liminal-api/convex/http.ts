@@ -1,0 +1,106 @@
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { clerkWebhook } from "./webhooks";
+import { api } from "./_generated/api";
+
+const http = httpRouter();
+
+// Test endpoint with Node.js functionality via actions
+http.route({
+  path: "/test",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Get authentication status
+      const identity = await ctx.auth.getUserIdentity();
+      
+      // Prepare response
+      const response = {
+        status: "success",
+        message: "Test endpoint working",
+        auth: {
+          authenticated: !!identity,
+          tokenIdentifier: identity?.tokenIdentifier || null,
+          email: identity?.email || null,
+          name: identity?.name || null,
+        },
+        timestamp: new Date().toISOString(),
+      };
+      
+      return new Response(JSON.stringify(response, null, 2), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          status: "error",
+          message: error instanceof Error ? error.message : "Unknown error",
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+  }),
+});
+
+// Enhanced health check endpoint with database integration and Node.js info
+http.route({
+  path: "/health",
+  method: "GET",
+  handler: httpAction(async (ctx) => {
+    try {
+      // Query the users table to verify database connectivity
+      const userCount = await ctx.runQuery(api.users.getUserCount);
+      
+      // Get a sample user (without sensitive data)
+      const sampleUser = await ctx.runQuery(api.users.getSampleUser);
+      
+      const response = {
+        status: "healthy",
+        database: {
+          connected: true,
+          userCount,
+          hasSampleUser: !!sampleUser,
+        },
+        timestamp: new Date().toISOString(),
+      };
+      
+      return new Response(JSON.stringify(response, null, 2), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          status: "unhealthy",
+          error: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        }),
+        {
+          status: 503,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+  }),
+});
+
+// Clerk webhook endpoint
+http.route({
+  path: "/clerk-webhook",
+  method: "POST",
+  handler: clerkWebhook,
+});
+
+export default http;

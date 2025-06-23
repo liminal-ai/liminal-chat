@@ -4,14 +4,7 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
-import { promises as fs } from "fs";
-import { join } from "path";
-import { nanoid } from "nanoid";
-
-// Type for Node.js file system errors
-interface NodeError extends Error {
-  code?: string;
-}
+import { fsPersistence } from "../providers/fs-persistence";
 import type {
   AgentType,
   CreateAgentTypeDto,
@@ -29,40 +22,12 @@ import { ToolRegistryService } from "./tools/tool-registry.service";
 
 @Injectable()
 export class AgentsService {
-  private readonly dataPath = join(
-    process.cwd(),
-    "..",
-    "domain-data",
-    "agents",
-  );
-  private readonly typesPath = join(this.dataPath, "types");
-  private readonly instancesPath = join(this.dataPath, "instances");
-
   constructor(private readonly toolRegistry: ToolRegistryService) {}
-
-  async onModuleInit() {
-    // Ensure directories exist
-    await this.ensureDirectoriesExist();
-  }
-
-  private async ensureDirectoriesExist() {
-    try {
-      await fs.access(this.typesPath);
-    } catch {
-      await fs.mkdir(this.typesPath, { recursive: true });
-    }
-
-    try {
-      await fs.access(this.instancesPath);
-    } catch {
-      await fs.mkdir(this.instancesPath, { recursive: true });
-    }
-  }
 
   private validateTypeName(typeName: string): void {
     if (!/^[\w-]+$/.test(typeName)) {
       throw new BadRequestException(
-        'typeName contains illegal characters. Only alphanumeric characters, underscores, and hyphens are allowed.',
+        "typeName contains illegal characters. Only alphanumeric characters, underscores, and hyphens are allowed.",
       );
     }
   }
@@ -85,70 +50,42 @@ export class AgentsService {
       );
     }
 
-    const typePath = join(this.typesPath, `${validatedDto.typeName}.json`);
-
     // Check if type already exists
-    try {
-      await fs.access(typePath);
+    const existing = await fsPersistence.agentType.read(validatedDto.typeName);
+    if (existing) {
       throw new ConflictException(
         `Agent type '${validatedDto.typeName}' already exists`,
       );
-    } catch (error: unknown) {
-      if (error instanceof ConflictException) throw error;
-      // File doesn't exist, continue
     }
 
-    await fs.writeFile(typePath, JSON.stringify(validatedDto, null, 2));
-    return validatedDto;
+    // Use typeName as the id for agent types
+    const created = await fsPersistence.agentType.write(
+      validatedDto.typeName,
+      validatedDto,
+    );
+
+    // Just return what we stored - fs-persistence fields don't hurt
+    return created;
   }
 
   async getAgentType(typeName: string): Promise<AgentType> {
     // Validate typeName for path safety - prevent path traversal
     this.validateTypeName(typeName);
-    
-    const typePath = join(this.typesPath, `${typeName}.json`);
 
-    try {
-      const content = await fs.readFile(typePath, "utf-8");
-      const data = JSON.parse(content) as unknown;
-      return AgentTypeSchema.parse(data);
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        throw new NotFoundException(`Agent type '${typeName}' not found`);
-      }
-      throw new BadRequestException(
-        `Failed to read agent type: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+    const data = await fsPersistence.agentType.read(typeName);
+
+    if (!data) {
+      throw new NotFoundException(`Agent type '${typeName}' not found`);
     }
+
+    // Just return what's stored
+    return data;
   }
 
   async listAgentTypes(): Promise<AgentType[]> {
-    try {
-      const files = await fs.readdir(this.typesPath);
-      const jsonFiles = files.filter((file) => file.endsWith(".json"));
-
-      const types = await Promise.all(
-        jsonFiles.map(async (file) => {
-          const typeName = file.replace(".json", "");
-          return this.getAgentType(typeName);
-        }),
-      );
-
-      return types;
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        return [];
-      }
-      throw error;
-    }
+    const allTypes = await fsPersistence.agentType.list();
+    // Just return the list - fs-persistence fields don't hurt
+    return allTypes;
   }
 
   async updateAgentType(
@@ -157,21 +94,28 @@ export class AgentsService {
   ): Promise<AgentType> {
     // Validate typeName for path safety - prevent path traversal
     this.validateTypeName(typeName);
-    
+
     const existing = await this.getAgentType(typeName);
     const updated = { ...existing, ...dto };
     const validatedDto = AgentTypeSchema.parse(updated);
 
-    const typePath = join(this.typesPath, `${typeName}.json`);
-    await fs.writeFile(typePath, JSON.stringify(validatedDto, null, 2));
+    const updatedData = await fsPersistence.agentType.update(
+      typeName,
+      validatedDto,
+    );
 
-    return validatedDto;
+    if (!updatedData) {
+      throw new NotFoundException(`Agent type '${typeName}' not found`);
+    }
+
+    // Just return the updated data
+    return updatedData;
   }
 
   async deleteAgentType(typeName: string): Promise<void> {
     // Validate typeName for path safety - prevent path traversal
     this.validateTypeName(typeName);
-    
+
     // Check if any instances use this type
     const instances = await this.listAgentInstances();
     const dependentInstances = instances.filter(
@@ -184,19 +128,10 @@ export class AgentsService {
       );
     }
 
-    const typePath = join(this.typesPath, `${typeName}.json`);
+    const deleted = await fsPersistence.agentType.delete(typeName);
 
-    try {
-      await fs.unlink(typePath);
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        throw new NotFoundException(`Agent type '${typeName}' not found`);
-      }
-      throw error;
+    if (!deleted) {
+      throw new NotFoundException(`Agent type '${typeName}' not found`);
     }
   }
 
@@ -208,7 +143,7 @@ export class AgentsService {
     // Verify the agent type exists
     await this.getAgentType(dto.typeName);
 
-    const agentId = nanoid();
+    const agentId = `${dto.agentName}-${dto.typeName}`;
     const now = new Date();
 
     const instance: AgentInstance = {
@@ -227,64 +162,47 @@ export class AgentsService {
     };
 
     const validatedInstance = AgentInstanceSchema.parse(instance);
-    const instancePath = join(this.instancesPath, `${agentId}.json`);
 
-    await fs.writeFile(
-      instancePath,
-      JSON.stringify(validatedInstance, null, 2),
-    );
-    return validatedInstance;
+    // Write using the agentId as the file identifier
+    const created = await fsPersistence.agent.write(agentId, validatedInstance);
+
+    // Return what fs-persistence gives us, ensuring dates are Date objects
+    return {
+      ...created,
+      createdAt: new Date(created.createdAt),
+      updatedAt: new Date(created.updatedAt),
+    };
   }
 
   async getAgentInstance(agentId: string): Promise<AgentInstance> {
-    const instancePath = join(this.instancesPath, `${agentId}.json`);
+    const data = await fsPersistence.agent.read(agentId);
 
-    try {
-      const content = await fs.readFile(instancePath, "utf-8");
-      const data = JSON.parse(content) as Record<string, unknown>;
-      // Parse dates from JSON
-      data.createdAt = new Date(data.createdAt as string);
-      data.updatedAt = new Date(data.updatedAt as string);
-      return AgentInstanceSchema.parse(data);
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        throw new NotFoundException(`Agent instance '${agentId}' not found`);
-      }
-      throw new BadRequestException(
-        `Failed to read agent instance: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+    if (!data) {
+      throw new NotFoundException(`Agent instance '${agentId}' not found`);
     }
+
+    // Return with dates converted
+    return {
+      ...data,
+      createdAt: new Date(data.createdAt),
+      updatedAt: new Date(data.updatedAt),
+    };
   }
 
   async listAgentInstances(): Promise<AgentInstance[]> {
-    try {
-      const files = await fs.readdir(this.instancesPath);
-      const jsonFiles = files.filter((file) => file.endsWith(".json"));
+    const allInstances = await fsPersistence.agent.list();
 
-      const instances = await Promise.all(
-        jsonFiles.map(async (file) => {
-          const agentId = file.replace(".json", "");
-          return this.getAgentInstance(agentId);
-        }),
-      );
+    // Convert dates and sort
+    const instances = allInstances.map((instance) => ({
+      ...instance,
+      createdAt: new Date(instance.createdAt),
+      updatedAt: new Date(instance.updatedAt),
+    }));
 
-      return instances.sort(
-        (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-      );
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        return [];
-      }
-      throw error;
-    }
+    // Sort by updatedAt descending
+    return instances.sort(
+      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+    );
   }
 
   async updateAgentInstance(
@@ -305,29 +223,29 @@ export class AgentsService {
     };
 
     const validatedInstance = AgentInstanceSchema.parse(updated);
-    const instancePath = join(this.instancesPath, `${agentId}.json`);
 
-    await fs.writeFile(
-      instancePath,
-      JSON.stringify(validatedInstance, null, 2),
+    const updatedData = await fsPersistence.agent.update(
+      agentId,
+      validatedInstance,
     );
-    return validatedInstance;
+
+    if (!updatedData) {
+      throw new NotFoundException(`Agent instance '${agentId}' not found`);
+    }
+
+    // Return with dates converted
+    return {
+      ...updatedData,
+      createdAt: new Date(updatedData.createdAt),
+      updatedAt: new Date(updatedData.updatedAt),
+    };
   }
 
   async deleteAgentInstance(agentId: string): Promise<void> {
-    const instancePath = join(this.instancesPath, `${agentId}.json`);
+    const deleted = await fsPersistence.agent.delete(agentId);
 
-    try {
-      await fs.unlink(instancePath);
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as NodeError).code === "ENOENT"
-      ) {
-        throw new NotFoundException(`Agent instance '${agentId}' not found`);
-      }
-      throw error;
+    if (!deleted) {
+      throw new NotFoundException(`Agent instance '${agentId}' not found`);
     }
   }
 

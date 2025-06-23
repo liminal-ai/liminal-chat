@@ -1,0 +1,37 @@
+{
+  "name": "liminal-api",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "convex dev",
+    "dev:dashboard": "convex dashboard",
+    "dev:watch": "convex dev --watch",
+    "dev:typecheck": "tsc -p convex --watch",
+    "dev:all": "npm-run-all -p dev:watch dev:typecheck",
+    "build": "tsc -p convex",
+    "deploy": "convex deploy",
+    "deploy:prod": "convex deploy --prod",
+    "logs": "convex logs",
+    "logs:prod": "convex logs --prod",
+    "lint": "tsc -p convex && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc -p convex --noEmit",
+    "clean": "rm -rf convex/_generated",
+    "reset": "npm run clean && convex dev --until-success",
+    "env:pull": "convex env list",
+    "env:set": "convex env set"
+  },
+  "dependencies": {
+    "@clerk/clerk-react": "^5.32.0",
+    "@convex-dev/auth": "^0.0.87",
+    "convex": "^1.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.2.2"
+  }
+}
