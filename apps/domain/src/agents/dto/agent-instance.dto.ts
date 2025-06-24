@@ -14,11 +14,11 @@ export const AgentInstanceSchema = z.object({
   context: AgentContextSchema.default({}),
   persistentData: z.record(z.any()).default({}),
   createdAt: z.preprocess((v) => {
-    if (typeof v === 'string') return new Date(v);
+    if (typeof v === "string") return new Date(v);
     return v;
   }, z.date()),
   updatedAt: z.preprocess((v) => {
-    if (typeof v === 'string') return new Date(v);
+    if (typeof v === "string") return new Date(v);
     return v;
   }, z.date()),
 });

@@ -65,7 +65,7 @@ export class ToolRegistryService {
       execute: (params: z.infer<typeof readFileSchema>) => {
         // Security: Disabled until secure path validation and sandboxing are implemented
         throw new Error(
-          'readFile tool is disabled for security reasons. Path validation and sandboxing must be implemented before enabling this tool.',
+          "readFile tool is disabled for security reasons. Path validation and sandboxing must be implemented before enabling this tool.",
         );
       },
     });

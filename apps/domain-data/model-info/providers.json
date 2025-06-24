@@ -1,0 +1,64 @@
+{
+  "openai": {
+    "key": "openai",
+    "name": "OpenAI",
+    "description": "OpenAI language models including GPT-4 and o-series reasoning models",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "OPENAI_API_KEY",
+    "defaultModel": "openai-gpt-4.1",
+    "status": "active",
+    "capabilities": ["chat", "completion", "tools", "json", "multimodal", "reasoning"]
+  },
+  "anthropic": {
+    "key": "anthropic",
+    "name": "Anthropic",
+    "description": "Claude family of models with strong reasoning capabilities",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "ANTHROPIC_API_KEY",
+    "defaultModel": "anthropic-claude-4-sonnet",
+    "status": "active",
+    "capabilities": ["chat", "completion", "tools", "json", "multimodal", "hybrid-thinking"]
+  },
+  "google": {
+    "key": "google",
+    "name": "Google AI",
+    "description": "Gemini models with multimodal capabilities and large context windows",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "GOOGLE_API_KEY",
+    "defaultModel": "google-gemini-2.5-pro",
+    "status": "active",
+    "capabilities": ["chat", "completion", "multimodal", "deep-think", "large-context"]
+  },
+  "perplexity": {
+    "key": "perplexity",
+    "name": "Perplexity AI",
+    "description": "Web search-enhanced language models with real-time citations",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "PERPLEXITY_API_KEY",
+    "defaultModel": "perplexity-sonar-pro",
+    "status": "active",
+    "capabilities": ["web-search", "citations", "multimodal", "deep-research", "chain-of-thought"]
+  },
+  "openrouter": {
+    "key": "openrouter",
+    "name": "OpenRouter",
+    "description": "Unified API for multiple model providers",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "OPENROUTER_API_KEY",
+    "defaultModel": "openrouter-openai-gpt-4.1",
+    "status": "active",
+    "capabilities": ["multi-provider", "fallback-routing"]
+  },
+  "vercel": {
+    "key": "vercel",
+    "name": "Vercel AI",
+    "description": "Vercel's v0 models optimized for web development and UI generation",
+    "requiresApiKey": true,
+    "apiKeyEnvVar": "VERCEL_API_KEY",
+    "defaultModel": "vercel-v0-1.5-md",
+    "status": "active",
+    "capabilities": ["code-generation", "ui-generation", "composite-reasoning", "multimodal"],
+    "requiresPaidPlan": true,
+    "planDetails": "Pro ($20/mo) or Team ($30/user/mo) required"
+  }
+}

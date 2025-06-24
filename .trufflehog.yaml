@@ -1,0 +1,51 @@
+# TruffleHog Custom Detector Configuration
+# Detects API keys for providers not included in TruffleHog's built-in detectors
+
+detectors:
+  # OpenAI API Keys
+  - name: "openai-custom-detector"
+    description: "Detect OpenAI user & project API keys"
+    keywords:
+      - OPENAI_API_KEY
+      - sk-proj
+      - openai
+    regex:
+      legacy_user: 'sk-[A-Za-z0-9]{48}'
+      project_or_none: 'sk-(?:proj|None)-[A-Za-z0-9_-]{20,190}'
+  # Clerk API Keys
+  - name: "clerk-secret-key"
+    keywords:
+      - CLERK_SECRET_KEY
+      - CLERK_PUBLISHABLE_KEY
+      - pk_test_
+      - sk_test_
+      - pk_live_
+      - sk_live_
+    regex:
+      publishable: 'pk_(?:test|live)_[A-Za-z0-9+/]{20,128}={0,2}'
+      secret: 'sk_(?:test|live)_[A-Za-z0-9]{32,64}'
+
+  # OpenRouter API Key
+  - name: "OpenRouter API Key"
+    keywords:
+      - openrouter
+      - sk-or
+    regex:
+      api_key: 'sk-or-(?:v\d+-)?[a-zA-Z0-9]{32,}'
+    
+  # Perplexity API Key
+  - name: "Perplexity API Key"
+    keywords:
+      - perplexity
+      - pplx
+    regex:
+      api_key: 'pplx-[a-zA-Z0-9]{32,}'
+    
+  # Vercel v0 API Key
+  - name: "Vercel v0 API Key"
+    keywords:
+      - vercel
+      - v0_api_key
+      - V0_API_KEY
+    regex:
+      api_key: 'v0_[a-zA-Z0-9]{32,}'
