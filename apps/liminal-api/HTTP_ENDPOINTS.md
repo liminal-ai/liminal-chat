@@ -9,7 +9,9 @@ Convex uses different domains for different types of access:
 
 ## Available HTTP Endpoints
 
-All HTTP endpoints are available at: `https://modest-squirrel-498.convex.site`
+All HTTP endpoints are available at: `{BASE_URL}`
+
+Replace `{BASE_URL}` with your Convex HTTP endpoint URL (format: `https://<deployment-name>.convex.site`)
 
 ### 1. Health Check
 ```bash
@@ -20,7 +22,7 @@ Returns database connectivity status and basic health information.
 
 Example:
 ```bash
-curl https://modest-squirrel-498.convex.site/health
+curl {BASE_URL}/health
 ```
 
 ### 2. Test Endpoint
@@ -33,10 +35,10 @@ Returns authentication status and basic test information.
 Example:
 ```bash
 # Without authentication
-curl https://modest-squirrel-498.convex.site/test
+curl {BASE_URL}/test
 
 # With authentication (replace YOUR_JWT with actual Clerk JWT token)
-curl -H 'Authorization: Bearer YOUR_JWT' https://modest-squirrel-498.convex.site/test
+curl -H 'Authorization: Bearer YOUR_JWT' {BASE_URL}/test
 ```
 
 ### 3. Clerk Webhook

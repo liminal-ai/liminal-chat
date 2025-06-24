@@ -6,13 +6,12 @@ Successfully implemented all acceptance criteria for Story 5, creating HTTP acti
 ## Files Created/Updated
 
 ### 1. `convex/http.ts` (Updated)
-- Added `"use node"` directive to enable Node.js runtime
-- Imported `crypto` module to verify Node.js built-ins work
-- Created `/test` endpoint with comprehensive system verification:
-  - Node.js runtime verification (version, platform, crypto functionality)
+- Created `/test` endpoint with basic system verification:
   - Authentication status check
-  - Environment variable access (sanitized)
+  - Returns authenticated user information
   - Error handling
+- NOTE: Node.js functionality (crypto, process info) was removed as it requires 
+  a separate action file with "use node" directive, which we decided not to implement
 - Enhanced `/health` endpoint with database integration:
   - Queries user count
   - Retrieves sample user data

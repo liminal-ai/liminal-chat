@@ -10,7 +10,9 @@ export const greet = query({
     const name = args.name || "World";
     return {
       message: `Hello, ${name}!`,
-      timestamp: new Date().toISOString(),
+      // Consider moving this to a `mutation` or
+      // pass the timestamp in via the client if really needed.
+      // timestamp: new Date().toISOString(),
       // Change this message to test hot reloading
       status: "Hot reloading is working!",
     };

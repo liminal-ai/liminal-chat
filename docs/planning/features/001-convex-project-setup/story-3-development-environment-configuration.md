@@ -21,7 +21,7 @@ Establish a complete development environment with proper tooling, hot reloading,
 7. Test full development workflow
 
 ## Definition of Done
-- `npm run dev` starts complete development environment
+- `pnpm dev` starts complete development environment
 - Changes to Convex functions trigger hot reload
 - TypeScript compilation happens automatically
 - Convex dashboard shows project data correctly
