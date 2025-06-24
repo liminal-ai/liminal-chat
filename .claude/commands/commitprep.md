@@ -13,10 +13,13 @@
 3. Security Pass 1: Critical Security (Stop on fail)
    - Command: `pnpm precommit:trufflehog`
      - Runs trufflehog on staged files with .trufflehog-exclude file
+     - Uses .trufflehog.yaml for custom detectors (Clerk, OpenRouter, Perplexity, Vercel v0)
    - Command: `pnpm precommit:sensitive-files`
      - Checks for sensitive filenames (*.pem, *.key, credentials.json, id_rsa)
    - Command: `pnpm precommit:env-files`
      - Checks for environment files (.env.*)
+   - Command: `pnpm precommit:api-keys`
+     - Additional pattern-based scan for API keys in ALL files
    - Stop and report if any issues found
 
 4. Security Pass 2: Code Quality Security (Show warnings)
