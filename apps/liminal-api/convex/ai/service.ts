@@ -21,11 +21,10 @@ export interface StreamTextParams extends GenerateTextParams {}
 
 // AI Service for centralized model operations
 export class AIService {
-  // Generate text (non-streaming)
-  async generateText(params: GenerateTextParams) {
-    const { provider, modelId, prompt, messages, params: modelParams, providerOptions } = params;
+  // Build model with all parameters
+  private buildModel(params: GenerateTextParams) {
+    const { provider, modelId, params: modelParams, providerOptions } = params;
 
-    // Build the model
     const builder = model(provider);
     if (modelId) builder.withModel(modelId);
     if (modelParams?.temperature !== undefined) builder.withTemperature(modelParams.temperature);
@@ -38,6 +37,15 @@ export class AIService {
     if (modelParams?.seed !== undefined) builder.withSeed(modelParams.seed);
     if (providerOptions) builder.withProviderOptions(providerOptions);
 
+    return builder;
+  }
+
+  // Generate text (non-streaming)
+  async generateText(params: GenerateTextParams) {
+    const { prompt, messages, params: modelParams, provider } = params;
+
+    // Build the model
+    const builder = this.buildModel(params);
     const llm = await builder.build();
 
     // Call Vercel AI SDK
@@ -59,21 +67,10 @@ export class AIService {
 
   // Stream text
   async streamText(params: StreamTextParams) {
-    const { provider, modelId, prompt, messages, params: modelParams, providerOptions } = params;
+    const { prompt, messages, params: modelParams } = params;
 
     // Build the model
-    const builder = model(provider);
-    if (modelId) builder.withModel(modelId);
-    if (modelParams?.temperature !== undefined) builder.withTemperature(modelParams.temperature);
-    if (modelParams?.maxTokens !== undefined) builder.withMaxTokens(modelParams.maxTokens);
-    if (modelParams?.topP !== undefined) builder.withTopP(modelParams.topP);
-    if (modelParams?.topK !== undefined) builder.withTopK(modelParams.topK);
-    if (modelParams?.frequencyPenalty !== undefined) builder.withFrequencyPenalty(modelParams.frequencyPenalty);
-    if (modelParams?.presencePenalty !== undefined) builder.withPresencePenalty(modelParams.presencePenalty);
-    if (modelParams?.stopSequences) builder.withStopSequences(modelParams.stopSequences);
-    if (modelParams?.seed !== undefined) builder.withSeed(modelParams.seed);
-    if (providerOptions) builder.withProviderOptions(providerOptions);
-
+    const builder = this.buildModel(params);
     const llm = await builder.build();
 
     // Call Vercel AI SDK
