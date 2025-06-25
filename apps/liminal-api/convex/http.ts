@@ -103,4 +103,49 @@ http.route({
   handler: clerkWebhook,
 });
 
+// Simple chat endpoint for Story 1 - Vercel AI SDK integration
+http.route({
+  path: "/api/chat/simple",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { prompt, model } = body;
+
+      if (!prompt) {
+        return new Response(
+          JSON.stringify({ error: "Prompt is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Call the action
+      const result = await ctx.runAction(api.chat.simpleChatAction, {
+        prompt,
+        model,
+      });
+
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Chat endpoint error:", error);
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
+
 export default http;
