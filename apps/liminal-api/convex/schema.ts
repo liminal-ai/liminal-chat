@@ -22,15 +22,6 @@ export default defineSchema(
     })
       .index("by_token", ["tokenIdentifier"])
       .index("by_email", ["email"]),
-    
-    // Placeholder table for system configuration
-    // This will be expanded to include actual data models
-    systemConfig: defineTable({
-      key: v.string(),
-      value: v.string(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-    }).index("by_key", ["key"]),
   },
   { schemaValidation: true }
 );

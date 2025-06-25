@@ -19,7 +19,10 @@
     "clean": "rm -rf convex/_generated",
     "reset": "npm run clean && convex dev --until-success",
     "env:pull": "convex env list",
-    "env:set": "convex env set"
+    "env:set": "convex env set",
+    "test": "playwright test",
+    "test:smoke": "playwright test smoke-test.spec.ts",
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
