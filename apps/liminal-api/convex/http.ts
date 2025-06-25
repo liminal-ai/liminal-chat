@@ -149,6 +149,186 @@ http.route({
 });
 
 
+// Messages-based chat endpoint - Vercel AI SDK standard streaming
+http.route({
+  path: "/api/chat",
+  method: "POST",
+  handler: httpAction(async (_ctx, request) => {
+    "use node";
+    
+    const { streamText } = await import("ai");
+    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+    const { openai } = await import("@ai-sdk/openai");
+    const { anthropic } = await import("@ai-sdk/anthropic");
+    const { google } = await import("@ai-sdk/google");
+    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    
+    try {
+      const body = await request.json();
+      const { messages, model: requestedModel, provider = "openrouter" } = body;
+
+      if (!messages || !Array.isArray(messages)) {
+        return new Response(
+          JSON.stringify({ error: "Messages array is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      let model;
+      let modelName;
+      
+      // Provider selection logic
+      if (provider === "openai") {
+        modelName = requestedModel || "gpt-4o-mini";
+        model = openai(modelName);
+      } else if (provider === "anthropic") {
+        modelName = requestedModel || "claude-3-5-sonnet-20241022";
+        model = anthropic(modelName);
+      } else if (provider === "google") {
+        modelName = requestedModel || "gemini-2.0-flash-exp";
+        model = google(modelName);
+      } else if (provider === "perplexity") {
+        modelName = requestedModel || "sonar-pro";
+        const perplexity = createPerplexity({
+          apiKey: process.env.PERPLEXITY_API_KEY,
+        });
+        model = perplexity(modelName);
+      } else if (provider === "vercel") {
+        modelName = requestedModel || "v0-1.0-md";
+        const { createVercel } = await import("@ai-sdk/vercel");
+        const vercelProvider = createVercel({
+          apiKey: process.env.VERCEL_API_KEY,
+        });
+        model = vercelProvider(modelName);
+      } else {
+        modelName = requestedModel || "google/gemini-2.5-flash";
+        const openrouter = createOpenRouter({
+          apiKey: process.env.OPENROUTER_API_KEY,
+        });
+        model = openrouter(modelName);
+      }
+
+      // Stream the response
+      const result = streamText({
+        model,
+        messages,
+      });
+
+      // Set Vercel AI SDK headers
+      const headers = new Headers();
+      headers.set("X-Vercel-AI-Data-Stream", "v1");
+      headers.set("Content-Type", "text/plain; charset=utf-8");
+
+      // Return data stream response
+      return result.toDataStreamResponse({ headers });
+    } catch (error) {
+      console.error("Chat endpoint error:", error);
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
+// Completion endpoint - streaming with prompt (Vercel AI SDK standard)
+http.route({
+  path: "/api/completion",
+  method: "POST",
+  handler: httpAction(async (_ctx, request) => {
+    "use node";
+    
+    const { streamText } = await import("ai");
+    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+    const { openai } = await import("@ai-sdk/openai");
+    const { anthropic } = await import("@ai-sdk/anthropic");
+    const { google } = await import("@ai-sdk/google");
+    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    
+    try {
+      const body = await request.json();
+      const { prompt, model: requestedModel, provider = "openrouter" } = body;
+
+      if (!prompt) {
+        return new Response(
+          JSON.stringify({ error: "Prompt is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      let model;
+      let modelName;
+      
+      // Provider selection logic
+      if (provider === "openai") {
+        modelName = requestedModel || "gpt-4o-mini";
+        model = openai(modelName);
+      } else if (provider === "anthropic") {
+        modelName = requestedModel || "claude-3-5-sonnet-20241022";
+        model = anthropic(modelName);
+      } else if (provider === "google") {
+        modelName = requestedModel || "gemini-2.0-flash-exp";
+        model = google(modelName);
+      } else if (provider === "perplexity") {
+        modelName = requestedModel || "sonar-pro";
+        const perplexity = createPerplexity({
+          apiKey: process.env.PERPLEXITY_API_KEY,
+        });
+        model = perplexity(modelName);
+      } else if (provider === "vercel") {
+        modelName = requestedModel || "v0-1.0-md";
+        const { createVercel } = await import("@ai-sdk/vercel");
+        const vercelProvider = createVercel({
+          apiKey: process.env.VERCEL_API_KEY,
+        });
+        model = vercelProvider(modelName);
+      } else {
+        modelName = requestedModel || "google/gemini-2.5-flash";
+        const openrouter = createOpenRouter({
+          apiKey: process.env.OPENROUTER_API_KEY,
+        });
+        model = openrouter(modelName);
+      }
+
+      // Stream the response
+      const result = streamText({
+        model,
+        prompt,
+      });
+
+      // Set Vercel AI SDK headers
+      const headers = new Headers();
+      headers.set("X-Vercel-AI-Data-Stream", "v1");
+      headers.set("Content-Type", "text/plain; charset=utf-8");
+
+      // Return data stream response
+      return result.toDataStreamResponse({ headers });
+    } catch (error) {
+      console.error("Completion endpoint error:", error);
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
 // Streaming chat endpoint - returns real-time stream
 http.route({
   path: "/api/chat/stream",
@@ -196,6 +376,13 @@ http.route({
           apiKey: process.env.PERPLEXITY_API_KEY,
         });
         model = perplexity(modelName);
+      } else if (provider === "vercel") {
+        modelName = requestedModel || "v0-1.0-md";
+        const { createVercel } = await import("@ai-sdk/vercel");
+        const vercelProvider = createVercel({
+          apiKey: process.env.VERCEL_API_KEY,
+        });
+        model = vercelProvider(modelName);
       } else {
         modelName = requestedModel || "google/gemini-2.5-flash";
         const openrouter = createOpenRouter({
@@ -210,8 +397,13 @@ http.route({
         prompt,
       });
 
-      // Return streaming response
-      return result.toDataStreamResponse();
+      // Set Vercel AI SDK headers
+      const headers = new Headers();
+      headers.set("X-Vercel-AI-Data-Stream", "v1");
+      headers.set("Content-Type", "text/plain; charset=utf-8");
+
+      // Return data stream response
+      return result.toDataStreamResponse({ headers });
     } catch (error) {
       console.error("Stream endpoint error:", error);
       return new Response(
