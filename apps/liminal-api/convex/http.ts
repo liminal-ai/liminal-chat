@@ -149,4 +149,82 @@ http.route({
 });
 
 
+// Streaming chat endpoint - returns real-time stream
+http.route({
+  path: "/api/chat/stream",
+  method: "POST",
+  handler: httpAction(async (_ctx, request) => {
+    "use node";
+    
+    const { streamText } = await import("ai");
+    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+    const { openai } = await import("@ai-sdk/openai");
+    const { anthropic } = await import("@ai-sdk/anthropic");
+    const { google } = await import("@ai-sdk/google");
+    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    
+    try {
+      const body = await request.json();
+      const { prompt, model: requestedModel, provider = "openrouter" } = body;
+
+      if (!prompt) {
+        return new Response(
+          JSON.stringify({ error: "Prompt is required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      let model;
+      let modelName;
+      
+      // Provider selection logic
+      if (provider === "openai") {
+        modelName = requestedModel || "gpt-4o-mini";
+        model = openai(modelName);
+      } else if (provider === "anthropic") {
+        modelName = requestedModel || "claude-3-5-sonnet-20241022";
+        model = anthropic(modelName);
+      } else if (provider === "google") {
+        modelName = requestedModel || "gemini-2.0-flash-exp";
+        model = google(modelName);
+      } else if (provider === "perplexity") {
+        modelName = requestedModel || "sonar-pro";
+        const perplexity = createPerplexity({
+          apiKey: process.env.PERPLEXITY_API_KEY,
+        });
+        model = perplexity(modelName);
+      } else {
+        modelName = requestedModel || "google/gemini-2.5-flash";
+        const openrouter = createOpenRouter({
+          apiKey: process.env.OPENROUTER_API_KEY,
+        });
+        model = openrouter(modelName);
+      }
+
+      // Stream the response
+      const result = streamText({
+        model,
+        prompt,
+      });
+
+      // Return streaming response
+      return result.toDataStreamResponse();
+    } catch (error) {
+      console.error("Stream endpoint error:", error);
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
 export default http;
