@@ -1,0 +1,142 @@
+"use node";
+
+import { ProviderName, getProviderConfig, getProviderApiKey } from "./providers";
+
+// Standard Vercel AI SDK parameters
+export interface ModelParams {
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  topK?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  stopSequences?: string[];
+  seed?: number;
+  maxRetries?: number;
+}
+
+// Builder class for fluent API
+export class ModelBuilder {
+  private provider: ProviderName;
+  private modelId?: string;
+  private params: ModelParams = {};
+  private providerOptions: Record<string, any> = {};
+
+  constructor(provider: ProviderName) {
+    this.provider = provider;
+  }
+
+  withModel(modelId: string): this {
+    this.modelId = modelId;
+    return this;
+  }
+
+  withTemperature(temperature: number): this {
+    this.params.temperature = temperature;
+    return this;
+  }
+
+  withMaxTokens(maxTokens: number): this {
+    this.params.maxTokens = maxTokens;
+    return this;
+  }
+
+  withTopP(topP: number): this {
+    this.params.topP = topP;
+    return this;
+  }
+
+  withTopK(topK: number): this {
+    this.params.topK = topK;
+    return this;
+  }
+
+  withFrequencyPenalty(penalty: number): this {
+    this.params.frequencyPenalty = penalty;
+    return this;
+  }
+
+  withPresencePenalty(penalty: number): this {
+    this.params.presencePenalty = penalty;
+    return this;
+  }
+
+  withStopSequences(sequences: string[]): this {
+    this.params.stopSequences = sequences;
+    return this;
+  }
+
+  withSeed(seed: number): this {
+    this.params.seed = seed;
+    return this;
+  }
+
+  withMaxRetries(retries: number): this {
+    this.params.maxRetries = retries;
+    return this;
+  }
+
+  withProviderOptions(options: Record<string, any>): this {
+    this.providerOptions = { ...this.providerOptions, ...options };
+    return this;
+  }
+
+  async build(): Promise<any> {
+    const config = getProviderConfig(this.provider);
+    const modelId = this.modelId || config.defaultModel;
+    const apiKey = getProviderApiKey(this.provider);
+
+    if (!apiKey) {
+      throw new Error(`Missing API key for provider ${this.provider}: ${config.keyName}`);
+    }
+
+    // Dynamic imports based on provider
+    switch (this.provider) {
+      case 'openai': {
+        const { openai } = await import("@ai-sdk/openai");
+        return openai(modelId);
+      }
+      case 'anthropic': {
+        const { anthropic } = await import("@ai-sdk/anthropic");
+        return anthropic(modelId);
+      }
+      case 'google': {
+        const { google } = await import("@ai-sdk/google");
+        return google(modelId);
+      }
+      case 'perplexity': {
+        const { createPerplexity } = await import("@ai-sdk/perplexity");
+        const perplexity = createPerplexity({ apiKey });
+        return perplexity(modelId);
+      }
+      case 'vercel': {
+        const { createVercel } = await import("@ai-sdk/vercel");
+        const vercel = createVercel({ apiKey });
+        return vercel(modelId);
+      }
+      case 'openrouter': {
+        const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+        const openrouter = createOpenRouter({ apiKey });
+        return openrouter(modelId);
+      }
+      default:
+        throw new Error(`Unknown provider: ${String(this.provider)}`);
+    }
+  }
+
+  // Get configuration for use with AI SDK functions
+  getConfig() {
+    const config = getProviderConfig(this.provider);
+    return {
+      provider: this.provider,
+      modelId: this.modelId || config.defaultModel,
+      params: this.params,
+      providerOptions: this.providerOptions,
+    };
+  }
+}
+
+// Factory function for cleaner API
+export function model(provider: ProviderName): ModelBuilder {
+  return new ModelBuilder(provider);
+}

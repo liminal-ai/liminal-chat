@@ -157,11 +157,7 @@ http.route({
     "use node";
     
     const { streamText } = await import("ai");
-    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
-    const { openai } = await import("@ai-sdk/openai");
-    const { anthropic } = await import("@ai-sdk/anthropic");
-    const { google } = await import("@ai-sdk/google");
-    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    const { createModelForHttp, getStreamingHeaders } = await import("./ai/httpHelpers");
     
     try {
       const body = await request.json();
@@ -177,39 +173,11 @@ http.route({
         );
       }
 
-      let model;
-      let modelName;
-      
-      // Provider selection logic
-      if (provider === "openai") {
-        modelName = requestedModel || "gpt-4o-mini";
-        model = openai(modelName);
-      } else if (provider === "anthropic") {
-        modelName = requestedModel || "claude-3-5-sonnet-20241022";
-        model = anthropic(modelName);
-      } else if (provider === "google") {
-        modelName = requestedModel || "gemini-2.0-flash-exp";
-        model = google(modelName);
-      } else if (provider === "perplexity") {
-        modelName = requestedModel || "sonar-pro";
-        const perplexity = createPerplexity({
-          apiKey: process.env.PERPLEXITY_API_KEY,
-        });
-        model = perplexity(modelName);
-      } else if (provider === "vercel") {
-        modelName = requestedModel || "v0-1.0-md";
-        const { createVercel } = await import("@ai-sdk/vercel");
-        const vercelProvider = createVercel({
-          apiKey: process.env.VERCEL_API_KEY,
-        });
-        model = vercelProvider(modelName);
-      } else {
-        modelName = requestedModel || "google/gemini-2.5-flash";
-        const openrouter = createOpenRouter({
-          apiKey: process.env.OPENROUTER_API_KEY,
-        });
-        model = openrouter(modelName);
-      }
+      // Use helper to create model
+      const model = await createModelForHttp(
+        provider,
+        requestedModel
+      );
 
       // Stream the response
       const result = streamText({
@@ -217,13 +185,8 @@ http.route({
         messages,
       });
 
-      // Set Vercel AI SDK headers
-      const headers = new Headers();
-      headers.set("X-Vercel-AI-Data-Stream", "v1");
-      headers.set("Content-Type", "text/plain; charset=utf-8");
-
-      // Return data stream response
-      return result.toDataStreamResponse({ headers });
+      // Return data stream response with headers
+      return result.toDataStreamResponse({ headers: getStreamingHeaders() });
     } catch (error) {
       console.error("Chat endpoint error:", error);
       return new Response(
@@ -247,11 +210,7 @@ http.route({
     "use node";
     
     const { streamText } = await import("ai");
-    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
-    const { openai } = await import("@ai-sdk/openai");
-    const { anthropic } = await import("@ai-sdk/anthropic");
-    const { google } = await import("@ai-sdk/google");
-    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    const { createModelForHttp, getStreamingHeaders } = await import("./ai/httpHelpers");
     
     try {
       const body = await request.json();
@@ -267,39 +226,11 @@ http.route({
         );
       }
 
-      let model;
-      let modelName;
-      
-      // Provider selection logic
-      if (provider === "openai") {
-        modelName = requestedModel || "gpt-4o-mini";
-        model = openai(modelName);
-      } else if (provider === "anthropic") {
-        modelName = requestedModel || "claude-3-5-sonnet-20241022";
-        model = anthropic(modelName);
-      } else if (provider === "google") {
-        modelName = requestedModel || "gemini-2.0-flash-exp";
-        model = google(modelName);
-      } else if (provider === "perplexity") {
-        modelName = requestedModel || "sonar-pro";
-        const perplexity = createPerplexity({
-          apiKey: process.env.PERPLEXITY_API_KEY,
-        });
-        model = perplexity(modelName);
-      } else if (provider === "vercel") {
-        modelName = requestedModel || "v0-1.0-md";
-        const { createVercel } = await import("@ai-sdk/vercel");
-        const vercelProvider = createVercel({
-          apiKey: process.env.VERCEL_API_KEY,
-        });
-        model = vercelProvider(modelName);
-      } else {
-        modelName = requestedModel || "google/gemini-2.5-flash";
-        const openrouter = createOpenRouter({
-          apiKey: process.env.OPENROUTER_API_KEY,
-        });
-        model = openrouter(modelName);
-      }
+      // Use helper to create model
+      const model = await createModelForHttp(
+        provider,
+        requestedModel
+      );
 
       // Stream the response
       const result = streamText({
@@ -307,13 +238,8 @@ http.route({
         prompt,
       });
 
-      // Set Vercel AI SDK headers
-      const headers = new Headers();
-      headers.set("X-Vercel-AI-Data-Stream", "v1");
-      headers.set("Content-Type", "text/plain; charset=utf-8");
-
-      // Return data stream response
-      return result.toDataStreamResponse({ headers });
+      // Return data stream response with headers
+      return result.toDataStreamResponse({ headers: getStreamingHeaders() });
     } catch (error) {
       console.error("Completion endpoint error:", error);
       return new Response(
@@ -337,11 +263,7 @@ http.route({
     "use node";
     
     const { streamText } = await import("ai");
-    const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
-    const { openai } = await import("@ai-sdk/openai");
-    const { anthropic } = await import("@ai-sdk/anthropic");
-    const { google } = await import("@ai-sdk/google");
-    const { createPerplexity } = await import("@ai-sdk/perplexity");
+    const { createModelForHttp, getStreamingHeaders } = await import("./ai/httpHelpers");
     
     try {
       const body = await request.json();
@@ -357,39 +279,11 @@ http.route({
         );
       }
 
-      let model;
-      let modelName;
-      
-      // Provider selection logic
-      if (provider === "openai") {
-        modelName = requestedModel || "gpt-4o-mini";
-        model = openai(modelName);
-      } else if (provider === "anthropic") {
-        modelName = requestedModel || "claude-3-5-sonnet-20241022";
-        model = anthropic(modelName);
-      } else if (provider === "google") {
-        modelName = requestedModel || "gemini-2.0-flash-exp";
-        model = google(modelName);
-      } else if (provider === "perplexity") {
-        modelName = requestedModel || "sonar-pro";
-        const perplexity = createPerplexity({
-          apiKey: process.env.PERPLEXITY_API_KEY,
-        });
-        model = perplexity(modelName);
-      } else if (provider === "vercel") {
-        modelName = requestedModel || "v0-1.0-md";
-        const { createVercel } = await import("@ai-sdk/vercel");
-        const vercelProvider = createVercel({
-          apiKey: process.env.VERCEL_API_KEY,
-        });
-        model = vercelProvider(modelName);
-      } else {
-        modelName = requestedModel || "google/gemini-2.5-flash";
-        const openrouter = createOpenRouter({
-          apiKey: process.env.OPENROUTER_API_KEY,
-        });
-        model = openrouter(modelName);
-      }
+      // Use helper to create model
+      const model = await createModelForHttp(
+        provider,
+        requestedModel
+      );
 
       // Stream the response
       const result = streamText({
@@ -397,13 +291,8 @@ http.route({
         prompt,
       });
 
-      // Set Vercel AI SDK headers
-      const headers = new Headers();
-      headers.set("X-Vercel-AI-Data-Stream", "v1");
-      headers.set("Content-Type", "text/plain; charset=utf-8");
-
-      // Return data stream response
-      return result.toDataStreamResponse({ headers });
+      // Return data stream response with headers
+      return result.toDataStreamResponse({ headers: getStreamingHeaders() });
     } catch (error) {
       console.error("Stream endpoint error:", error);
       return new Response(

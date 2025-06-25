@@ -1,14 +1,8 @@
 "use node";
 
 import { action } from "./_generated/server";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { openai } from "@ai-sdk/openai";
-import { anthropic } from "@ai-sdk/anthropic";
-import { google } from "@ai-sdk/google";
-import { createPerplexity } from "@ai-sdk/perplexity";
-import { createVercel } from "@ai-sdk/vercel";
-import { generateText, streamText } from "ai";
 import { v } from "convex/values";
+import { aiService } from "./ai/service";
 
 // Multi-provider chat action supporting 6 providers
 export const simpleChatAction = action({
@@ -25,60 +19,16 @@ export const simpleChatAction = action({
     )),
   },
   handler: async (_ctx, args) => {
-    const { prompt, provider = "openrouter" } = args;
+    const { prompt, provider = "openrouter", model } = args;
     
-    let model;
-    let modelName;
-    
-    if (provider === "openai") {
-      // Direct OpenAI provider
-      modelName = args.model || "gpt-4o-mini";
-      model = openai(modelName);
-    } else if (provider === "anthropic") {
-      // Direct Anthropic provider
-      modelName = args.model || "claude-3-5-sonnet-20241022";
-      model = anthropic(modelName);
-    } else if (provider === "google") {
-      // Direct Google provider
-      modelName = args.model || "gemini-2.0-flash-exp";
-      model = google(modelName);
-    } else if (provider === "perplexity") {
-      // Direct Perplexity provider
-      modelName = args.model || "sonar-pro";
-      const perplexity = createPerplexity({
-        apiKey: process.env.PERPLEXITY_API_KEY,
-      });
-      model = perplexity(modelName);
-    } else if (provider === "vercel") {
-      // Vercel v0 AI provider
-      modelName = args.model || "v0-1.0-md";
-      const vercelProvider = createVercel({
-        apiKey: process.env.VERCEL_API_KEY,
-      });
-      model = vercelProvider(modelName);
-    } else {
-      // OpenRouter provider (default)
-      modelName = args.model || "google/gemini-2.5-flash";
-      const openrouter = createOpenRouter({
-        apiKey: process.env.OPENROUTER_API_KEY,
-      });
-      model = openrouter(modelName);
-    }
-
-    // Use generateText for simple non-streaming response
-    const result = await generateText({
-      model,
+    // Use AI service for clean abstraction
+    const result = await aiService.generateText({
+      provider: provider,
+      modelId: model,
       prompt,
     });
 
-    // Return the generated text with metadata
-    return {
-      text: result.text,
-      usage: result.usage,
-      finishReason: result.finishReason,
-      model: modelName,
-      provider,
-    };
+    return result;
   },
 });
 
@@ -97,58 +47,27 @@ export const streamChatAction = action({
     )),
   },
   handler: async (_ctx, args) => {
-    const { prompt, provider = "openrouter" } = args;
+    const { prompt, provider = "openrouter", model } = args;
     
-    let model;
-    let modelName;
-    
-    // Same provider logic as simpleChatAction
-    if (provider === "openai") {
-      modelName = args.model || "gpt-4o-mini";
-      model = openai(modelName);
-    } else if (provider === "anthropic") {
-      modelName = args.model || "claude-3-5-sonnet-20241022";
-      model = anthropic(modelName);
-    } else if (provider === "google") {
-      modelName = args.model || "gemini-2.0-flash-exp";
-      model = google(modelName);
-    } else if (provider === "perplexity") {
-      modelName = args.model || "sonar-pro";
-      const perplexity = createPerplexity({
-        apiKey: process.env.PERPLEXITY_API_KEY,
-      });
-      model = perplexity(modelName);
-    } else if (provider === "vercel") {
-      modelName = args.model || "v0-1.0-md";
-      const vercelProvider = createVercel({
-        apiKey: process.env.VERCEL_API_KEY,
-      });
-      model = vercelProvider(modelName);
-    } else {
-      modelName = args.model || "google/gemini-2.5-flash";
-      const openrouter = createOpenRouter({
-        apiKey: process.env.OPENROUTER_API_KEY,
-      });
-      model = openrouter(modelName);
-    }
-
-    // Use streamText for streaming response
-    const result = streamText({
-      model,
+    // Use AI service for streaming
+    const stream = await aiService.streamText({
+      provider: provider,
+      modelId: model,
       prompt,
     });
 
     // Collect all chunks
     const chunks = [];
-    for await (const chunk of result.textStream) {
+    for await (const chunk of stream.textStream) {
       chunks.push(chunk);
     }
 
     // Return complete text and metadata
+    const config = (await import("./ai/providers")).getProviderConfig(provider);
     return {
       text: chunks.join(''),
       chunks: chunks.length,
-      model: modelName,
+      model: model || config.defaultModel,
       provider,
     };
   },
@@ -172,54 +91,15 @@ export const chatAction = action({
     )),
   },
   handler: async (_ctx, args) => {
-    const { messages, provider = "openrouter" } = args;
+    const { messages, provider = "openrouter", model } = args;
     
-    let model;
-    let modelName;
-    
-    // Same provider logic
-    if (provider === "openai") {
-      modelName = args.model || "gpt-4o-mini";
-      model = openai(modelName);
-    } else if (provider === "anthropic") {
-      modelName = args.model || "claude-3-5-sonnet-20241022";
-      model = anthropic(modelName);
-    } else if (provider === "google") {
-      modelName = args.model || "gemini-2.0-flash-exp";
-      model = google(modelName);
-    } else if (provider === "perplexity") {
-      modelName = args.model || "sonar-pro";
-      const perplexity = createPerplexity({
-        apiKey: process.env.PERPLEXITY_API_KEY,
-      });
-      model = perplexity(modelName);
-    } else if (provider === "vercel") {
-      modelName = args.model || "v0-1.0-md";
-      const vercelProvider = createVercel({
-        apiKey: process.env.VERCEL_API_KEY,
-      });
-      model = vercelProvider(modelName);
-    } else {
-      modelName = args.model || "google/gemini-2.5-flash";
-      const openrouter = createOpenRouter({
-        apiKey: process.env.OPENROUTER_API_KEY,
-      });
-      model = openrouter(modelName);
-    }
-
-    // Use generateText with messages
-    const result = await generateText({
-      model,
+    // Use AI service for messages-based generation
+    const result = await aiService.generateText({
+      provider: provider,
+      modelId: model,
       messages,
     });
 
-    // Return the generated text with metadata
-    return {
-      text: result.text,
-      usage: result.usage,
-      finishReason: result.finishReason,
-      model: modelName,
-      provider,
-    };
+    return result;
   },
 });
