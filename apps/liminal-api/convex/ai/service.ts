@@ -17,7 +17,6 @@ export interface GenerateTextParams {
   providerOptions?: Record<string, any>;
 }
 
-export interface StreamTextParams extends GenerateTextParams {}
 
 // AI Service for centralized model operations
 export class AIService {
@@ -53,7 +52,6 @@ export class AIService {
       model: llm,
       ...(prompt ? { prompt } : {}),
       ...(messages ? { messages } : {}),
-      ...modelParams,
     });
 
     return {
@@ -66,7 +64,7 @@ export class AIService {
   }
 
   // Stream text
-  async streamText(params: StreamTextParams) {
+  async streamText(params: GenerateTextParams) {
     const { prompt, messages, params: modelParams } = params;
 
     // Build the model
@@ -78,7 +76,6 @@ export class AIService {
       model: llm,
       ...(prompt ? { prompt } : {}),
       ...(messages ? { messages } : {}),
-      ...modelParams,
     });
 
     return result;
