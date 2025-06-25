@@ -126,6 +126,7 @@ http.route({
       const result = await ctx.runAction(api.chat.simpleChatAction, {
         prompt,
         model,
+        provider: body.provider,
       });
 
       return new Response(JSON.stringify(result), {
