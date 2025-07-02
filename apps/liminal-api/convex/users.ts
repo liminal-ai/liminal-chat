@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuth, requireAuth, DEV_USER_CONFIG, validateDevConfig } from "./lib/auth";
+import { getAuth, requireAuth, getDEV_USER_CONFIG, validateDevConfig } from "./lib/auth";
 import { env } from "./lib/env";
 
 // Query to get the current authenticated user
@@ -135,10 +135,11 @@ export const initializeDevUser = mutation({
     // Validate that dev config is properly set
     validateDevConfig();
     
+    const devUserConfig = getDEV_USER_CONFIG();
     const DEV_USER = {
-      tokenIdentifier: DEV_USER_CONFIG.tokenIdentifier,
-      email: DEV_USER_CONFIG.email,
-      name: DEV_USER_CONFIG.name,
+      tokenIdentifier: devUserConfig.tokenIdentifier,
+      email: devUserConfig.email,
+      name: devUserConfig.name,
     };
     
     // Ensure all required fields are present
