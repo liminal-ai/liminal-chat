@@ -1,6 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
 import { TEST_MODELS } from './config';
-import { env } from '../convex/lib/env';
 
 /**
  * Helper functions for integration tests
@@ -74,7 +73,8 @@ export async function makeChatRequest(
   // Add auth token if provided via environment variable
   if (process.env.CLERK_TEST_TOKEN) {
     headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-  } else if (env.NODE_ENV !== 'test' && !env.isDevAuthEnabled) {
+  } else if (process.env.NODE_ENV !== 'test' && 
+             !(process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production')) {
     console.warn(
       '⚠️ No authentication token provided for tests\n' +
       'To test with authentication:\n' +
