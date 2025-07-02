@@ -5,6 +5,7 @@ import { HonoWithConvex, HttpRouterWithHono as _HttpRouterWithHono } from "conve
 import { ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
 import { Webhook } from "svix";
+import { Id } from "./_generated/dataModel";
 
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();
@@ -62,6 +63,26 @@ interface ClerkWebhookEvent {
     http_request: {
       client_ip: string;
     };
+  };
+}
+
+// TypeScript types for conversation endpoints
+interface CreateConversationRequest {
+  title: string;
+  type?: "standard" | "roundtable" | "pipeline";
+  metadata?: {
+    provider?: string;
+    model?: string;
+    [key: string]: unknown;
+  };
+}
+
+interface UpdateConversationRequest {
+  title?: string;
+  metadata?: {
+    provider?: string;
+    model?: string;
+    [key: string]: unknown;
   };
 }
 
@@ -206,7 +227,7 @@ app.get("/api/conversations", async (c) => {
 app.post("/api/conversations", async (c) => {
   const ctx = c.env;
   try {
-    const body = await c.req.json();
+    const body: CreateConversationRequest = await c.req.json();
     const { title, type = "standard", metadata } = body;
 
     if (!title) {
@@ -232,11 +253,11 @@ app.post("/api/conversations", async (c) => {
 app.get("/api/conversations/:id", async (c) => {
   const ctx = c.env;
   try {
-    const conversationId = c.req.param("id");
+    const conversationId = c.req.param("id") as Id<"conversations">;
 
     // Get conversation details
     const conversation = await ctx.runQuery(api.conversations.get, {
-      conversationId: conversationId as any,
+      conversationId,
     });
 
     if (!conversation) {
@@ -245,7 +266,7 @@ app.get("/api/conversations/:id", async (c) => {
 
     // Get messages
     const messages = await ctx.runQuery(api.messages.getAll, {
-      conversationId: conversationId as any,
+      conversationId,
     });
 
     return c.json({
@@ -264,12 +285,12 @@ app.get("/api/conversations/:id", async (c) => {
 app.patch("/api/conversations/:id", async (c) => {
   const ctx = c.env;
   try {
-    const conversationId = c.req.param("id");
-    const body = await c.req.json();
+    const conversationId = c.req.param("id") as Id<"conversations">;
+    const body: UpdateConversationRequest = await c.req.json();
     const { title, metadata } = body;
 
     await ctx.runMutation(api.conversations.update, {
-      conversationId: conversationId as any,
+      conversationId,
       title,
       metadata,
     });
@@ -287,10 +308,10 @@ app.patch("/api/conversations/:id", async (c) => {
 app.delete("/api/conversations/:id", async (c) => {
   const ctx = c.env;
   try {
-    const conversationId = c.req.param("id");
+    const conversationId = c.req.param("id") as Id<"conversations">;
 
     await ctx.runMutation(api.conversations.archive, {
-      conversationId: conversationId as any,
+      conversationId,
     });
 
     return c.json({ success: true });
