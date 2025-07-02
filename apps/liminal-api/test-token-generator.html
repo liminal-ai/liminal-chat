@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clerk Token Generator</title>
+  <script src="https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+</head>
+<body>
+  <h1>Clerk Test Token Generator</h1>
+  <div id="status">Loading...</div>
+  <button id="generateToken" disabled>Generate Test Token</button>
+  <pre id="token"></pre>
+
+  <script>
+    // SECURITY: Never commit API keys to source control!
+    // To use this test tool:
+    // 1. Get your Clerk publishable key from https://dashboard.clerk.com
+    // 2. Replace <YOUR_CLERK_PUBLISHABLE_KEY> below with your actual key
+    // 3. DO NOT commit this file with your actual key
+    
+    // Replace with your Clerk publishable key (starts with 'pk_')
+    const clerkPublishableKey = '<YOUR_CLERK_PUBLISHABLE_KEY>';
+    
+    if (clerkPublishableKey === '<YOUR_CLERK_PUBLISHABLE_KEY>') {
+      document.getElementById('status').textContent = 'ERROR: Please add your Clerk publishable key to this file (see comments in source)';
+      throw new Error('Clerk publishable key not configured');
+    }
+    
+    const clerk = new Clerk(clerkPublishableKey);
+    
+    async function init() {
+      await clerk.load();
+      
+      const status = document.getElementById('status');
+      const generateBtn = document.getElementById('generateToken');
+      
+      if (clerk.user) {
+        status.textContent = `Signed in as: ${clerk.user.primaryEmailAddress?.emailAddress}`;
+        generateBtn.disabled = false;
+      } else {
+        status.textContent = 'Not signed in. Redirecting to sign-in...';
+        await clerk.redirectToSignIn();
+      }
+    }
+    
+    document.getElementById('generateToken').addEventListener('click', async () => {
+      try {
+        const token = await window.Clerk.session.getToken({ template: 'testing-template' });
+        document.getElementById('token').textContent = token;
+        console.log('Token generated:', token);
+        
+        // Also show how to use it
+        document.getElementById('token').textContent += '\n\n// Use in tests:\nAuthorization: Bearer ' + token;
+      } catch (error) {
+        console.error('Error generating token:', error);
+        document.getElementById('token').textContent = 'Error: ' + error.message;
+      }
+    });
+    
+    init();
+  </script>
+</body>
+</html>

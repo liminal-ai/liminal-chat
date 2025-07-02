@@ -120,6 +120,24 @@ pnpm env:set KEY=value
 
 Environment variables are deployment-specific. Set them separately for dev and prod.
 
+### Development Authentication (Optional)
+For local development without Clerk authentication, you can enable a dev user bypass:
+
+```bash
+# Enable dev auth bypass
+npx convex env set DEV_AUTH_DEFAULT true
+
+# Set dev user credentials (replace with your values)
+npx convex env set DEV_USER_ID "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
+npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
+npx convex env set DEV_USER_NAME "Dev User"
+```
+
+**Important**: 
+- These variables are for development only and should NEVER be used in production
+- The `DEV_USER_ID` should match a valid Clerk user ID from your development environment
+- After setting these variables, run the `initializeDevUser` mutation once to create the user in your database
+
 ## Project Structure
 
 ```

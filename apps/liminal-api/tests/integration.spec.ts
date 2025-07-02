@@ -30,20 +30,29 @@ test.describe('Liminal API Integration Tests', () => {
   });
 
   test('3. Streaming format compliance', async ({ request }) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (process.env.CLERK_TEST_TOKEN) {
+      headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
+    }
+    
     const response = await request.post('/api/chat', {
       data: {
         messages: [
           { role: 'user', content: TEST_PROMPTS.simple }
         ],
         provider: 'openrouter',
-      }
+      },
+      headers
     });
     
     expect(response.ok()).toBeTruthy();
     
     // Verify Vercel AI SDK streaming format
-    const headers = response.headers();
-    expect(RESPONSE_VALIDATORS.hasStreamHeaders(headers)).toBeTruthy();
+    const responseHeaders = response.headers();
+    expect(RESPONSE_VALIDATORS.hasStreamHeaders(responseHeaders)).toBeTruthy();
     
     const text = await response.text();
     expect(RESPONSE_VALIDATORS.isValidStream(text)).toBeTruthy();
