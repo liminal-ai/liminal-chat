@@ -41,7 +41,7 @@ export class AIService {
 
   // Generate text (non-streaming)
   async generateText(params: GenerateTextParams) {
-    const { prompt, messages, params: modelParams, provider } = params;
+    const { prompt, messages, params: _modelParams, provider } = params;
 
     // Build the model
     const builder = this.buildModel(params);
@@ -65,7 +65,7 @@ export class AIService {
 
   // Stream text
   async streamText(params: GenerateTextParams) {
-    const { prompt, messages, params: modelParams } = params;
+    const { prompt, messages, params: _modelParams } = params;
 
     // Build the model
     const builder = this.buildModel(params);

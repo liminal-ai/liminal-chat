@@ -53,7 +53,19 @@ export async function makeChatRequest(
   endpoint: string,
   data: any
 ): Promise<{ response: any; body: any }> {
-  const response = await request.post(endpoint, { data });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  // Add auth token if provided via environment variable
+  if (process.env.CLERK_TEST_TOKEN) {
+    headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
+  }
+  
+  const response = await request.post(endpoint, { 
+    data,
+    headers 
+  });
   const body = await response.text();
   
   try {

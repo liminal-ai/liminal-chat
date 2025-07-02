@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clerk Token Generator</title>
+  <script src="https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+</head>
+<body>
+  <h1>Clerk Test Token Generator</h1>
+  <div id="status">Loading...</div>
+  <button id="generateToken" disabled>Generate Test Token</button>
+  <pre id="token"></pre>
+
+  <script>
+    // Replace with your Clerk publishable key
+    const clerkPublishableKey = 'pk_test_Z29yZ2VvdXMtaGVycmluZy02My5jbGVyay5hY2NvdW50cy5kZXYk';
+    
+    const clerk = new Clerk(clerkPublishableKey);
+    
+    async function init() {
+      await clerk.load();
+      
+      const status = document.getElementById('status');
+      const generateBtn = document.getElementById('generateToken');
+      
+      if (clerk.user) {
+        status.textContent = `Signed in as: ${clerk.user.primaryEmailAddress?.emailAddress}`;
+        generateBtn.disabled = false;
+      } else {
+        status.textContent = 'Not signed in. Redirecting to sign-in...';
+        await clerk.redirectToSignIn();
+      }
+    }
+    
+    document.getElementById('generateToken').addEventListener('click', async () => {
+      try {
+        const token = await window.Clerk.session.getToken({ template: 'testing-template' });
+        document.getElementById('token').textContent = token;
+        console.log('Token generated:', token);
+        
+        // Also show how to use it
+        document.getElementById('token').textContent += '\n\n// Use in tests:\nAuthorization: Bearer ' + token;
+      } catch (error) {
+        console.error('Error generating token:', error);
+        document.getElementById('token').textContent = 'Error: ' + error.message;
+      }
+    });
+    
+    init();
+  </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
   "name": "liminal-api",
   "private": true,
   "version": "0.0.0",
+  "main": "index.ts",
   "scripts": {
     "dev": "convex dev",
     "dev:dashboard": "convex dashboard",
@@ -34,7 +35,9 @@
     "@convex-dev/auth": "^0.0.87",
     "@openrouter/ai-sdk-provider": "^0.7.2",
     "ai": "^4.3.16",
-    "convex": "^1.23.0"
+    "convex": "^1.23.0",
+    "convex-helpers": "^0.1.95",
+    "hono": "^4.8.3"
   },
   "devDependencies": {
     "@types/node": "^24.0.3",

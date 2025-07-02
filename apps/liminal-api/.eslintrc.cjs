@@ -5,7 +5,14 @@ module.exports = {
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended-type-checked",
   ],
-  ignorePatterns: [".eslintrc.cjs", "convex/_generated"],
+  ignorePatterns: [
+    ".eslintrc.cjs", 
+    "convex/_generated",
+    "tests/**",
+    "test-utils/**",
+    "playwright.config.ts",
+    "index.ts"
+  ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: true,

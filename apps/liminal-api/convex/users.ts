@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuth, requireAuth } from "./lib/auth";
 
 // Query to get the current authenticated user
 export const getCurrentUser = query({
@@ -28,10 +29,7 @@ export const syncUser = mutation({
     imageUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required to sync user data");
-    }
+    const identity = await requireAuth(ctx);
 
     const existingUser = await ctx.db
       .query("users")
@@ -64,7 +62,7 @@ export const syncUser = mutation({
 export const testAuth = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
+    const identity = await getAuth(ctx);
     if (!identity) {
       return {
         authenticated: false,
@@ -112,5 +110,36 @@ export const getSampleUser = query({
       hasImage: !!user.imageUrl,
       createdAt: user.createdAt,
     };
+  },
+});
+
+// Mutation to initialize dev user (call this once to set up dev environment)
+export const initializeDevUser = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const DEV_USER = {
+      tokenIdentifier: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI',
+      email: 'dev@liminal.chat',
+      name: 'Dev User',
+    };
+    
+    // Check if dev user already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", DEV_USER.tokenIdentifier))
+      .first();
+    
+    if (existingUser) {
+      return { message: "Dev user already exists", userId: existingUser._id };
+    }
+    
+    // Create dev user
+    const userId = await ctx.db.insert("users", {
+      ...DEV_USER,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    
+    return { message: "Dev user created", userId };
   },
 });
