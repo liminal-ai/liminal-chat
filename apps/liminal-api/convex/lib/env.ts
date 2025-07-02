@@ -59,22 +59,22 @@ const REQUIRED_ENV_VARS = {
  */
 const CONDITIONAL_ENV_VARS = {
   DEV_AUTH: {
-    condition: () => process.env.DEV_AUTH_DEFAULT === "true",
+    condition: () => process.env.DEV_AUTH_DEFAULT === "true" && process.env.NODE_ENV !== "production",
     vars: {
       DEV_USER_ID: {
         description: "Development user Clerk ID",
         example: "user_2zINPyhtT9Wem9OeVW4eZDs21KI",
-        docs: "Set when DEV_AUTH_DEFAULT is true"
+        docs: "Required when DEV_AUTH_DEFAULT is true (development only)"
       },
       DEV_USER_EMAIL: {
         description: "Development user email",
         example: "dev@liminal.chat",
-        docs: "Set when DEV_AUTH_DEFAULT is true"
+        docs: "Required when DEV_AUTH_DEFAULT is true (development only)"
       },
       DEV_USER_NAME: {
         description: "Development user display name",
         example: "Dev User",
-        docs: "Set when DEV_AUTH_DEFAULT is true"
+        docs: "Required when DEV_AUTH_DEFAULT is true (development only)"
       }
     }
   }
