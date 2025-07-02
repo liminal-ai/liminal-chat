@@ -123,28 +123,68 @@ export const list = query({
   },
 });
 
-// Get all messages for a conversation (be careful with large conversations)
+// Get all messages for a conversation with pagination protection
 export const getAll = query({
   args: {
     conversationId: v.id("conversations"),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await getAuth(ctx);
-    if (!identity) return [];
+    if (!identity) return { messages: [], hasMore: false, nextCursor: null };
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation || conversation.userId !== identity.tokenIdentifier) {
-      return [];
+      return { messages: [], hasMore: false, nextCursor: null };
     }
 
-    return await ctx.db
+    // Validate and set limit (default: 100, max: 1000)
+    const requestedLimit = args.limit ?? 100;
+    const effectiveLimit = Math.min(Math.max(1, requestedLimit), 1000);
+
+    // Get cursor message if provided
+    let cursorCreatedAt: number | null = null;
+    if (args.cursor) {
+      const cursorMessage = await ctx.db.get(args.cursor as Id<"messages">);
+      if (cursorMessage && cursorMessage.conversationId === args.conversationId) {
+        cursorCreatedAt = cursorMessage.createdAt;
+      }
+    }
+
+    // Build query with cursor filter if needed
+    const baseQuery = ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) => 
         q.eq("conversationId", args.conversationId)
-      )
+      );
+
+    // Apply cursor filter and order, then take limit + 1
+    const messages = await (cursorCreatedAt !== null
+      ? baseQuery.filter((q) => q.gt(q.field("createdAt"), cursorCreatedAt))
+      : baseQuery)
       .order("asc")
-      .collect();
+      .take(effectiveLimit + 1);
+
+    // Check if there are more messages
+    const hasMore = messages.length > effectiveLimit;
+    let nextCursor: string | null = null;
+    
+    if (hasMore) {
+      // Remove the extra message
+      messages.pop();
+      // Set cursor to the last message's ID
+      if (messages.length > 0) {
+        nextCursor = messages[messages.length - 1]._id;
+      }
+    }
+
+    return {
+      messages,
+      hasMore,
+      nextCursor,
+    };
   },
 });
 
