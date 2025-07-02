@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: "AI-powered chat application",
 };
 
+/**
+ * Root layout component that wraps the application with authentication and backend client providers, applies global font styles, and renders child components.
+ *
+ * @param children - The content to be rendered within the layout
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

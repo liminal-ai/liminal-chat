@@ -47,7 +47,13 @@ export function parseDataStream(text: string): string[] {
   return chunks;
 }
 
-// Make a chat request with standard error handling
+/**
+ * Sends a POST request to the specified chat endpoint with JSON data and optional authorization, returning the response and its parsed body.
+ *
+ * @param endpoint - The API endpoint to send the request to
+ * @param data - The JSON payload to include in the request body
+ * @returns An object containing the response and the parsed JSON body, or the raw text if parsing fails
+ */
 export async function makeChatRequest(
   request: APIRequestContext,
   endpoint: string,

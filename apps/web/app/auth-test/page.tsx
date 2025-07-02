@@ -6,6 +6,11 @@ import { useQuery } from 'convex/react';
 // @ts-expect-error - Monorepo import
 import { api } from '../../../liminal-api/convex/_generated/api';
 
+/**
+ * Displays the current Convex authentication status and user details.
+ *
+ * Shows a loading message while the authentication status is being fetched. Once loaded, indicates whether the user is authenticated with Convex and, if so, displays user ID, email, and name.
+ */
 function ConvexAuthTestInline() {
   const authTest = useQuery(api.users.testAuth);
   
@@ -40,6 +45,11 @@ function ConvexAuthTestInline() {
   );
 }
 
+/**
+ * Renders an authentication test page that allows users to sign in or sign up, view their authentication details, verify Convex backend authentication, and generate a test JWT token for use in integration tests.
+ *
+ * The page conditionally displays sign-in/sign-up options or authenticated user information based on the user's authentication state. Authenticated users can generate a test token from a Clerk JWT template and copy it for use in testing environments.
+ */
 export default function AuthTestPage() {
   const { isLoaded, userId, getToken } = useAuth();
   const { user } = useUser();

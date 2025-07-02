@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 
+/**
+ * Renders a page that allows users to check the health status of a remote service and displays the result.
+ *
+ * Provides a button to trigger a health check, visual feedback for the current health status, and a link to an authentication test page.
+ */
 export default function HelloPage() {
   const [healthStatus, setHealthStatus] = useState<'idle' | 'checking' | 'healthy' | 'error'>('idle');
 
