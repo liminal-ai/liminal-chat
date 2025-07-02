@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { v } from "convex/values";
 import { validateEnvironment, logEnvironmentStatus } from "./lib/env";
 
 /**
@@ -6,7 +7,7 @@ import { validateEnvironment, logEnvironmentStatus } from "./lib/env";
  * This should be called when the Convex deployment starts
  */
 export const validateStartup = internalMutation({
-  args: {},
+  args: v.object({}),
   handler: async (_ctx, _args) => {
     console.log("🚀 Liminal Chat - Validating environment configuration...");
     
@@ -40,11 +41,11 @@ export const validateStartup = internalMutation({
 });
 
 /**
- * Public query to check environment health
+ * Internal mutation to check environment health
  * Returns validation status without exposing sensitive information
  */
 export const checkEnvironmentHealth = internalMutation({
-  args: {},
+  args: v.object({}),
   handler: async (_ctx, _args) => {
     const validation = validateEnvironment();
     

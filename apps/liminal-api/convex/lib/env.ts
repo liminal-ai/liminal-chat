@@ -150,9 +150,9 @@ export const env = {
     return process.env.NODE_ENV === "production";
   },
   
-  // Helper to check if dev auth is enabled
+  // Helper to check if dev auth is enabled (with production protection)
   get isDevAuthEnabled(): boolean {
-    return process.env.DEV_AUTH_DEFAULT === "true";
+    return process.env.DEV_AUTH_DEFAULT === "true" && process.env.NODE_ENV !== "production";
   }
 };
 

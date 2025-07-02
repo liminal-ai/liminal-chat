@@ -99,7 +99,9 @@ app.post("/clerk-webhook", async (c) => {
     console.error("CLERK_WEBHOOK_SECRET configuration error:", error);
     return c.json({ 
       error: "Webhook configuration error",
-      details: error instanceof Error ? error.message : "Unknown error"
+      details: process.env.NODE_ENV === "development" 
+        ? (error instanceof Error ? error.message : "Unknown error")
+        : "An internal error occurred while processing the webhook configuration"
     }, 500);
   }
   
