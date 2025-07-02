@@ -11,8 +11,19 @@
   <pre id="token"></pre>
 
   <script>
-    // Replace with your Clerk publishable key
-    const clerkPublishableKey = 'pk_test_Z29yZ2VvdXMtaGVycmluZy02My5jbGVyay5hY2NvdW50cy5kZXYk';
+    // SECURITY: Never commit API keys to source control!
+    // To use this test tool:
+    // 1. Get your Clerk publishable key from https://dashboard.clerk.com
+    // 2. Replace <YOUR_CLERK_PUBLISHABLE_KEY> below with your actual key
+    // 3. DO NOT commit this file with your actual key
+    
+    // Replace with your Clerk publishable key (starts with 'pk_')
+    const clerkPublishableKey = '<YOUR_CLERK_PUBLISHABLE_KEY>';
+    
+    if (clerkPublishableKey === '<YOUR_CLERK_PUBLISHABLE_KEY>') {
+      document.getElementById('status').textContent = 'ERROR: Please add your Clerk publishable key to this file (see comments in source)';
+      throw new Error('Clerk publishable key not configured');
+    }
     
     const clerk = new Clerk(clerkPublishableKey);
     

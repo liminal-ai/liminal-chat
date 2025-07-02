@@ -3,15 +3,28 @@ import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
 // Development-only default auth user
 const DEV_AUTH_DEFAULT = process.env.DEV_AUTH_DEFAULT === 'true';
 
-// Development user configuration - matches your Clerk dev user
-const DEV_USER_CONFIG = {
-  tokenIdentifier: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI',
-  email: 'dev@liminal.chat', // Using a more appropriate dev email
-  name: 'Dev User',
-  subject: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI'
+// Development user configuration - from environment variables
+export const DEV_USER_CONFIG = {
+  tokenIdentifier: process.env.DEV_USER_ID || '',
+  email: process.env.DEV_USER_EMAIL || '',
+  name: process.env.DEV_USER_NAME || '',
+  subject: process.env.DEV_USER_ID || ''
 };
 
+// Validate dev user configuration
+export function validateDevConfig() {
+  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+    if (!process.env.DEV_USER_ID || !process.env.DEV_USER_EMAIL || !process.env.DEV_USER_NAME) {
+      throw new Error(
+        'Dev auth is enabled but required environment variables are missing. ' +
+        'Please set DEV_USER_ID, DEV_USER_EMAIL, and DEV_USER_NAME in your Convex environment.'
+      );
+    }
+  }
+}
+
 async function getDevUser(ctx: QueryCtx | MutationCtx) {
+  validateDevConfig();
   // Check if dev user exists in database
   const _existingUser = await ctx.db
     .query("users")
@@ -50,6 +63,7 @@ export async function getAuth(ctx: QueryCtx | MutationCtx) {
 export async function getAuthForAction(ctx: ActionCtx) {
   // In development with default auth enabled, return the dev user config
   if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+    validateDevConfig();
     return DEV_USER_CONFIG;
   }
   

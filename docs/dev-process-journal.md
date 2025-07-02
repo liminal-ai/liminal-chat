@@ -269,9 +269,287 @@ npm install hono convex-helpers
 
 ---
 
+## Session: July 2, 2025 (Part 3) - PR Security Review & Fix Planning
+
+### Context
+- **PR Created**: #28 "feat: implement conversations and messages with auth system"
+- **Status**: 173 files changed, all tests passing, lint/typecheck clean
+- **Reviews Received**: CodeRabbit (22 actionable comments), Copilot (overview), Claude (security-focused)
+- **Critical Discovery**: Multiple security vulnerabilities identified requiring immediate attention
+
+### Review Summary Analysis
+
+#### CodeRabbit Review (22 Actionable + 26 Nitpicks)
+**Focus**: Code quality, TypeScript safety, best practices
+**Key Issues**:
+- Package build configuration (`main: "index.ts"` should point to compiled JS)
+- Convex version mismatch (backend 1.23.0 vs frontend 1.25.0)
+- Environment variable validation missing
+- Next.js App Router violations (`<html>/<body>` tags in page components)
+- TypeScript path mapping issues
+- Cross-platform compatibility (macOS-only shell scripts)
+
+#### Claude Security Review (Comprehensive)
+**Focus**: Security vulnerabilities, architecture assessment, production readiness
+**Critical Findings**:
+1. **Webhook Security Hole**: Clerk webhooks accept any POST without signature verification
+2. **Hardcoded Credentials**: Dev user ID exposed in source code
+3. **Production Exposure**: Dev user creation possible in production
+4. **Key Exposure**: Hardcoded Clerk keys in HTML files
+
+### Critical Security Vulnerabilities Identified
+
+#### 🚨 Issue 1: Webhook Security Vulnerability
+**File**: `apps/liminal-api/convex/http.ts:42-76`
+**Problem**: Clerk webhook endpoint accepts any POST request without signature verification
+**Risk**: Attackers can spoof user events (account creation, deletion, updates)
+**Fix Required**:
+```typescript
+// Need to install svix package and implement signature verification
+import { Webhook } from 'svix';
+
+app.post("/clerk-webhook", async (c) => {
+  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
+  const payload = await c.req.text();
+  const headers = c.req.headers;
+  
+  try {
+    wh.verify(payload, {
+      'svix-id': headers.get('svix-id'),
+      'svix-timestamp': headers.get('svix-timestamp'),
+      'svix-signature': headers.get('svix-signature'),
+    });
+  } catch (err) {
+    return c.json({ error: 'Invalid signature' }, 400);
+  }
+  
+  // Now safe to process webhook
+});
+```
+
+#### 🚨 Issue 2: Hardcoded Dev Credentials
+**File**: `apps/liminal-api/convex/lib/auth.ts:7-12`
+**Problem**: Dev user credentials hardcoded in source code
+**Exposed Data**: `user_2zINPyhtT9Wem9OeVW4eZDs21KI`
+**Fix Required**:
+```typescript
+// Move to environment variables
+const DEV_USER_CONFIG = {
+  tokenIdentifier: process.env.DEV_USER_TOKEN_ID!,
+  email: process.env.DEV_USER_EMAIL || 'dev@liminal.chat',
+  name: process.env.DEV_USER_NAME || 'Dev User',
+  subject: process.env.DEV_USER_TOKEN_ID!
+};
+```
+
+#### 🚨 Issue 3: Production Protection Missing
+**File**: `apps/liminal-api/convex/users.ts:145`
+**Problem**: `initializeDevUser` mutation can create users in production
+**Fix Required**:
+```typescript
+export const initializeDevUser = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Prevent execution in production
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Dev user initialization not allowed in production');
+    }
+    
+    if (!DEV_AUTH_DEFAULT) {
+      throw new Error('DEV_AUTH_DEFAULT must be enabled');
+    }
+    
+    // Rest of implementation
+  },
+});
+```
+
+#### 🚨 Issue 4: Exposed Keys in HTML
+**File**: `apps/liminal-api/test-token-generator.html:15`
+**Problem**: Hardcoded Clerk publishable key
+**Fix Required**: Remove hardcoded key, use environment-based configuration
+
+### Additional Critical Issues from CodeRabbit
+
+#### Issue 5: Package Build Configuration
+**File**: `apps/liminal-api/package.json`
+**Problem**: `"main": "index.ts"` points to TypeScript instead of compiled JavaScript
+**Impact**: Will break consumers trying to import the package
+**Fix Options**:
+1. Add build step: `"main": "dist/index.js", "types": "dist/index.d.ts"`
+2. Remove main field entirely if not publishing as npm package
+3. Configure as ES module with proper build pipeline
+
+#### Issue 6: Convex Version Mismatch
+**Files**: `apps/liminal-api/package.json` vs `apps/web/package.json`
+**Problem**: Backend uses `convex@1.23.0`, frontend uses `1.25.0`
+**Impact**: Generated code drift, typing inconsistencies
+**Fix**: Align both to `1.25.0`
+
+#### Issue 7: Environment Variable Validation
+**File**: `apps/web/app/providers/ConvexClientProvider.tsx:8`
+**Problem**: Uses `process.env.NEXT_PUBLIC_CONVEX_URL!` without validation
+**Fix**:
+```typescript
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+if (!convexUrl) {
+  throw new Error(
+    'NEXT_PUBLIC_CONVEX_URL is not defined. Did you copy .env.local.example and restart the dev server?'
+  );
+}
+const convex = new ConvexReactClient(convexUrl);
+```
+
+### Implementation Plan
+
+#### Phase 1: Critical Security Fixes (MUST FIX BEFORE MERGE)
+
+1. **Implement Webhook Security**
+   - Install svix package: `npm install svix`
+   - Add `CLERK_WEBHOOK_SECRET` to environment variables
+   - Implement signature verification in webhook handler
+   - Test webhook security with invalid signatures
+
+2. **Externalize Dev Credentials**
+   - Add environment variables: `DEV_USER_TOKEN_ID`, `DEV_USER_EMAIL`, `DEV_USER_NAME`
+   - Update `DEV_USER_CONFIG` to use env vars
+   - Remove hardcoded credentials from source
+   - Update development documentation
+
+3. **Add Production Protection**
+   - Add `NODE_ENV` check to `initializeDevUser` mutation
+   - Prevent dev user creation in production
+   - Add environment validation
+
+4. **Remove Exposed Keys**
+   - Remove hardcoded Clerk key from HTML file
+   - Use environment-based configuration
+   - Update documentation for proper setup
+
+#### Phase 2: Code Quality & Safety (SHOULD FIX FOR MAINTAINABILITY)
+
+5. **Fix Package Configuration**
+   - Decide on build strategy for liminal-api package
+   - Either add proper build pipeline or remove main field
+   - Update package.json accordingly
+
+6. **Synchronize Package Versions**
+   - Update backend Convex to 1.25.0
+   - Test for breaking changes
+   - Update package-lock.json
+
+7. **Add Environment Validation**
+   - Implement proper env var validation in ConvexClientProvider
+   - Add descriptive error messages
+   - Update setup documentation
+
+8. **Fix Type Safety Issues**
+   - Replace `as any` casts with proper types
+   - Import and use `Id<"conversations">` type
+   - Maintain TypeScript benefits
+
+#### Phase 3: Polish & Developer Experience (NICE TO HAVE)
+
+9. **Cross-platform Compatibility**
+   - Update shell scripts to support Linux/Windows
+   - Use platform detection for `open`/`xdg-open`/`start` commands
+
+10. **Code Cleanup**
+    - Remove unused imports and variables
+    - Consolidate duplicated test helpers
+    - Extract inline styles to CSS classes
+
+11. **Documentation Improvements**
+    - Fix markdown formatting issues
+    - Add TypeScript path mapping guidance
+    - Update deployment instructions
+
+### Environment Variables Required
+
+Add to Convex environment:
+```bash
+# Webhook security
+npx convex env set CLERK_WEBHOOK_SECRET sk_whsec_your_webhook_secret_here
+
+# Dev user configuration (development only)
+npx convex env set DEV_USER_TOKEN_ID user_2zINPyhtT9Wem9OeVW4eZDs21KI
+npx convex env set DEV_USER_EMAIL dev@liminal.chat
+npx convex env set DEV_USER_NAME "Dev User"
+```
+
+Add to Next.js `.env.local`:
+```bash
+NEXT_PUBLIC_CONVEX_URL=https://modest-squirrel-498.convex.site
+```
+
+### Testing Requirements for Fixes
+
+1. **Webhook Security**: Test with invalid signatures, verify rejection
+2. **Production Protection**: Test dev user creation fails in production mode
+3. **Environment Validation**: Test with missing env vars, verify error messages
+4. **Package Configuration**: Test import resolution if keeping main field
+
+### Files Requiring Changes
+
+**Phase 1 (Security)**:
+- `apps/liminal-api/convex/http.ts` (webhook security)
+- `apps/liminal-api/convex/lib/auth.ts` (externalize credentials)
+- `apps/liminal-api/convex/users.ts` (production protection)
+- `apps/liminal-api/test-token-generator.html` (remove keys)
+- `apps/liminal-api/package.json` (add svix dependency)
+
+**Phase 2 (Quality)**:
+- `apps/liminal-api/package.json` (fix main field, update Convex version)
+- `apps/web/package.json` (sync Convex version)
+- `apps/web/app/providers/ConvexClientProvider.tsx` (env validation)
+- Various files for type safety improvements
+
+**Phase 3 (Polish)**:
+- `apps/liminal-api/generate-test-token.sh` (cross-platform)
+- Various files for cleanup and documentation
+
+### Success Criteria
+
+**Phase 1 Complete When**:
+- Webhook endpoints reject invalid signatures
+- No hardcoded credentials in source code
+- Dev user creation blocked in production
+- All secrets properly externalized
+
+**Phase 2 Complete When**:
+- Package configuration is production-ready
+- All package versions synchronized
+- Environment variables properly validated
+- Type safety restored
+
+**Ready for Merge When**:
+- Phase 1 security fixes implemented and tested
+- All existing tests still pass
+- Security review passes
+- Documentation updated for new environment variables
+
+### Risk Assessment
+
+**High Risk (Phase 1)**:
+- Webhook vulnerability allows account takeover
+- Credential exposure enables unauthorized access
+- Production data corruption possible
+
+**Medium Risk (Phase 2)**:
+- Package import failures in consuming applications
+- Runtime errors from missing environment variables
+- Type safety degradation
+
+**Low Risk (Phase 3)**:
+- Developer experience issues
+- Code maintainability concerns
+
+---
+
 ## Meta Notes
 
 **Journal Structure**: Raw observations for now, will organize after Feature 2
 **Goal**: Build evidence base for process documentation and AI scaffolding
 **Timeline**: Review and potentially restructure after Feature 2 completion
 **New Focus**: Communication clarity and testing discipline after routing incident
+**Current Priority**: Security vulnerability remediation before merge approval

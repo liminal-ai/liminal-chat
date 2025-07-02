@@ -69,6 +69,16 @@ This file is used by the Convex CLI and Next.js for local development. It should
 
 See `.env.local.example` for the template.
 
+### Test Token Generator
+
+The `test-token-generator.html` file requires a Clerk publishable key to function:
+
+1. Get your publishable key from [Clerk Dashboard](https://dashboard.clerk.com)
+2. Replace `<YOUR_CLERK_PUBLISHABLE_KEY>` in the file with your actual key
+3. **IMPORTANT**: Never commit the file with your actual key - always reset to placeholder before committing
+
+The publishable key starts with `pk_` and is safe to use in client-side code, but should not be committed to source control to prevent unauthorized usage.
+
 ## Security Best Practices
 
 1. **Never commit API keys** to Git
