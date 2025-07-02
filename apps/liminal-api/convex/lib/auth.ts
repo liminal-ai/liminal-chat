@@ -1,25 +1,24 @@
 import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
+import { env } from "./env";
 
 // Development-only default auth user
-const DEV_AUTH_DEFAULT = process.env.DEV_AUTH_DEFAULT === 'true';
+const DEV_AUTH_DEFAULT = env.isDevAuthEnabled;
 
 // Development user configuration - from environment variables
 export const DEV_USER_CONFIG = {
-  tokenIdentifier: process.env.DEV_USER_ID || '',
-  email: process.env.DEV_USER_EMAIL || '',
-  name: process.env.DEV_USER_NAME || '',
-  subject: process.env.DEV_USER_ID || ''
+  tokenIdentifier: DEV_AUTH_DEFAULT ? env.DEV_USER_ID : '',
+  email: DEV_AUTH_DEFAULT ? env.DEV_USER_EMAIL : '',
+  name: DEV_AUTH_DEFAULT ? env.DEV_USER_NAME : '',
+  subject: DEV_AUTH_DEFAULT ? env.DEV_USER_ID : ''
 };
 
 // Validate dev user configuration
 export function validateDevConfig() {
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
-    if (!process.env.DEV_USER_ID || !process.env.DEV_USER_EMAIL || !process.env.DEV_USER_NAME) {
-      throw new Error(
-        'Dev auth is enabled but required environment variables are missing. ' +
-        'Please set DEV_USER_ID, DEV_USER_EMAIL, and DEV_USER_NAME in your Convex environment.'
-      );
-    }
+  if (DEV_AUTH_DEFAULT) {
+    // The env module will throw with helpful errors if vars are missing
+    const _id = env.DEV_USER_ID;
+    const _email = env.DEV_USER_EMAIL;
+    const _name = env.DEV_USER_NAME;
   }
 }
 
@@ -38,7 +37,7 @@ async function getDevUser(ctx: QueryCtx | MutationCtx) {
 
 export async function requireAuth(ctx: QueryCtx | MutationCtx) {
   // In development with bypass enabled, return the dev user
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+  if (DEV_AUTH_DEFAULT) {
     return await getDevUser(ctx);
   }
   
@@ -52,7 +51,7 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx) {
 
 export async function getAuth(ctx: QueryCtx | MutationCtx) {
   // In development with default auth enabled, return the dev user
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+  if (DEV_AUTH_DEFAULT) {
     return await getDevUser(ctx);
   }
   
@@ -62,8 +61,7 @@ export async function getAuth(ctx: QueryCtx | MutationCtx) {
 // Special version for actions (no database access)
 export async function getAuthForAction(ctx: ActionCtx) {
   // In development with default auth enabled, return the dev user config
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
-    validateDevConfig();
+  if (DEV_AUTH_DEFAULT) {
     return DEV_USER_CONFIG;
   }
   

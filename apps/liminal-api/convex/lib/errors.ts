@@ -1,0 +1,169 @@
+/**
+ * Enhanced error utilities for better developer experience
+ */
+
+/**
+ * Configuration error with helpful instructions
+ */
+export class ConfigurationError extends Error {
+  constructor(
+    message: string,
+    public readonly variableName?: string,
+    public readonly helpText?: string
+  ) {
+    super(message);
+    this.name = 'ConfigurationError';
+  }
+}
+
+/**
+ * Create a helpful configuration error message
+ */
+export function createConfigError(
+  variableName: string,
+  description: string,
+  example?: string,
+  additionalHelp?: string
+): ConfigurationError {
+  let message = `❌ Missing required configuration: ${variableName}\n\n`;
+  message += `📝 Description: ${description}\n`;
+  
+  if (example) {
+    message += `💡 Example: ${example}\n`;
+  }
+  
+  message += `\n🔧 To fix this:\n`;
+  message += `npx convex env set ${variableName} "your-value-here"\n`;
+  
+  if (additionalHelp) {
+    message += `\n${additionalHelp}`;
+  }
+  
+  return new ConfigurationError(message, variableName, additionalHelp);
+}
+
+/**
+ * API key error with provider-specific help
+ */
+export function createApiKeyError(provider: string, keyName: string): Error {
+  const providerUrls: Record<string, string> = {
+    openai: 'https://platform.openai.com/api-keys',
+    anthropic: 'https://console.anthropic.com/settings/keys',
+    google: 'https://makersuite.google.com/app/apikey',
+    perplexity: 'https://docs.perplexity.ai/docs/getting-started',
+    vercel: 'https://vercel.com/account/tokens',
+    openrouter: 'https://openrouter.ai/keys'
+  };
+  
+  const url = providerUrls[provider.toLowerCase()] || 'your provider dashboard';
+  
+  return new Error(
+    `🔑 API Key Required for ${provider}\n\n` +
+    `The ${keyName} environment variable is not set.\n\n` +
+    `To use ${provider}, you need to:\n` +
+    `1. Get your API key from: ${url}\n` +
+    `2. Set it in Convex:\n` +
+    `   npx convex env set ${keyName} "your-api-key"\n\n` +
+    `Note: API keys are sensitive. Never commit them to version control.`
+  );
+}
+
+/**
+ * Authentication configuration error
+ */
+export function createAuthError(context: 'production' | 'development'): Error {
+  if (context === 'production') {
+    return new Error(
+      `🔒 Authentication Required\n\n` +
+      `This endpoint requires authentication in production.\n` +
+      `Please ensure you have:\n` +
+      `1. Clerk authentication properly configured\n` +
+      `2. Valid authentication token in your request headers\n` +
+      `3. CLERK_ISSUER_URL environment variable set\n\n` +
+      `For local development, you can enable dev auth:\n` +
+      `npx convex env set DEV_AUTH_DEFAULT "true"`
+    );
+  }
+  
+  return new Error(
+    `🔧 Development Authentication Not Configured\n\n` +
+    `Dev auth is enabled but required variables are missing.\n\n` +
+    `Please set these environment variables:\n` +
+    `• DEV_USER_ID - Clerk user ID for dev user\n` +
+    `• DEV_USER_EMAIL - Email for dev user\n` +
+    `• DEV_USER_NAME - Display name for dev user\n\n` +
+    `Example:\n` +
+    `npx convex env set DEV_USER_ID "user_123..."\n` +
+    `npx convex env set DEV_USER_EMAIL "dev@example.com"\n` +
+    `npx convex env set DEV_USER_NAME "Dev User"`
+  );
+}
+
+/**
+ * Model not found error with suggestions
+ */
+export function createModelError(
+  provider: string,
+  requestedModel: string,
+  availableModels: string[]
+): Error {
+  return new Error(
+    `🤖 Model Not Found: ${requestedModel}\n\n` +
+    `The model '${requestedModel}' is not available for ${provider}.\n\n` +
+    `Available models:\n` +
+    availableModels.map(m => `• ${m}`).join('\n') +
+    `\n\nTo use a different model, specify it in your request:\n` +
+    `{ "provider": "${provider}", "model": "${availableModels[0]}" }`
+  );
+}
+
+/**
+ * Rate limit error with retry guidance
+ */
+export function createRateLimitError(
+  provider: string,
+  retryAfter?: number
+): Error {
+  let message = `⏱️ Rate Limit Exceeded for ${provider}\n\n`;
+  message += `You've hit the rate limit for ${provider} API.\n\n`;
+  
+  if (retryAfter) {
+    message += `Please retry after ${retryAfter} seconds.\n\n`;
+  }
+  
+  message += `To avoid rate limits:\n`;
+  message += `• Use a lower request frequency\n`;
+  message += `• Implement exponential backoff\n`;
+  message += `• Consider upgrading your API plan\n`;
+  message += `• Use a different provider temporarily`;
+  
+  return new Error(message);
+}
+
+/**
+ * Webhook configuration error
+ */
+export function createWebhookError(issue: 'missing_secret' | 'invalid_signature'): Error {
+  if (issue === 'missing_secret') {
+    return new Error(
+      `🔐 Webhook Secret Not Configured\n\n` +
+      `The CLERK_WEBHOOK_SECRET is required for webhook verification.\n\n` +
+      `To set up webhook security:\n` +
+      `1. Go to your Clerk dashboard > Webhooks\n` +
+      `2. Copy the signing secret (starts with 'whsec_')\n` +
+      `3. Set it in Convex:\n` +
+      `   npx convex env set CLERK_WEBHOOK_SECRET "whsec_..."\n\n` +
+      `This prevents webhook spoofing attacks.`
+    );
+  }
+  
+  return new Error(
+    `❌ Invalid Webhook Signature\n\n` +
+    `The webhook signature verification failed.\n` +
+    `This could mean:\n` +
+    `• The webhook secret is incorrect\n` +
+    `• The request was tampered with\n` +
+    `• The request is not from Clerk\n\n` +
+    `Please verify your CLERK_WEBHOOK_SECRET matches the one in Clerk dashboard.`
+  );
+}

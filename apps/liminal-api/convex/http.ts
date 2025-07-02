@@ -6,6 +6,7 @@ import { ActionCtx } from "./_generated/server";
 import { api } from "./_generated/api";
 import { Webhook } from "svix";
 import { Id } from "./_generated/dataModel";
+import { env } from "./lib/env";
 
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();
@@ -90,12 +91,16 @@ interface UpdateConversationRequest {
 app.post("/clerk-webhook", async (c) => {
   const _ctx = c.env;
   
-  // Security: Get the webhook secret from environment
-  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
-  
-  if (!webhookSecret) {
-    console.error("CLERK_WEBHOOK_SECRET is not configured");
-    return c.json({ error: "Webhook configuration error" }, 500);
+  // Security: Get the webhook secret from environment with better error handling
+  let webhookSecret: string;
+  try {
+    webhookSecret = env.CLERK_WEBHOOK_SECRET;
+  } catch (error) {
+    console.error("CLERK_WEBHOOK_SECRET configuration error:", error);
+    return c.json({ 
+      error: "Webhook configuration error",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
   }
   
   // Security: Extract required headers for signature verification

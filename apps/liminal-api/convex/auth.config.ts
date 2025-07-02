@@ -1,7 +1,9 @@
+import { env } from "./lib/env";
+
 export default {
   providers: [
     {
-      domain: process.env.CLERK_ISSUER_URL!,
+      domain: env.CLERK_ISSUER_URL,
       applicationID: "convex",
     },
   ]
