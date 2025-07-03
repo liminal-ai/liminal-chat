@@ -1,0 +1,222 @@
+name: Backend CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/liminal-api/**'
+      - '.github/workflows/backend-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/liminal-api/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      # Format Check (Auto-fix)
+      - name: Format Check
+        id: format
+        if: ${{ !vars.DISABLE_FORMAT_CHECK }}
+        run: |
+          if [ "${{ vars.DISABLE_FORMAT_CHECK }}" = "true" ]; then
+            echo "⚠️ Format check is DISABLED" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          echo "Checking code formatting..."
+          if ! pnpm format:check; then
+            echo "Files need formatting. Auto-fixing..."
+            pnpm format:fix
+            
+            # Check if we're in a PR and can auto-commit
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::warning::Code was automatically formatted. Please pull latest changes."
+            fi
+            
+            # Re-check after fixing
+            pnpm format:check
+          fi
+
+      - name: Format Check Disabled Warning
+        if: ${{ vars.DISABLE_FORMAT_CHECK }}
+        run: |
+          echo "::warning::⚠️ FORMAT CHECK IS DISABLED"
+          echo "Format checking is currently disabled via DISABLE_FORMAT_CHECK repository variable."
+
+      # Security Scanning (Critical - Stop on fail)
+      - name: Security Scan
+        id: security
+        if: ${{ !vars.DISABLE_SECURITY_CHECK }}
+        run: |
+          if [ "${{ vars.DISABLE_SECURITY_CHECK }}" = "true" ]; then
+            echo "⚠️ Security scan is DISABLED" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          echo "Running critical security scans..."
+          pnpm precommit:trufflehog
+          pnpm precommit:env-files
+          pnpm precommit:api-keys
+
+      - name: Security Check Disabled Warning
+        if: ${{ vars.DISABLE_SECURITY_CHECK }}
+        run: |
+          echo "::error::⚠️ SECURITY CHECK IS DISABLED"
+          echo "Security scanning is currently disabled via DISABLE_SECURITY_CHECK repository variable."
+          echo "This is a critical security risk and should only be temporary."
+
+      # Dependency Security (Stop on critical)
+      - name: Dependency Security Audit
+        if: ${{ !vars.DISABLE_DEPENDENCY_AUDIT }}
+        run: |
+          echo "Checking for vulnerable dependencies..."
+          pnpm audit --prod
+          
+      - name: Dependency Audit Disabled Warning
+        if: ${{ vars.DISABLE_DEPENDENCY_AUDIT }}
+        run: |
+          echo "::warning::⚠️ DEPENDENCY AUDIT IS DISABLED"
+
+      # Lint Check (Stop on errors)
+      - name: Lint Check
+        if: ${{ !vars.DISABLE_LINT_CHECK }}
+        run: |
+          echo "Running ESLint across all packages..."
+          pnpm lint
+
+      - name: Lint Check Disabled Warning
+        if: ${{ vars.DISABLE_LINT_CHECK }}
+        run: |
+          echo "::warning::⚠️ LINT CHECK IS DISABLED"
+
+      # TypeScript Compilation (Stop on errors)
+      - name: TypeScript Check
+        if: ${{ !vars.DISABLE_TYPECHECK }}
+        run: |
+          echo "Checking TypeScript compilation..."
+          pnpm typecheck
+
+      - name: TypeScript Check Disabled Warning
+        if: ${{ vars.DISABLE_TYPECHECK }}
+        run: |
+          echo "::warning::⚠️ TYPESCRIPT CHECK IS DISABLED"
+
+      # Integration Tests (Stop on failures)
+      - name: Integration Tests
+        if: ${{ !vars.DISABLE_INTEGRATION_TESTS }}
+        working-directory: apps/liminal-api
+        run: |
+          echo "Running integration tests..."
+          npm test
+
+      - name: Integration Tests Disabled Warning
+        if: ${{ vars.DISABLE_INTEGRATION_TESTS }}
+        run: |
+          echo "::warning::⚠️ INTEGRATION TESTS ARE DISABLED"
+
+      # Show disabled gates summary
+      - name: Disabled Gates Summary
+        if: ${{ vars.DISABLE_FORMAT_CHECK || vars.DISABLE_SECURITY_CHECK || vars.DISABLE_DEPENDENCY_AUDIT || vars.DISABLE_LINT_CHECK || vars.DISABLE_TYPECHECK || vars.DISABLE_INTEGRATION_TESTS }}
+        run: |
+          echo "## ⚠️ DISABLED QUALITY GATES ⚠️" >> $GITHUB_STEP_SUMMARY
+          echo "The following gates are currently disabled:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ vars.DISABLE_FORMAT_CHECK }}" = "true" ]; then
+            echo "- ❌ **Format Check** (DISABLE_FORMAT_CHECK=true)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ vars.DISABLE_SECURITY_CHECK }}" = "true" ]; then
+            echo "- ❌ **Security Scan** (DISABLE_SECURITY_CHECK=true) 🚨 **CRITICAL RISK**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ vars.DISABLE_DEPENDENCY_AUDIT }}" = "true" ]; then
+            echo "- ❌ **Dependency Audit** (DISABLE_DEPENDENCY_AUDIT=true)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ vars.DISABLE_LINT_CHECK }}" = "true" ]; then
+            echo "- ❌ **Lint Check** (DISABLE_LINT_CHECK=true)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ vars.DISABLE_TYPECHECK }}" = "true" ]; then
+            echo "- ❌ **TypeScript Check** (DISABLE_TYPECHECK=true)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ vars.DISABLE_INTEGRATION_TESTS }}" = "true" ]; then
+            echo "- ❌ **Integration Tests** (DISABLE_INTEGRATION_TESTS=true)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**To re-enable:** Go to Repository Settings → Secrets and variables → Actions → Variables" >> $GITHUB_STEP_SUMMARY
+
+  # Staging Deployment (Only if all quality gates pass)
+  staging-deployment:
+    name: Staging Deployment
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy to Staging
+        working-directory: apps/liminal-api
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_STAGING_DEPLOY_KEY }}
+        run: |
+          echo "Deploying to Convex staging environment..."
+          npx convex deploy
+
+      - name: Health Check Staging
+        env:
+          STAGING_URL: ${{ vars.CONVEX_STAGING_URL }}
+        run: |
+          echo "Running health check against staging environment..."
+          
+          # Wait a moment for deployment to be ready
+          sleep 10
+          
+          # Health check
+          if curl -f "$STAGING_URL/health"; then
+            echo "✅ Staging deployment successful and healthy"
+          else
+            echo "❌ Staging health check failed"
+            exit 1
+          fi
+
+      - name: Staging Deployment Summary
+        run: |
+          echo "## 🚀 Staging Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "Backend successfully deployed to staging environment." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Staging URL:** ${{ vars.CONVEX_STAGING_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Health Check:** ✅ Passed" >> $GITHUB_STEP_SUMMARY
