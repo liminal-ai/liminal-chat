@@ -54,7 +54,7 @@ jobs:
       # Format Check (Auto-fix)
       - name: Format Check
         id: format
-        if: ${{ !vars.DISABLE_FORMAT_CHECK }}
+        if: ${{ vars.DISABLE_FORMAT_CHECK != 'true' }}
         run: |
           if [ "${{ vars.DISABLE_FORMAT_CHECK }}" = "true" ]; then
             echo "⚠️ Format check is DISABLED" >> $GITHUB_STEP_SUMMARY
@@ -83,7 +83,7 @@ jobs:
 
       # Security Scanning (Critical - Stop on fail)
       - name: TruffleHog Security Scan
-        if: ${{ !vars.DISABLE_SECURITY_CHECK }}
+        if: ${{ vars.DISABLE_SECURITY_CHECK != 'true' }}
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
@@ -92,7 +92,7 @@ jobs:
 
       - name: Additional Security Checks
         id: security
-        if: ${{ !vars.DISABLE_SECURITY_CHECK }}
+        if: ${{ vars.DISABLE_SECURITY_CHECK != 'true' }}
         run: |
           echo "Running additional security checks..."
           pnpm precommit:env-files
@@ -107,7 +107,7 @@ jobs:
 
       # Dependency Security (Stop on critical)
       - name: Dependency Security Audit
-        if: ${{ !vars.DISABLE_DEPENDENCY_AUDIT }}
+        if: ${{ vars.DISABLE_DEPENDENCY_AUDIT != 'true' }}
         run: |
           echo "Checking for vulnerable dependencies..."
           pnpm audit --prod
@@ -119,7 +119,7 @@ jobs:
 
       # Lint Check (Stop on errors)
       - name: Lint Check
-        if: ${{ !vars.DISABLE_LINT_CHECK }}
+        if: ${{ vars.DISABLE_LINT_CHECK != 'true' }}
         run: |
           echo "Running ESLint across all packages..."
           pnpm lint
@@ -131,7 +131,7 @@ jobs:
 
       # TypeScript Compilation (Stop on errors)
       - name: TypeScript Check
-        if: ${{ !vars.DISABLE_TYPECHECK }}
+        if: ${{ vars.DISABLE_TYPECHECK != 'true' }}
         run: |
           echo "Checking TypeScript compilation..."
           pnpm typecheck
@@ -143,11 +143,11 @@ jobs:
 
       # Integration Tests (Stop on failures)
       - name: Integration Tests
-        if: ${{ !vars.DISABLE_INTEGRATION_TESTS }}
+        if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
         working-directory: apps/liminal-api
         run: |
           echo "Running integration tests..."
-          npm test
+          pnpm test
 
       - name: Integration Tests Disabled Warning
         if: ${{ vars.DISABLE_INTEGRATION_TESTS }}
@@ -242,14 +242,23 @@ jobs:
         run: |
           echo "Running health check against staging environment..."
 
+          # Validate staging URL is set
+          if [ -z "$STAGING_URL" ]; then
+            echo "::error::CONVEX_STAGING_URL is not set in repository variables"
+            echo "Please configure CONVEX_STAGING_URL in Repository Settings → Secrets and variables → Actions → Variables"
+            exit 1
+          fi
+
           # Wait a moment for deployment to be ready
           sleep 10
 
-          # Health check
-          if curl -f "$STAGING_URL/health"; then
+          # Health check with timeout
+          echo "Testing health endpoint: $STAGING_URL/health"
+          if curl -f --max-time 30 "$STAGING_URL/health"; then
             echo "✅ Staging deployment successful and healthy"
           else
             echo "❌ Staging health check failed"
+            echo "::error::Health check failed for $STAGING_URL/health"
             exit 1
           fi
 

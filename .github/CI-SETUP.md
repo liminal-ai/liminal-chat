@@ -26,7 +26,7 @@ Set these to `"true"` only when absolutely necessary:
 
 - **DISABLE_FORMAT_CHECK** - Disables Prettier format checking
 - **DISABLE_SECURITY_CHECK** - Disables TruffleHog security scanning ⚠️ **CRITICAL RISK**
-- **DISABLE_DEPENDENCY_AUDIT** - Disables npm audit for vulnerable dependencies
+- **DISABLE_DEPENDENCY_AUDIT** - Disables pnpm audit for vulnerable dependencies
 - **DISABLE_LINT_CHECK** - Disables ESLint checking
 - **DISABLE_TYPECHECK** - Disables TypeScript compilation checking
 - **DISABLE_INTEGRATION_TESTS** - Disables integration test execution
@@ -76,7 +76,7 @@ Set these to `"true"` only when absolutely necessary:
 - **Failure**: Blocks merge on type errors
 
 ### 6. Integration Tests
-- **Command**: `npm test` (in `apps/liminal-api`)
+- **Command**: `pnpm test` (in `apps/liminal-api`)
 - **Behavior**: Runs all 11 integration tests
 - **Failure**: Blocks merge on test failures
 
