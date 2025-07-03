@@ -56,11 +56,6 @@ jobs:
         id: format
         if: ${{ vars.DISABLE_FORMAT_CHECK != 'true' }}
         run: |
-          if [ "${{ vars.DISABLE_FORMAT_CHECK }}" = "true" ]; then
-            echo "⚠️ Format check is DISABLED" >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
-
           echo "Checking code formatting..."
           if ! pnpm format:check; then
             echo "Files need formatting. Auto-fixing..."
@@ -76,7 +71,7 @@ jobs:
           fi
 
       - name: Format Check Disabled Warning
-        if: ${{ vars.DISABLE_FORMAT_CHECK }}
+        if: ${{ vars.DISABLE_FORMAT_CHECK == 'true' }}
         run: |
           echo "::warning::⚠️ FORMAT CHECK IS DISABLED"
           echo "Format checking is currently disabled via DISABLE_FORMAT_CHECK repository variable."
@@ -99,7 +94,7 @@ jobs:
           pnpm precommit:api-keys
 
       - name: Security Check Disabled Warning
-        if: ${{ vars.DISABLE_SECURITY_CHECK }}
+        if: ${{ vars.DISABLE_SECURITY_CHECK == 'true' }}
         run: |
           echo "::error::⚠️ SECURITY CHECK IS DISABLED"
           echo "Security scanning is currently disabled via DISABLE_SECURITY_CHECK repository variable."
@@ -113,7 +108,7 @@ jobs:
           pnpm audit --prod
 
       - name: Dependency Audit Disabled Warning
-        if: ${{ vars.DISABLE_DEPENDENCY_AUDIT }}
+        if: ${{ vars.DISABLE_DEPENDENCY_AUDIT == 'true' }}
         run: |
           echo "::warning::⚠️ DEPENDENCY AUDIT IS DISABLED"
 
@@ -125,7 +120,7 @@ jobs:
           pnpm lint
 
       - name: Lint Check Disabled Warning
-        if: ${{ vars.DISABLE_LINT_CHECK }}
+        if: ${{ vars.DISABLE_LINT_CHECK == 'true' }}
         run: |
           echo "::warning::⚠️ LINT CHECK IS DISABLED"
 
@@ -137,7 +132,7 @@ jobs:
           pnpm typecheck
 
       - name: TypeScript Check Disabled Warning
-        if: ${{ vars.DISABLE_TYPECHECK }}
+        if: ${{ vars.DISABLE_TYPECHECK == 'true' }}
         run: |
           echo "::warning::⚠️ TYPESCRIPT CHECK IS DISABLED"
 
@@ -150,7 +145,7 @@ jobs:
           pnpm test
 
       - name: Integration Tests Disabled Warning
-        if: ${{ vars.DISABLE_INTEGRATION_TESTS }}
+        if: ${{ vars.DISABLE_INTEGRATION_TESTS == 'true' }}
         run: |
           echo "::warning::⚠️ INTEGRATION TESTS ARE DISABLED"
 
