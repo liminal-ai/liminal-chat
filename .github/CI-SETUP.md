@@ -110,32 +110,29 @@ When any quality gates are disabled:
 
 ## Setup Steps
 
-### 1. Create Staging Environment
-```bash
-# Create new Convex project for staging
-npx convex dev --configure-new
+### 1. Create Preview Deploy Key
+**Important**: Convex uses Preview Deployments for staging environments.
 
-# Set environment variables (copy from production)
-npx convex env set OPENAI_API_KEY "your-key"
-npx convex env set ANTHROPIC_API_KEY "your-key"
-# ... (repeat for all API keys)
+1. Open Convex Dashboard: `npx convex dashboard`
+2. Navigate to Settings → Deploy Keys
+3. Click "Create Preview Deploy Key"
+4. Name it "GitHub Actions Staging"
+5. Copy the generated key
 
-# Deploy initial version
-npx convex deploy
-```
+### 2. Get Staging URL
+Preview deployments use dynamic URLs. The staging URL will be:
+- Format: `https://[deployment-name].convex.site`
+- Example: `https://modest-squirrel-498-staging.convex.site`
 
-### 2. Generate Deploy Key
-```bash
-# Generate deployment key for GitHub Actions
-npx convex auth create-key --name "GitHub Actions Staging"
-# Copy the generated key to GitHub Secrets as CONVEX_STAGING_DEPLOY_KEY
-```
+Note: Preview deployment URLs are created automatically when you first deploy with the deploy key.
 
 ### 3. Configure Repository
 1. Go to Repository Settings → Secrets and variables → Actions
-2. Add **CONVEX_STAGING_DEPLOY_KEY** secret
-3. Add **CONVEX_STAGING_URL** variable
+2. Add **CONVEX_STAGING_DEPLOY_KEY** secret (the preview deploy key from step 1)
+3. Add **CONVEX_STAGING_URL** variable (the preview deployment URL)
 4. Optionally configure gate control variables
+
+**Note**: The staging URL will be available after the first successful deployment with the deploy key.
 
 ### 4. Test Workflow
 1. Create a test PR with backend changes
