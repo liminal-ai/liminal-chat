@@ -33,7 +33,7 @@
     "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write --log-level warn \"{apps,packages}/**/*.{js,jsx,ts,tsx,json}\""
+    "format:fix": "prettier --write --log-level warn ."
   },
   "devDependencies": {
     "@playwright/test": "^1.53.1",
