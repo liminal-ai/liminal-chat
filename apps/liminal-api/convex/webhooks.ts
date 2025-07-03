@@ -4,12 +4,12 @@ import { createWebhookError } from './lib/errors';
 /**
  * Webhook handler for Clerk user lifecycle events.
  * Verifies webhook signature and processes user creation/update/deletion events.
- * 
+ *
  * @param ctx - Convex action context
  * @param request - HTTP request containing Clerk webhook payload
  * @returns HTTP response confirming webhook processing
  * @throws WebhookError if signature verification fails
- * 
+ *
  * @example
  * ```typescript
  * // Configure webhook endpoint in Clerk dashboard:
@@ -19,7 +19,7 @@ import { createWebhookError } from './lib/errors';
  */
 export const clerkWebhook = httpAction(async (ctx, request) => {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
-  
+
   if (!webhookSecret) {
     throw createWebhookError('missing_secret');
   }
@@ -32,7 +32,7 @@ export const clerkWebhook = httpAction(async (ctx, request) => {
 
   // Get request body as text for signature verification
   const body = await request.text();
-  
+
   // Verify the webhook signature using Clerk's verification
   try {
     const { Webhook } = await import('svix');
@@ -42,7 +42,7 @@ export const clerkWebhook = httpAction(async (ctx, request) => {
       'svix-timestamp': request.headers.get('svix-timestamp') || '',
       'svix-signature': signature,
     });
-    
+
     // Parse the verified payload
     const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
 
@@ -71,7 +71,6 @@ export const clerkWebhook = httpAction(async (ctx, request) => {
     }
 
     return new Response('OK', { status: 200 });
-    
   } catch (error) {
     console.error('Webhook verification failed:', error);
     throw createWebhookError('invalid_signature');

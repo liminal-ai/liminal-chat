@@ -68,6 +68,8 @@ export default defineSchema(
       content: v.any(), // Typed based on message type
       // When it was created
       createdAt: v.number(),
+      // When it was last updated
+      updatedAt: v.number(),
       // Optional metadata
       metadata: v.optional(
         v.object({

@@ -7,6 +7,8 @@ Format Check (Auto-fix)
      - Shows files that need formatting
    - Command: `pnpm format:fix` (if needed)
      - Automatically formats staged files
+   - Command: `pnpm precommit:stage-all`
+     - Re-stage any files modified by Prettier
 
 Security: Critical Security (Stop on fail)
    - Command: `pnpm precommit:trufflehog`
@@ -53,8 +55,8 @@ Documentation Generation (Auto-update)
    - Continue even if generation has warnings
 
 Final Summary
-    - Show summary of all checks (passed/failed/warnings)
-    - List any issues that need attention
-    - If all critical checks pass, proceed to commit message
+   - Show summary of all checks (passed/failed/warnings)
+   - List any issues that need attention
+   - If all critical checks pass, proceed to commit message
 
 All output should be shown in the conversation

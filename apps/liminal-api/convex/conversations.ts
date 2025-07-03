@@ -204,7 +204,7 @@ export const update = mutation({
 
     if (args.metadata !== undefined) {
       updates.metadata = {
-        ...conversation.metadata,
+        ...(conversation.metadata || {}),
         ...args.metadata,
       };
     }
@@ -243,7 +243,7 @@ export const archive = mutation({
 
     await ctx.db.patch(args.conversationId, {
       metadata: {
-        ...conversation.metadata,
+        ...(conversation.metadata || {}),
         archived: true,
       },
       updatedAt: Date.now(),

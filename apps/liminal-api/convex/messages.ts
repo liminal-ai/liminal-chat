@@ -99,6 +99,7 @@ export const create = mutation({
       type: args.type,
       content: args.content,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
       metadata: args.metadata,
     });
 
@@ -350,6 +351,7 @@ export const createBatch = mutation({
         type: message.type,
         content: message.content,
         createdAt: now,
+        updatedAt: now,
         metadata: message.metadata,
       });
 

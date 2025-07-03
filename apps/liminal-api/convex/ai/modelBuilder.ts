@@ -89,61 +89,66 @@ export class ModelBuilder {
     // The getProviderApiKey function now throws with a helpful error message
     // if the API key is missing, so we don't need additional error handling here
 
-    // Build model options including parameters and provider-specific settings
-    const modelOptions = {
-      ...this.params,
-      ...this.providerOptions,
-    };
-
     // Dynamic imports based on provider
+    // Note: Model parameters (temperature, etc.) should be passed to generateText/streamText,
+    // not to the provider constructor
     switch (this.provider) {
       case 'openai': {
-        const { openai } = await import('@ai-sdk/openai');
-        const provider = openai({
-          apiKey,
-          ...this.providerOptions,
-        });
-        return provider(modelId, modelOptions);
+        const { openai, createOpenAI } = await import('@ai-sdk/openai');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createOpenAI({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return openai(modelId);
       }
       case 'anthropic': {
-        const { anthropic } = await import('@ai-sdk/anthropic');
-        const provider = anthropic({
-          apiKey,
-          ...this.providerOptions,
-        });
-        return provider(modelId, modelOptions);
+        const { anthropic, createAnthropic } = await import('@ai-sdk/anthropic');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createAnthropic({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return anthropic(modelId);
       }
       case 'google': {
-        const { google } = await import('@ai-sdk/google');
-        const provider = google({
-          apiKey,
-          ...this.providerOptions,
-        });
-        return provider(modelId, modelOptions);
+        const { google, createGoogleGenerativeAI } = await import('@ai-sdk/google');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createGoogleGenerativeAI({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return google(modelId);
       }
       case 'perplexity': {
         const { createPerplexity } = await import('@ai-sdk/perplexity');
-        const provider = createPerplexity({ 
+        const provider = createPerplexity({
           apiKey,
           ...this.providerOptions,
         });
-        return provider(modelId, modelOptions);
+        return provider(modelId);
       }
       case 'vercel': {
         const { createVercel } = await import('@ai-sdk/vercel');
-        const provider = createVercel({ 
+        const provider = createVercel({
           apiKey,
           ...this.providerOptions,
         });
-        return provider(modelId, modelOptions);
+        return provider(modelId);
       }
       case 'openrouter': {
         const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
-        const provider = createOpenRouter({ 
+        const provider = createOpenRouter({
           apiKey,
           ...this.providerOptions,
         });
-        return provider(modelId, modelOptions);
+        return provider(modelId);
       }
       default:
         throw new Error(`Unknown provider: ${String(this.provider)}`);
@@ -151,6 +156,18 @@ export class ModelBuilder {
   }
 
   // Get configuration for use with AI SDK functions
+  // Returns both the model (for generateText/streamText) and params separately
+  async getModelAndParams() {
+    const model = await this.build();
+    return {
+      model,
+      params: this.params, // These go to generateText/streamText calls
+      provider: this.provider,
+      modelId: this.modelId || getProviderConfig(this.provider).defaultModel,
+    };
+  }
+
+  // Legacy method for backward compatibility
   getConfig() {
     const config = getProviderConfig(this.provider);
     return {
