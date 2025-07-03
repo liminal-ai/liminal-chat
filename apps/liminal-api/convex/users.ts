@@ -3,7 +3,17 @@ import { mutation, query } from "./_generated/server";
 import { getAuth, requireAuth, getDEV_USER_CONFIG, validateDevConfig } from "./lib/auth";
 import { env } from "./lib/env";
 
-// Query to get the current authenticated user
+/**
+ * Gets the current authenticated user from the database.
+ * 
+ * @returns The user object if authenticated, null otherwise
+ * 
+ * @example
+ * const user = await ctx.runQuery(api.users.getCurrentUser);
+ * if (user) {
+ *   console.log(`Welcome ${user.name}`);
+ * }
+ */
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
@@ -22,7 +32,23 @@ export const getCurrentUser = query({
   },
 });
 
-// Mutation to create or update a user when they sign in
+/**
+ * Synchronizes user data from authentication provider to the database.
+ * Creates a new user if they don't exist, or updates existing user data.
+ * 
+ * @param email - User's email address
+ * @param name - User's display name (optional)
+ * @param imageUrl - URL to user's profile image (optional)
+ * 
+ * @throws Error if not authenticated
+ * 
+ * @example
+ * await ctx.runMutation(api.users.syncUser, {
+ *   email: "user@example.com",
+ *   name: "John Doe",
+ *   imageUrl: "https://example.com/avatar.jpg"
+ * });
+ */
 export const syncUser = mutation({
   args: {
     email: v.string(),
@@ -59,7 +85,18 @@ export const syncUser = mutation({
   },
 });
 
-// Query to test if authentication is working
+/**
+ * Tests the authentication status and returns user information.
+ * Useful for debugging auth issues and health checks.
+ * 
+ * @returns Object with authentication status and user data
+ * @returns {boolean} authenticated - Whether the user is authenticated
+ * @returns {Object|null} user - The user object if authenticated
+ * 
+ * @example
+ * const { authenticated, user } = await ctx.runQuery(api.users.testAuth);
+ * console.log(`Auth status: ${authenticated}`);
+ */
 export const testAuth = query({
   args: {},
   handler: async (ctx) => {
@@ -84,7 +121,16 @@ export const testAuth = query({
   },
 });
 
-// Query to get the count of users in the database
+/**
+ * Gets the total count of users in the database.
+ * Used for health checks and monitoring.
+ * 
+ * @returns {number} The total number of users
+ * 
+ * @example
+ * const count = await ctx.runQuery(api.users.getUserCount);
+ * console.log(`Total users: ${count}`);
+ */
 export const getUserCount = query({
   args: {},
   handler: async (ctx) => {
@@ -93,7 +139,23 @@ export const getUserCount = query({
   },
 });
 
-// Query to get a sample user (for health check)
+/**
+ * Gets a sanitized sample user for health checks.
+ * Returns only non-sensitive user data.
+ * 
+ * @returns Sanitized user data or null if no users exist
+ * @returns {string} id - User's database ID
+ * @returns {boolean} hasEmail - Whether user has an email
+ * @returns {boolean} hasName - Whether user has a name
+ * @returns {boolean} hasImage - Whether user has a profile image
+ * @returns {number} createdAt - Timestamp when user was created
+ * 
+ * @example
+ * const sampleUser = await ctx.runQuery(api.users.getSampleUser);
+ * if (sampleUser) {
+ *   console.log(`Found user created at ${new Date(sampleUser.createdAt)}`);
+ * }
+ */
 export const getSampleUser = query({
   args: {},
   handler: async (ctx) => {
@@ -114,8 +176,30 @@ export const getSampleUser = query({
   },
 });
 
-// Mutation to initialize dev user (call this once to set up dev environment)
-// SECURITY: This function is restricted to development environments only
+/**
+ * Initializes the default development user for local testing.
+ * 
+ * @security This function is restricted to development environments only.
+ * It will throw an error if NODE_ENV is set to "production".
+ * 
+ * @throws Error if called in production environment
+ * @throws Error if dev environment variables are not configured
+ * 
+ * @returns Object with creation status
+ * @returns {string} message - Status message
+ * @returns {string} userId - The created or existing user's ID
+ * 
+ * @example
+ * // First set environment variables:
+ * // npx convex env set DEV_AUTH_DEFAULT true
+ * // npx convex env set DEV_USER_ID "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
+ * // npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
+ * // npx convex env set DEV_USER_NAME "Dev User"
+ * 
+ * // Then initialize:
+ * const result = await ctx.runMutation(api.users.initializeDevUser);
+ * console.log(result.message); // "Dev user created" or "Dev user already exists"
+ */
 export const initializeDevUser = mutation({
   args: {},
   handler: async (ctx) => {

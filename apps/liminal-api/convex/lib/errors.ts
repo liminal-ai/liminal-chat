@@ -3,7 +3,12 @@
  */
 
 /**
- * Configuration error with helpful instructions
+ * Configuration error with helpful instructions.
+ * Extends Error with additional context for missing configuration.
+ * 
+ * @param message - The error message
+ * @param variableName - The name of the missing variable
+ * @param helpText - Additional help text for resolution
  */
 export class ConfigurationError extends Error {
   constructor(
@@ -17,7 +22,21 @@ export class ConfigurationError extends Error {
 }
 
 /**
- * Create a helpful configuration error message
+ * Creates a helpful configuration error message with setup instructions.
+ * 
+ * @param variableName - The name of the missing environment variable
+ * @param description - What the variable is used for
+ * @param example - Example value format
+ * @param additionalHelp - Extra help text specific to this variable
+ * @returns ConfigurationError with formatted message
+ * 
+ * @example
+ * throw createConfigError(
+ *   "OPENAI_API_KEY",
+ *   "OpenAI API key for GPT models",
+ *   "sk-...",
+ *   "Get your key at: https://platform.openai.com/api-keys"
+ * );
  */
 export function createConfigError(
   variableName: string,
@@ -43,7 +62,16 @@ export function createConfigError(
 }
 
 /**
- * API key error with provider-specific help
+ * Creates an API key error with provider-specific documentation links.
+ * 
+ * @param provider - The AI provider name (e.g., "openai", "anthropic")
+ * @param keyName - The environment variable name for the API key
+ * @returns Error with setup instructions and documentation link
+ * 
+ * @example
+ * if (!process.env.OPENAI_API_KEY) {
+ *   throw createApiKeyError("openai", "OPENAI_API_KEY");
+ * }
  */
 export function createApiKeyError(provider: string, keyName: string): Error {
   const providerUrls: Record<string, string> = {
@@ -69,7 +97,16 @@ export function createApiKeyError(provider: string, keyName: string): Error {
 }
 
 /**
- * Authentication configuration error
+ * Creates an authentication configuration error.
+ * Different messages for production vs development contexts.
+ * 
+ * @param context - Whether this is a production or development auth error
+ * @returns Error with context-appropriate setup instructions
+ * 
+ * @example
+ * if (!identity && env.isProduction) {
+ *   throw createAuthError('production');
+ * }
  */
 export function createAuthError(context: 'production' | 'development'): Error {
   if (context === 'production') {
@@ -100,7 +137,19 @@ export function createAuthError(context: 'production' | 'development'): Error {
 }
 
 /**
- * Model not found error with suggestions
+ * Creates a model not found error with available alternatives.
+ * 
+ * @param provider - The AI provider name
+ * @param requestedModel - The model that was requested but not found
+ * @param availableModels - List of models available for this provider
+ * @returns Error with model suggestions
+ * 
+ * @example
+ * throw createModelError(
+ *   "openai",
+ *   "gpt-5",
+ *   ["gpt-4", "gpt-3.5-turbo"]
+ * );
  */
 export function createModelError(
   provider: string,
@@ -118,7 +167,15 @@ export function createModelError(
 }
 
 /**
- * Rate limit error with retry guidance
+ * Creates a rate limit error with retry guidance.
+ * 
+ * @param provider - The AI provider that returned rate limit error
+ * @param retryAfter - Optional seconds to wait before retry
+ * @returns Error with rate limit handling suggestions
+ * 
+ * @example
+ * // From a 429 response
+ * throw createRateLimitError("openai", 60);
  */
 export function createRateLimitError(
   provider: string,
@@ -141,7 +198,21 @@ export function createRateLimitError(
 }
 
 /**
- * Webhook configuration error
+ * Creates a webhook configuration or verification error.
+ * 
+ * @param issue - The type of webhook error
+ * @returns Error with webhook setup or debugging instructions
+ * 
+ * @example
+ * // When secret is missing
+ * if (!env.CLERK_WEBHOOK_SECRET) {
+ *   throw createWebhookError('missing_secret');
+ * }
+ * 
+ * // When signature verification fails
+ * if (!isValidSignature) {
+ *   throw createWebhookError('invalid_signature');
+ * }
  */
 export function createWebhookError(issue: 'missing_secret' | 'invalid_signature'): Error {
   if (issue === 'missing_secret') {

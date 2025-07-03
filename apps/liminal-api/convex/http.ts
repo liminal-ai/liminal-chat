@@ -507,4 +507,20 @@ http.route({
   }),
 });
 
+/**
+ * HTTP router configuration for Convex.
+ * Combines Hono routes for RESTful endpoints with native Convex HTTP actions for streaming.
+ * 
+ * Available endpoints:
+ * - GET /health - System health check
+ * - POST /clerk-webhook - Clerk user sync webhook
+ * - POST /api/chat-text - Non-streaming chat completion
+ * - POST /api/chat - Streaming chat (Vercel AI SDK format)
+ * - POST /api/completion - Streaming completion
+ * - GET /api/conversations - List conversations
+ * - POST /api/conversations - Create conversation
+ * - GET /api/conversations/:id - Get conversation with messages
+ * - PATCH /api/conversations/:id - Update conversation
+ * - DELETE /api/conversations/:id - Archive conversation
+ */
 export default http;

@@ -27,7 +27,29 @@ const _messageContentValidators = {
   }),
 };
 
-// Create a new message
+/**
+ * Creates a new message in a conversation.
+ * Verifies ownership and validates author permissions.
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param authorType - Type of author: "user", "agent", or "system"
+ * @param authorId - ID of the author (must match user token for "user" type)
+ * @param type - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error"
+ * @param content - Message content (structure depends on type)
+ * @param metadata - Optional metadata like model, tokens, etc.
+ * @returns The ID of the created message
+ * @throws Error if conversation not found or user doesn't own it
+ * @throws Error if user message authorId doesn't match authenticated user
+ * 
+ * @example
+ * const messageId = await ctx.runMutation(api.messages.create, {
+ *   conversationId: "j123...",
+ *   authorType: "user",
+ *   authorId: identity.tokenIdentifier,
+ *   type: "text",
+ *   content: "Hello, AI!"
+ * });
+ */
 export const create = mutation({
   args: {
     conversationId: v.id("conversations"),
@@ -86,7 +108,23 @@ export const create = mutation({
   },
 });
 
-// List messages for a conversation with pagination
+/**
+ * Lists messages in a conversation with pagination support.
+ * Messages are returned in chronological order (oldest first).
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param paginationOpts - Pagination options
+ * @param paginationOpts.numItems - Number of items per page (default: 50)
+ * @param paginationOpts.cursor - Cursor for pagination
+ * @returns Paginated message list with page array and isDone flag
+ * @returns Empty result if not authenticated or not owner
+ * 
+ * @example
+ * const { page, isDone } = await ctx.runQuery(api.messages.list, {
+ *   conversationId: "j123...",
+ *   paginationOpts: { numItems: 20 }
+ * });
+ */
 export const list = query({
   args: {
     conversationId: v.id("conversations"),
@@ -123,7 +161,32 @@ export const list = query({
   },
 });
 
-// Get all messages for a conversation with pagination protection
+/**
+ * Gets all messages for a conversation with cursor-based pagination.
+ * Includes protection against loading too many messages at once.
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param limit - Maximum messages to return (default: 100, max: 1000)
+ * @param cursor - Message ID to start after (for pagination)
+ * @returns Object with messages array, hasMore flag, and nextCursor
+ * @returns Empty result if not authenticated or not owner
+ * 
+ * @example
+ * // First page
+ * const { messages, hasMore, nextCursor } = await ctx.runQuery(api.messages.getAll, {
+ *   conversationId: "j123...",
+ *   limit: 50
+ * });
+ * 
+ * // Next page
+ * if (hasMore && nextCursor) {
+ *   const nextPage = await ctx.runQuery(api.messages.getAll, {
+ *     conversationId: "j123...",
+ *     limit: 50,
+ *     cursor: nextCursor
+ *   });
+ * }
+ */
 export const getAll = query({
   args: {
     conversationId: v.id("conversations"),
@@ -188,7 +251,40 @@ export const getAll = query({
   },
 });
 
-// Create multiple messages at once (useful for initial context)
+/**
+ * Creates multiple messages at once in a conversation.
+ * Useful for importing chat history or setting up initial context.
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param messages - Array of message objects to create
+ * @returns Array of created message IDs
+ * @throws Error if conversation not found or user doesn't own it
+ * @throws Error if any user message authorId doesn't match authenticated user
+ * 
+ * @example
+ * const messageIds = await ctx.runMutation(api.messages.createBatch, {
+ *   conversationId: "j123...",
+ *   messages: [
+ *     {
+ *       authorType: "user",
+ *       authorId: identity.tokenIdentifier,
+ *       type: "text",
+ *       content: "What is TypeScript?"
+ *     },
+ *     {
+ *       authorType: "agent",
+ *       authorId: "openai",
+ *       type: "text",
+ *       content: "TypeScript is a typed superset of JavaScript...",
+ *       metadata: {
+ *         model: "gpt-4",
+ *         provider: "openai",
+ *         totalTokens: 125
+ *       }
+ *     }
+ *   ]
+ * });
+ */
 export const createBatch = mutation({
   args: {
     conversationId: v.id("conversations"),
@@ -256,7 +352,26 @@ export const createBatch = mutation({
   },
 });
 
-// Count messages in a conversation
+/**
+ * Counts messages in a conversation, optionally filtered by type.
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param type - Optional filter by message type
+ * @returns The count of messages matching the criteria
+ * @returns 0 if not authenticated or not owner
+ * 
+ * @example
+ * // Count all messages
+ * const total = await ctx.runQuery(api.messages.count, {
+ *   conversationId: "j123..."
+ * });
+ * 
+ * // Count only error messages
+ * const errors = await ctx.runQuery(api.messages.count, {
+ *   conversationId: "j123...",
+ *   type: "error"
+ * });
+ */
 export const count = query({
   args: {
     conversationId: v.id("conversations"),
@@ -294,7 +409,22 @@ export const count = query({
   },
 });
 
-// Get latest messages (useful for context windows)
+/**
+ * Gets the latest messages from a conversation.
+ * Returns messages in chronological order, useful for building context windows.
+ * 
+ * @param conversationId - The ID of the conversation
+ * @param limit - Number of messages to return (default: 10)
+ * @returns Array of the latest messages in chronological order
+ * @returns Empty array if not authenticated or not owner
+ * 
+ * @example
+ * // Get last 5 messages for context
+ * const context = await ctx.runQuery(api.messages.getLatest, {
+ *   conversationId: "j123...",
+ *   limit: 5
+ * });
+ */
 export const getLatest = query({
   args: {
     conversationId: v.id("conversations"),

@@ -7,7 +7,32 @@ import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { getAuthForAction } from "./lib/auth";
 
-// Non-streaming text generation action used by /api/chat-text endpoint
+/**
+ * Non-streaming text generation action for simple chat completions.
+ * Creates or continues a conversation with message persistence.
+ * Used by the `/api/chat-text` HTTP endpoint.
+ * 
+ * @param prompt - The user's input prompt
+ * @param model - Optional model override (provider-specific)
+ * @param provider - AI provider to use (default: "openrouter")
+ * @param conversationId - Optional existing conversation to continue
+ * @returns Generated text response with metadata
+ * @returns {string} text - The generated text
+ * @returns {Object} usage - Token usage statistics
+ * @returns {string} finishReason - Why generation stopped
+ * @returns {string} model - The actual model used
+ * @returns {string} provider - The provider used
+ * @returns {string} conversationId - The conversation ID (created or existing)
+ * 
+ * @example
+ * const result = await ctx.runAction(api.chat.simpleChatAction, {
+ *   prompt: "Explain TypeScript generics",
+ *   provider: "openai",
+ *   model: "gpt-4"
+ * });
+ * console.log(result.text);
+ * console.log(`Conversation ID: ${result.conversationId}`);
+ */
 export const simpleChatAction = action({
   args: {
     prompt: v.string(),
@@ -94,7 +119,34 @@ export const simpleChatAction = action({
   },
 });
 
-// Streaming chat action with message persistence
+/**
+ * Streaming chat action that prepares conversation context.
+ * Saves the user message and returns conversation metadata.
+ * The actual streaming response is handled by the HTTP endpoint.
+ * 
+ * @param messages - Array of conversation messages
+ * @param messages[].role - Message role: "system", "user", or "assistant"
+ * @param messages[].content - Message content
+ * @param model - Optional model override (provider-specific)
+ * @param provider - AI provider to use (default: "openrouter")
+ * @param conversationId - Optional existing conversation to continue
+ * @returns Conversation context for streaming
+ * @returns {string} conversationId - The conversation ID (created or existing)
+ * @returns {string} provider - The provider to use
+ * @returns {string} model - The model to use
+ * @throws Error if last message is not from user
+ * 
+ * @example
+ * const context = await ctx.runAction(api.chat.streamingChatAction, {
+ *   messages: [
+ *     { role: "system", content: "You are a helpful assistant" },
+ *     { role: "user", content: "Hello!" }
+ *   ],
+ *   provider: "anthropic",
+ *   model: "claude-3-sonnet"
+ * });
+ * // Use context.conversationId to save the streaming response later
+ */
 export const streamingChatAction = action({
   args: {
     messages: v.array(v.object({

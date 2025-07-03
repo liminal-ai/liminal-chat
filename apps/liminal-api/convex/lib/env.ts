@@ -97,7 +97,22 @@ const OPTIONAL_ENV_VARS = {
 } as const;
 
 /**
- * Type-safe environment variable access
+ * Type-safe environment variable access.
+ * All getters use lazy evaluation to prevent module loading failures.
+ * 
+ * @example
+ * // Access API keys
+ * const apiKey = env.OPENAI_API_KEY; // Throws helpful error if not set
+ * 
+ * // Check environment
+ * if (env.isProduction) {
+ *   // Production-only code
+ * }
+ * 
+ * // Check dev auth
+ * if (env.isDevAuthEnabled) {
+ *   // Use dev user
+ * }
  */
 export const env = {
   // Required vars (will throw if not set)
@@ -199,8 +214,19 @@ function getConditionalEnv(key: string, conditionName: keyof typeof CONDITIONAL_
 }
 
 /**
- * Validate all environment variables at startup
- * Call this in your Convex functions that depend on environment variables
+ * Validates all environment variables at startup.
+ * Checks required and conditionally required variables.
+ * 
+ * @returns Validation result
+ * @returns {boolean} valid - Whether all required variables are set
+ * @returns {string[]} errors - List of missing variables with descriptions
+ * 
+ * @example
+ * const { valid, errors } = validateEnvironment();
+ * if (!valid) {
+ *   console.error("Missing environment variables:");
+ *   errors.forEach(error => console.error(`  - ${error}`));
+ * }
  */
 export function validateEnvironment(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -234,7 +260,17 @@ export function validateEnvironment(): { valid: boolean; errors: string[] } {
 }
 
 /**
- * Log environment configuration status (masks sensitive values)
+ * Logs environment configuration status to console.
+ * Masks sensitive values for security (shows only first 4 chars).
+ * 
+ * @example
+ * // Call during startup or debugging
+ * logEnvironmentStatus();
+ * // Output:
+ * // === Environment Configuration Status ===
+ * // Required Variables:
+ * //   OPENAI_API_KEY: ✅ Set (sk-p...)
+ * //   ANTHROPIC_API_KEY: ❌ Missing (Not set)
  */
 export function logEnvironmentStatus(): void {
   console.log("=== Environment Configuration Status ===");

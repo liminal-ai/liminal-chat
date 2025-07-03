@@ -18,18 +18,26 @@ During development, we use a default dev user instead of requiring full Clerk au
 - Test features that require authentication
 - Maintain consistent user context across sessions
 
-### Configuration
+### Environment Configuration
 
-The dev user is configured in `/apps/liminal-api/convex/lib/auth.ts`:
+With the new environment system implemented on July 2, 2025, dev user configuration is now managed through environment variables:
 
-```typescript
-const DEV_USER_CONFIG = {
-  tokenIdentifier: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI',
-  email: 'dev@liminal.chat',
-  name: 'Dev User',
-  subject: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI'
-};
+```bash
+# Enable dev auth (development only)
+npx convex env set DEV_AUTH_DEFAULT true
+
+# Set dev user configuration
+npx convex env set DEV_USER_ID "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
+npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
+npx convex env set DEV_USER_NAME "Dev User"
 ```
+
+### Security Protection
+
+The dev auth system includes multiple security layers:
+- **Production Protection**: Dev auth is automatically disabled when `NODE_ENV === 'production'`
+- **Lazy Evaluation**: Dev user config is only loaded when needed, preventing startup failures
+- **Validation**: The system validates all required env vars are set when dev auth is enabled
 
 ### Setting Up Dev User
 
@@ -37,6 +45,9 @@ const DEV_USER_CONFIG = {
    ```bash
    cd apps/liminal-api
    npx convex env set DEV_AUTH_DEFAULT true
+   npx convex env set DEV_USER_ID "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
+   npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
+   npx convex env set DEV_USER_NAME "Dev User"
    ```
 
 2. **Initialize Dev User in Database**
@@ -71,23 +82,24 @@ In production, authentication works as follows:
 
 ### Configuration Requirements
 
-1. **Clerk Keys** (in `.env.local`):
+1. **Environment Variables** (in Convex cloud):
+   ```bash
+   npx convex env set CLERK_ISSUER_URL "https://your-instance.clerk.accounts.dev"
+   npx convex env set CLERK_WEBHOOK_SECRET "whsec_your_webhook_secret"
+   ```
+
+2. **Next.js Environment** (when we build the frontend):
    ```
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
    CLERK_SECRET_KEY=sk_...
    ```
 
-2. **Convex Environment**:
-   ```bash
-   npx convex env set CLERK_ISSUER_URL https://your-instance.clerk.accounts.dev
-   ```
+### Webhook Security
 
-### User Synchronization
-
-Users are synchronized to Convex through:
-- Webhook endpoint at `/clerk-webhook`
-- Manual sync via `users.syncUser` mutation
-- Automatic sync on first authenticated request
+The Clerk webhook endpoint now includes Svix signature verification:
+- Validates webhook signatures to prevent spoofing
+- Requires `CLERK_WEBHOOK_SECRET` to be set
+- Returns proper error messages for missing configuration
 
 ## Auth Helper Functions
 
@@ -97,10 +109,12 @@ Used in mutations and queries that require authentication.
 
 ```typescript
 export async function requireAuth(ctx: QueryCtx | MutationCtx) {
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+  // In development with bypass enabled, return the dev user
+  if (env.isDevAuthEnabled) {
     return await getDevUser(ctx);
   }
   
+  // Normal auth flow
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
     throw new Error("Authentication required");
@@ -124,7 +138,8 @@ Used in queries where authentication enhances but isn't required.
 
 ```typescript
 export async function getAuth(ctx: QueryCtx | MutationCtx) {
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
+  // In development with default auth enabled, return the dev user
+  if (env.isDevAuthEnabled) {
     return await getDevUser(ctx);
   }
   
@@ -147,8 +162,10 @@ Special version for Convex actions (which don't have database access).
 
 ```typescript
 export async function getAuthForAction(ctx: ActionCtx) {
-  if (DEV_AUTH_DEFAULT && process.env.NODE_ENV !== 'production') {
-    return DEV_USER_CONFIG;
+  // In development with default auth enabled, return the dev user config
+  if (env.isDevAuthEnabled) {
+    validateDevConfig();
+    return getDEV_USER_CONFIG();
   }
   
   return await ctx.auth.getUserIdentity();
@@ -160,6 +177,37 @@ export async function getAuthForAction(ctx: ActionCtx) {
 - When calling mutations/queries from actions
 
 **Why different**: Actions can't access the database directly, so they can't look up the dev user.
+
+## Environment System Integration
+
+The authentication system is now integrated with the centralized environment configuration:
+
+### Type-Safe Access
+```typescript
+import { env } from "./lib/env";
+
+// Check if dev auth is enabled (with production protection)
+if (env.isDevAuthEnabled) {
+  // Use dev auth
+}
+
+// Access dev user config (throws helpful errors if not set)
+const userId = env.DEV_USER_ID;
+const userEmail = env.DEV_USER_EMAIL;
+const userName = env.DEV_USER_NAME;
+```
+
+### Error Messages
+When environment variables are missing, you'll see helpful error messages:
+```
+Missing required environment variable: DEV_USER_ID
+Description: Development user Clerk ID
+Example: user_2zINPyhtT9Wem9OeVW4eZDs21KI
+Note: Required when DEV_AUTH_DEFAULT is true (development only)
+
+To set this variable in Convex:
+npx convex env set DEV_USER_ID "your-value-here"
+```
 
 ## Common Patterns
 
@@ -230,35 +278,32 @@ export const listPublicItems = query({
 
 **Solution**: Ensure queries use auth helper functions
 
-#### 404 on Resource Access
-**Symptom**: Fetching specific resources returns 404
+#### Module Loading Errors
+**Symptom**: "Cannot access 'env' before initialization" errors
 
-**Causes**:
-1. User doesn't own the resource
-2. Auth context not propagated
-3. Route configuration issues
+**Cause**: Circular dependencies or eager evaluation of env vars
 
-**Solution**: Check ownership verification logic and auth propagation
+**Solution**: Use lazy evaluation pattern with getDEV_USER_CONFIG()
 
-#### Auth Context Not Propagating
-**Symptom**: Queries work directly but fail when called from HTTP actions
+#### Dev Auth in Production
+**Symptom**: Security error when trying to use dev auth in production
 
-**Cause**: Convex HTTP actions need explicit auth handling
+**Cause**: Production protection is working correctly
 
-**Solution**: Use auth helpers in both the action and the queries it calls
+**Solution**: Use proper Clerk authentication in production
 
 ### Debug Steps
 
 1. **Check Environment Variables**
    ```bash
    npx convex env list
-   # Verify DEV_AUTH_DEFAULT=true
+   # Verify DEV_AUTH_DEFAULT and dev user vars
    ```
 
-2. **Verify User Creation**
+2. **Validate Environment**
    ```bash
-   npx convex run users:getUserCount
-   # Should return at least 1
+   npx convex run startup:validateStartup
+   # Check for any configuration errors
    ```
 
 3. **Test Auth Flow**
@@ -279,21 +324,25 @@ export const listPublicItems = query({
 
 ## Security Considerations
 
-1. **Never use DEV_AUTH_DEFAULT in production**
-   - Always check `NODE_ENV !== 'production'`
-   - Remove or set to false before deployment
+1. **Production Protection**
+   - Dev auth automatically disabled in production
+   - initializeDevUser mutation blocked in production
+   - Clear error messages explain security implications
 
-2. **Verify Webhook Signatures**
-   - Clerk webhooks should verify signatures
+2. **Webhook Security**
+   - Svix signature verification on all Clerk webhooks
    - Prevents unauthorized user creation
+   - Proper error handling for missing secrets
 
-3. **Token Expiration**
-   - Clerk tokens expire and refresh automatically
-   - Convex handles this transparently
+3. **Environment Variable Security**
+   - All sensitive values stored in Convex cloud
+   - No hardcoded credentials in code
+   - Lazy evaluation prevents accidental exposure
 
 4. **User Data Privacy**
    - Always verify ownership before returning data
    - Use indexes for efficient user-scoped queries
+   - Consistent auth handling across all endpoints
 
 ## Migration Notes
 
@@ -302,3 +351,9 @@ When migrating from the old NestJS system:
 2. Sessions are managed by Clerk, not the backend
 3. No need for custom JWT logic - Clerk handles it
 4. User sync happens through webhooks or on-demand
+
+## Related Documentation
+
+- Environment Configuration: See `convex/lib/env.ts` for the complete environment system
+- Error Handling: See `convex/lib/errors.ts` for error utilities
+- Testing: Integration tests demonstrate auth flows in `tests/integration.spec.ts`

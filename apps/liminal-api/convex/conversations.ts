@@ -3,7 +3,26 @@ import { mutation, query } from "./_generated/server";
 import { Id as _Id } from "./_generated/dataModel";
 import { requireAuth, getAuth } from "./lib/auth";
 
-// Create a new conversation
+/**
+ * Creates a new conversation for the authenticated user.
+ * 
+ * @param title - The title of the conversation
+ * @param type - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard")
+ * @param metadata - Optional metadata including provider, model, and tags
+ * @returns The ID of the created conversation
+ * @throws Error if not authenticated
+ * 
+ * @example
+ * const conversationId = await ctx.runMutation(api.conversations.create, {
+ *   title: "Chat about TypeScript",
+ *   type: "standard",
+ *   metadata: {
+ *     provider: "openai",
+ *     model: "gpt-4",
+ *     tags: ["programming", "typescript"]
+ *   }
+ * });
+ */
 export const create = mutation({
   args: {
     title: v.string(),
@@ -30,7 +49,23 @@ export const create = mutation({
   },
 });
 
-// List user's conversations with pagination
+/**
+ * Lists the authenticated user's conversations with pagination support.
+ * 
+ * @param archived - Filter by archived status (optional)
+ * @param paginationOpts - Pagination options
+ * @param paginationOpts.numItems - Number of items per page (default: 50)
+ * @param paginationOpts.cursor - Cursor for pagination (optional)
+ * @returns Paginated conversation list with page array and isDone flag
+ * @returns Empty result if not authenticated
+ * 
+ * @example
+ * const { page, isDone } = await ctx.runQuery(api.conversations.list, {
+ *   archived: false,
+ *   paginationOpts: { numItems: 20 }
+ * });
+ * console.log(`Found ${page.length} conversations`);
+ */
 export const list = query({
   args: {
     archived: v.optional(v.boolean()),
@@ -71,7 +106,21 @@ export const list = query({
   },
 });
 
-// Get a single conversation
+/**
+ * Gets a single conversation by ID.
+ * Verifies ownership before returning the conversation.
+ * 
+ * @param conversationId - The ID of the conversation to retrieve
+ * @returns The conversation object or null if not found/not owned by user
+ * 
+ * @example
+ * const conversation = await ctx.runQuery(api.conversations.get, {
+ *   conversationId: "j123..."
+ * });
+ * if (conversation) {
+ *   console.log(`Conversation: ${conversation.title}`);
+ * }
+ */
 export const get = query({
   args: {
     conversationId: v.id("conversations"),
@@ -91,7 +140,24 @@ export const get = query({
   },
 });
 
-// Update conversation metadata
+/**
+ * Updates a conversation's title and/or metadata.
+ * Only the conversation owner can update it.
+ * 
+ * @param conversationId - The ID of the conversation to update
+ * @param title - New title (optional)
+ * @param metadata - Metadata to update (optional, merged with existing)
+ * @throws Error "Conversation not found" if not found or not owned by user
+ * 
+ * @example
+ * await ctx.runMutation(api.conversations.update, {
+ *   conversationId: "j123...",
+ *   title: "Updated Title",
+ *   metadata: {
+ *     tags: ["important", "work"]
+ *   }
+ * });
+ */
 export const update = mutation({
   args: {
     conversationId: v.id("conversations"),
@@ -132,7 +198,18 @@ export const update = mutation({
   },
 });
 
-// Archive (soft delete) a conversation
+/**
+ * Archives a conversation (soft delete).
+ * The conversation remains in the database but is marked as archived.
+ * 
+ * @param conversationId - The ID of the conversation to archive
+ * @throws Error "Conversation not found" if not found or not owned by user
+ * 
+ * @example
+ * await ctx.runMutation(api.conversations.archive, {
+ *   conversationId: "j123..."
+ * });
+ */
 export const archive = mutation({
   args: {
     conversationId: v.id("conversations"),
@@ -157,7 +234,20 @@ export const archive = mutation({
   },
 });
 
-// Update last message timestamp (called when new messages are added)
+/**
+ * Updates the last message timestamp for a conversation.
+ * Called internally when new messages are added to maintain sort order.
+ * 
+ * @param conversationId - The ID of the conversation to update
+ * @throws Error "Conversation not found" if not found or not owned by user
+ * @internal
+ * 
+ * @example
+ * // Usually called after creating a message
+ * await ctx.runMutation(api.conversations.updateLastMessageAt, {
+ *   conversationId: "j123..."
+ * });
+ */
 export const updateLastMessageAt = mutation({
   args: {
     conversationId: v.id("conversations"),
@@ -179,7 +269,19 @@ export const updateLastMessageAt = mutation({
   },
 });
 
-// Count conversations for a user
+/**
+ * Counts the total number of conversations for the authenticated user.
+ * 
+ * @param archived - Filter by archived status (optional)
+ * @returns The count of conversations matching the filter
+ * @returns 0 if not authenticated
+ * 
+ * @example
+ * const activeCount = await ctx.runQuery(api.conversations.count, {
+ *   archived: false
+ * });
+ * console.log(`You have ${activeCount} active conversations`);
+ */
 export const count = query({
   args: {
     archived: v.optional(v.boolean()),
