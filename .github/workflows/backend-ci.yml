@@ -82,8 +82,10 @@ jobs:
         uses: trufflesecurity/trufflehog@v3.89.2
         with:
           path: ./
-          base: main
-          head: HEAD
+          # For PRs: scan diff from base to head
+          # For pushes to main: scan full repository (no base/head specified)
+          base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          head: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || '' }}
 
       - name: Additional Security Checks
         id: security
