@@ -197,4 +197,4 @@ Value: true
 - Status checks appear on PRs
 - Deployment status in Actions tab
 - Summary reports for each run
-- Automatic PR protection (when configured)
+- Automatic PR protection (when configured)# Staging deployment now configured
