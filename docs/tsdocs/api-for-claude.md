@@ -43,6 +43,14 @@ Args: - Array of conversation messages, - Optional model override (provider-spec
 Returns: Conversation context for streaming  
 Throws: Error if last message is not from user  
 
+#### cleanup.ts
+
+**`clearTestData`** (query) - convex/cleanup.ts:11  
+Clear all messages and conversations (but preserve users)  
+
+**`getDataCounts`** (query) - convex/cleanup.ts:49  
+Get data counts for monitoring cleanup  
+
 #### conversations.ts
 
 **`create`** (mutation) - convex/conversations.ts:28  
@@ -114,6 +122,14 @@ Returns: 0 if not authenticated or not owner
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
 Returns: Empty array if not authenticated or not owner  
+
+#### migrations.ts
+
+**`addUpdatedAtToMessages`** (query) - convex/migrations.ts:14  
+Migration: Add updatedAt field to existing messages  
+
+**`addUpdatedAtToConversations`** (query) - convex/migrations.ts:43  
+Migration: Add updatedAt field to existing conversations  
 
 #### startup.ts
 
@@ -276,8 +292,10 @@ Configuration error with helpful instructions.
 ## Function Index by Type
 
 ### Convex Queries
+cleanup.ts: `clearTestData`, `getDataCounts`  
 conversations.ts: `list`, `get`, `count`  
 messages.ts: `list`, `getAll`, `count`, `getLatest`  
+migrations.ts: `addUpdatedAtToMessages`, `addUpdatedAtToConversations`  
 users.ts: `getCurrentUser`, `syncUser`, `testAuth`, `getUserCount`, `getSampleUser`, `initializeDevUser`  
 
 ### Convex Mutations
