@@ -141,6 +141,9 @@ export const testAuth = query({
 export const getUserCount = query({
   args: {},
   handler: async (ctx) => {
+    // Require authentication for administrative data
+    await requireAuth(ctx);
+    
     const users = await ctx.db.query('users').collect();
     return users.length;
   },
@@ -163,6 +166,9 @@ export const getUserCount = query({
 export const getSampleUser = query({
   args: {},
   handler: async (ctx) => {
+    // Require authentication for user data access
+    await requireAuth(ctx);
+    
     const user = await ctx.db.query('users').first();
 
     if (!user) {

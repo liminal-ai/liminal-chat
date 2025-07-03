@@ -89,34 +89,61 @@ export class ModelBuilder {
     // The getProviderApiKey function now throws with a helpful error message
     // if the API key is missing, so we don't need additional error handling here
 
+    // Build model options including parameters and provider-specific settings
+    const modelOptions = {
+      ...this.params,
+      ...this.providerOptions,
+    };
+
     // Dynamic imports based on provider
     switch (this.provider) {
       case 'openai': {
         const { openai } = await import('@ai-sdk/openai');
-        return openai(modelId);
+        const provider = openai({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       case 'anthropic': {
         const { anthropic } = await import('@ai-sdk/anthropic');
-        return anthropic(modelId);
+        const provider = anthropic({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       case 'google': {
         const { google } = await import('@ai-sdk/google');
-        return google(modelId);
+        const provider = google({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       case 'perplexity': {
         const { createPerplexity } = await import('@ai-sdk/perplexity');
-        const perplexity = createPerplexity({ apiKey });
-        return perplexity(modelId);
+        const provider = createPerplexity({ 
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       case 'vercel': {
         const { createVercel } = await import('@ai-sdk/vercel');
-        const vercel = createVercel({ apiKey });
-        return vercel(modelId);
+        const provider = createVercel({ 
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       case 'openrouter': {
         const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
-        const openrouter = createOpenRouter({ apiKey });
-        return openrouter(modelId);
+        const provider = createOpenRouter({ 
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId, modelOptions);
       }
       default:
         throw new Error(`Unknown provider: ${String(this.provider)}`);

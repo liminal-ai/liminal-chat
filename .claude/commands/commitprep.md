@@ -21,6 +21,8 @@ Security: Critical Security (Stop on fail)
 
 Code Standards Pass (Show violations)
    - Manual review against docs/engineering-practices.md
+   - Check for outdated or missing docstrings (TSDoc/JSDoc)
+   - Verify code comments accurately describe the code
    - Flag any violations of standards
    - Show violations but continue
 
@@ -42,6 +44,13 @@ Type Check (Stop on errors)
      - Ensures TypeScript compilation across all packages
    - Stop if type errors found
 
+Documentation Generation (Auto-update)
+   - Command: `cd apps/liminal-api && pnpm docs:llm`
+     - Regenerates llms.txt and api-for-claude.md
+     - Ensures documentation reflects latest code changes
+   - Command: `git add docs/tsdocs/llms.txt docs/tsdocs/api-for-claude.md`
+     - Stage the updated documentation files
+   - Continue even if generation has warnings
 
 Final Summary
     - Show summary of all checks (passed/failed/warnings)
