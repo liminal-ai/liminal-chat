@@ -85,7 +85,7 @@ Core testing principles:
 - **Authentication Guide**: `docs/authentication.md` - Clerk + Convex auth setup
 - **Engineering Practices**: `docs/engineering-practices.md` - Coding standards and conventions
 - **Product Requirements**: `docs/liminal-chat-prd.md` - Product vision and requirements
-- **Development Process**: `docs/dev-process-journal.md` - Process and workflow documentation
+<!-- Removed – file deleted in PR -->
 
 ### Active Development
 - **Current Status**: `development-log.md` - Daily development journal with history of dev
