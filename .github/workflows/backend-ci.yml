@@ -78,17 +78,19 @@ jobs:
           echo "Format checking is currently disabled via DISABLE_FORMAT_CHECK repository variable."
 
       # Security Scanning (Critical - Stop on fail)
-      - name: Security Scan
+      - name: TruffleHog Security Scan
+        if: ${{ !vars.DISABLE_SECURITY_CHECK }}
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+      - name: Additional Security Checks
         id: security
         if: ${{ !vars.DISABLE_SECURITY_CHECK }}
         run: |
-          if [ "${{ vars.DISABLE_SECURITY_CHECK }}" = "true" ]; then
-            echo "⚠️ Security scan is DISABLED" >> $GITHUB_STEP_SUMMARY
-            exit 0
-          fi
-
-          echo "Running critical security scans..."
-          pnpm precommit:trufflehog
+          echo "Running additional security checks..."
           pnpm precommit:env-files
           pnpm precommit:api-keys
 
