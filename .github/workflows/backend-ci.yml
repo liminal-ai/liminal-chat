@@ -79,7 +79,7 @@ jobs:
       # Security Scanning (Critical - Stop on fail)
       - name: TruffleHog Security Scan
         if: ${{ vars.DISABLE_SECURITY_CHECK != 'true' }}
-        uses: trufflesecurity/trufflehog@v3.64.4
+        uses: trufflesecurity/trufflehog@v3.89.2
         with:
           path: ./
           base: main
