@@ -79,7 +79,7 @@ jobs:
       # Security Scanning (Critical - Stop on fail)
       - name: TruffleHog Security Scan
         if: ${{ vars.DISABLE_SECURITY_CHECK != 'true' }}
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.64.4
         with:
           path: ./
           base: main
@@ -151,7 +151,7 @@ jobs:
 
       # Show disabled gates summary
       - name: Disabled Gates Summary
-        if: ${{ vars.DISABLE_FORMAT_CHECK || vars.DISABLE_SECURITY_CHECK || vars.DISABLE_DEPENDENCY_AUDIT || vars.DISABLE_LINT_CHECK || vars.DISABLE_TYPECHECK || vars.DISABLE_INTEGRATION_TESTS }}
+        if: ${{ vars.DISABLE_FORMAT_CHECK == 'true' || vars.DISABLE_SECURITY_CHECK == 'true' || vars.DISABLE_DEPENDENCY_AUDIT == 'true' || vars.DISABLE_LINT_CHECK == 'true' || vars.DISABLE_TYPECHECK == 'true' || vars.DISABLE_INTEGRATION_TESTS == 'true' }}
         run: |
           echo "## ⚠️ DISABLED QUALITY GATES ⚠️" >> $GITHUB_STEP_SUMMARY
           echo "The following gates are currently disabled:" >> $GITHUB_STEP_SUMMARY
