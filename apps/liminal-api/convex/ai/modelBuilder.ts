@@ -1,6 +1,6 @@
-"use node";
+'use node';
 
-import { ProviderName, getProviderConfig, getProviderApiKey } from "./providers";
+import { ProviderName, getProviderConfig, getProviderApiKey } from './providers';
 
 // Standard Vercel AI SDK parameters
 export interface ModelParams {
@@ -92,29 +92,29 @@ export class ModelBuilder {
     // Dynamic imports based on provider
     switch (this.provider) {
       case 'openai': {
-        const { openai } = await import("@ai-sdk/openai");
+        const { openai } = await import('@ai-sdk/openai');
         return openai(modelId);
       }
       case 'anthropic': {
-        const { anthropic } = await import("@ai-sdk/anthropic");
+        const { anthropic } = await import('@ai-sdk/anthropic');
         return anthropic(modelId);
       }
       case 'google': {
-        const { google } = await import("@ai-sdk/google");
+        const { google } = await import('@ai-sdk/google');
         return google(modelId);
       }
       case 'perplexity': {
-        const { createPerplexity } = await import("@ai-sdk/perplexity");
+        const { createPerplexity } = await import('@ai-sdk/perplexity');
         const perplexity = createPerplexity({ apiKey });
         return perplexity(modelId);
       }
       case 'vercel': {
-        const { createVercel } = await import("@ai-sdk/vercel");
+        const { createVercel } = await import('@ai-sdk/vercel');
         const vercel = createVercel({ apiKey });
         return vercel(modelId);
       }
       case 'openrouter': {
-        const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
+        const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
         const openrouter = createOpenRouter({ apiKey });
         return openrouter(modelId);
       }

@@ -15,13 +15,6 @@
     "noEmit": true,
     "types": ["node", "@types/node"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "convex/_generated"
-  ]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", "convex/_generated"]
 }

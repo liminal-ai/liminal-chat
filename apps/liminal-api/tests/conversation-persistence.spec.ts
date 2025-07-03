@@ -7,23 +7,19 @@ const TEST_CONFIG = {
 };
 
 const TEST_PROMPTS = {
-  simple: "Respond with only: OK",
+  simple: 'Respond with only: OK',
 };
 
-async function makeChatRequest(
-  requestContext: any,
-  endpoint: string,
-  body: any
-) {
+async function makeChatRequest(requestContext: any, endpoint: string, body: any) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  
+
   // Add auth token if provided via environment variable
   if (process.env.CLERK_TEST_TOKEN) {
     headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
   }
-  
+
   const response = await requestContext.post(`${TEST_CONFIG.BASE_URL}${endpoint}`, {
     data: body,
     headers,
@@ -45,7 +41,7 @@ test.describe('Conversation Persistence Tests', () => {
       {
         prompt: 'Hello, this is a test message',
         provider: 'openrouter',
-      }
+      },
     );
 
     expect(firstResponse.ok()).toBeTruthy();
@@ -63,7 +59,7 @@ test.describe('Conversation Persistence Tests', () => {
         prompt: 'This is a follow-up message',
         provider: 'openrouter',
         conversationId,
-      }
+      },
     );
 
     expect(secondResponse.ok()).toBeTruthy();
@@ -75,12 +71,12 @@ test.describe('Conversation Persistence Tests', () => {
     if (process.env.CLERK_TEST_TOKEN) {
       headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
     }
-    
+
     const conversationResponse = await request.get(
       `${TEST_CONFIG.BASE_URL}/api/conversations/${conversationId}`,
-      { headers }
+      { headers },
     );
-    
+
     // Note: This will fail if not authenticated
     // In a real test, we'd need to set up authentication
     // For now, we just verify the API structure is correct
@@ -92,15 +88,12 @@ test.describe('Conversation Persistence Tests', () => {
     if (process.env.CLERK_TEST_TOKEN) {
       headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
     }
-    
-    const response = await request.get(
-      `${TEST_CONFIG.BASE_URL}/api/conversations`,
-      { headers }
-    );
+
+    const response = await request.get(`${TEST_CONFIG.BASE_URL}/api/conversations`, { headers });
 
     // Should return 200 even if empty (for authenticated users)
     expect(response.status()).toBe(200);
-    
+
     const body = await response.json();
     expect(body).toHaveProperty('page');
     expect(body).toHaveProperty('isDone');
@@ -113,21 +106,18 @@ test.describe('Conversation Persistence Tests', () => {
     if (process.env.CLERK_TEST_TOKEN) {
       headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
     }
-    
-    const response = await request.post(
-      `${TEST_CONFIG.BASE_URL}/api/conversations`,
-      {
-        data: {
-          title: 'Test Conversation',
-          type: 'standard',
-          metadata: {
-            provider: 'openrouter',
-            model: 'google/gemini-2.5-flash',
-          },
+
+    const response = await request.post(`${TEST_CONFIG.BASE_URL}/api/conversations`, {
+      data: {
+        title: 'Test Conversation',
+        type: 'standard',
+        metadata: {
+          provider: 'openrouter',
+          model: 'google/gemini-2.5-flash',
         },
-        headers
-      }
-    );
+      },
+      headers,
+    });
 
     // Will fail without auth, but verifies API structure
     expect([200, 201, 401, 403]).toContain(response.status());
@@ -140,22 +130,17 @@ test.describe('Conversation Persistence Tests', () => {
     if (process.env.CLERK_TEST_TOKEN) {
       headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
     }
-    
-    const response = await request.post(
-      `${TEST_CONFIG.BASE_URL}/api/chat`,
-      {
-        data: {
-          messages: [
-            { role: 'user', content: TEST_PROMPTS.simple },
-          ],
-          provider: 'openrouter',
-        },
-        headers
-      }
-    );
+
+    const response = await request.post(`${TEST_CONFIG.BASE_URL}/api/chat`, {
+      data: {
+        messages: [{ role: 'user', content: TEST_PROMPTS.simple }],
+        provider: 'openrouter',
+      },
+      headers,
+    });
 
     expect(response.ok()).toBeTruthy();
-    
+
     // Check for conversation ID header
     const conversationIdHeader = response.headers()['x-conversation-id'];
     // May or may not have conversation ID depending on auth

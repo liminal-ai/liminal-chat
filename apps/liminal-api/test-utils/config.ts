@@ -15,13 +15,13 @@ export const TEST_MODELS = {
 
 // Deterministic test prompts that minimize ambiguity
 export const TEST_PROMPTS = {
-  simple: "Respond with only: OK",
-  number: "What is 2+2? Reply with only the number.",
+  simple: 'Respond with only: OK',
+  number: 'What is 2+2? Reply with only the number.',
   json: 'Return this exact JSON: {"status":"ok"}',
-  streaming: "Reply with only the word: STREAM",
-  error: "This should trigger an error: ",
-  memory: "Remember: TEST123",
-  recall: "What did I ask you to remember?",
+  streaming: 'Reply with only the word: STREAM',
+  error: 'This should trigger an error: ',
+  memory: 'Remember: TEST123',
+  recall: 'What did I ask you to remember?',
 } as const;
 
 // Test timeouts
@@ -47,7 +47,8 @@ export const RESPONSE_VALIDATORS = {
     return text.includes('0:');
   },
   hasStreamHeaders: (headers: Record<string, string>): boolean => {
-    return headers['x-vercel-ai-data-stream'] === 'v1' ||
-           headers['content-type']?.includes('text/plain');
+    return (
+      headers['x-vercel-ai-data-stream'] === 'v1' || headers['content-type']?.includes('text/plain')
+    );
   },
 } as const;

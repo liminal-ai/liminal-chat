@@ -2,6 +2,12 @@ Stage all changes
    - Command: `pnpm precommit:stage-all`
    - Stages all changes with git add -A
 
+Format Check (Auto-fix)
+   - Command: `pnpm format:check`
+     - Shows files that need formatting
+   - Command: `pnpm format:fix` (if needed)
+     - Automatically formats staged files
+
 Security: Critical Security (Stop on fail)
    - Command: `pnpm precommit:trufflehog`
      - Runs trufflehog on staged files with .trufflehog-exclude file
@@ -14,7 +20,7 @@ Security: Critical Security (Stop on fail)
    - Stop and report if any issues found
 
 Code Standards Pass (Show violations)
-   - Manual review against docs/development/liminal-chat-coding-standards.md
+   - Manual review against docs/engineering-practices.md
    - Flag any violations of standards
    - Show violations but continue
 

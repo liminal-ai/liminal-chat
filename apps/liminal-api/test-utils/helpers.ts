@@ -20,19 +20,19 @@ export function hasApiKey(provider: string): boolean {
     vercel: 'VERCEL_API_KEY',
     openrouter: 'OPENROUTER_API_KEY',
   };
-  
+
   const keyName = keyNames[provider];
   if (!keyName) {
     console.warn(`⚠️ Unknown provider '${provider}' - cannot check for API key`);
     return false;
   }
-  
+
   const hasKey = !!process.env[keyName];
   if (!hasKey) {
     console.info(
       `ℹ️ Skipping ${provider} tests - ${keyName} not set\n` +
-      `To enable ${provider} tests, set the environment variable:\n` +
-      `export ${keyName}="your-api-key"`
+        `To enable ${provider} tests, set the environment variable:\n` +
+        `export ${keyName}="your-api-key"`,
     );
   }
   return hasKey;
@@ -42,7 +42,7 @@ export function hasApiKey(provider: string): boolean {
 export function parseDataStream(text: string): string[] {
   const lines = text.split('\n');
   const chunks: string[] = [];
-  
+
   for (const line of lines) {
     if (line.startsWith('0:')) {
       // Extract the actual content from the data stream
@@ -56,7 +56,7 @@ export function parseDataStream(text: string): string[] {
       }
     }
   }
-  
+
   return chunks;
 }
 
@@ -64,31 +64,33 @@ export function parseDataStream(text: string): string[] {
 export async function makeChatRequest(
   request: APIRequestContext,
   endpoint: string,
-  data: any
+  data: any,
 ): Promise<{ response: any; body: any }> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  
+
   // Add auth token if provided via environment variable
   if (process.env.CLERK_TEST_TOKEN) {
     headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-  } else if (process.env.NODE_ENV !== 'test' && 
-             !(process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production')) {
+  } else if (
+    process.env.NODE_ENV !== 'test' &&
+    !(process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production')
+  ) {
     console.warn(
       '⚠️ No authentication token provided for tests\n' +
-      'To test with authentication:\n' +
-      '1. Set CLERK_TEST_TOKEN environment variable, OR\n' +
-      '2. Enable dev auth with DEV_AUTH_DEFAULT=true (development only)'
+        'To test with authentication:\n' +
+        '1. Set CLERK_TEST_TOKEN environment variable, OR\n' +
+        '2. Enable dev auth with DEV_AUTH_DEFAULT=true (development only)',
     );
   }
-  
-  const response = await request.post(endpoint, { 
+
+  const response = await request.post(endpoint, {
     data,
-    headers 
+    headers,
   });
   const body = await response.text();
-  
+
   try {
     return { response, body: JSON.parse(body) };
   } catch {

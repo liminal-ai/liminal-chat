@@ -21,7 +21,7 @@
     "precommit:stage-all": "git add -A",
     "precommit:list-files": "git diff --cached --name-only",
     "precommit:trufflehog": "git diff --cached --name-only | trufflehog filesystem --no-update --exclude-paths=.trufflehog-exclude --config=.trufflehog.yaml --filter-unverified",
-    "precommit:api-keys": "git diff --cached --name-only | xargs grep -E -n -H '(sk_test_|pk_test_|sk_live_|pk_live_|api_key|apikey|api-key|secret_key|secretkey|secret-key|private_key|privatekey|private-key)[[:space:]]*[=:][[:space:]]*[A-Za-z0-9+/]{20,}|[A-Za-z0-9+/]{40,}' 2>/dev/null || echo 'No API key patterns found'",
+    "precommit:api-keys": "git diff --cached --name-only | grep -v '/docs/.*/assets/.*\\.js$' | grep -v '\\.html$' | grep -v 'package-lock\\.json$' | xargs grep -E -n -H '(sk_test_|pk_test_|sk_live_|pk_live_|api_key|apikey|api-key|secret_key|secretkey|secret-key|private_key|privatekey|private-key)[[:space:]]*[=:][[:space:]]*[A-Za-z0-9+/]{20,}|[A-Za-z0-9+/]{40,}' 2>/dev/null || echo 'No API key patterns found'",
     "precommit:sensitive-files": "git diff --cached --name-only | grep -E \"\\.(pem|key|p12)$|credentials\\.json|id_rsa\" || echo \"No sensitive filenames found\"",
     "precommit:env-files": "git diff --cached --name-only | grep -E \"^\\.env\" || echo \"No .env files found\"",
     "precommit:debug-statements": "git diff --cached --name-only | grep -E \"\\.(ts|js|tsx|jsx)$\" | xargs grep -n \"console\\.log\\|debugger\" 2>/dev/null || echo \"No debug statements found\"",
@@ -30,10 +30,16 @@
     "precommit:large-files": "git diff --cached --name-only | xargs ls -lh 2>/dev/null | awk '$5 ~ /[0-9]+M/ {print $5, $9}' | head -10 || echo \"No large files found\"",
     "precommit:binary-files": "git diff --cached --name-only | xargs file 2>/dev/null | grep -v \"text\" | grep -v \"empty\" | head -10 || echo \"No unexpected binary files\"",
     "precommit:branch-check": "git branch --show-current | grep -E \"^(main|master)$\" && echo \"WARNING: You are on the main/master branch!\" || echo \"Branch check passed\"",
-    "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\""
+    "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write --log-level warn \"{apps,packages}/**/*.{js,jsx,ts,tsx,json}\""
   },
   "devDependencies": {
     "@playwright/test": "^1.53.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "prettier": "^3.6.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },

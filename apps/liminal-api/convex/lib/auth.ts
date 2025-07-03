@@ -1,5 +1,5 @@
-import { QueryCtx, MutationCtx, ActionCtx } from "../_generated/server";
-import { env } from "./env";
+import { QueryCtx, MutationCtx, ActionCtx } from '../_generated/server';
+import { env } from './env';
 
 // Development-only default auth user
 const DEV_AUTH_DEFAULT = env.isDevAuthEnabled;
@@ -7,16 +7,14 @@ const DEV_AUTH_DEFAULT = env.isDevAuthEnabled;
 /**
  * Gets the development user configuration.
  * Uses lazy evaluation to prevent module loading failures when env vars are missing.
- * 
+ *
  * @returns Development user configuration object
- * @returns {string} tokenIdentifier - Clerk user ID for dev user
- * @returns {string} email - Dev user's email
- * @returns {string} name - Dev user's display name
- * @returns {string} subject - Same as tokenIdentifier (for Clerk compatibility)
- * 
+ *
  * @example
+ * ```typescript
  * const config = getDEV_USER_CONFIG();
  * console.log(`Dev user: ${config.email}`);
+ * ```
  */
 export function getDEV_USER_CONFIG() {
   if (!DEV_AUTH_DEFAULT) {
@@ -24,27 +22,29 @@ export function getDEV_USER_CONFIG() {
       tokenIdentifier: '',
       email: '',
       name: '',
-      subject: ''
+      subject: '',
     };
   }
-  
+
   return {
     tokenIdentifier: env.DEV_USER_ID,
     email: env.DEV_USER_EMAIL,
     name: env.DEV_USER_NAME,
-    subject: env.DEV_USER_ID
+    subject: env.DEV_USER_ID,
   };
 }
 
 /**
  * Validates that development user configuration is properly set.
  * Throws helpful errors if required environment variables are missing.
- * 
+ *
  * @throws ConvexError if dev auth is enabled but required env vars are missing
- * 
+ *
  * @example
+ * ```typescript
  * // Call before using dev auth to ensure config is valid
  * validateDevConfig();
+ * ```
  */
 export function validateDevConfig() {
   if (DEV_AUTH_DEFAULT) {
@@ -56,11 +56,11 @@ export function validateDevConfig() {
 async function getDevUser(ctx: QueryCtx | MutationCtx) {
   validateDevConfig();
   const devUserConfig = getDEV_USER_CONFIG();
-  
+
   // Check if dev user exists in database
   const _existingUser = await ctx.db
-    .query("users")
-    .withIndex("by_token", (q) => q.eq("tokenIdentifier", devUserConfig.tokenIdentifier))
+    .query('users')
+    .withIndex('by_token', (q) => q.eq('tokenIdentifier', devUserConfig.tokenIdentifier))
     .first();
 
   // If user doesn't exist, still return the config
@@ -72,12 +72,13 @@ async function getDevUser(ctx: QueryCtx | MutationCtx) {
  * Requires authentication for a query or mutation.
  * In development with DEV_AUTH_DEFAULT=true, returns the dev user.
  * In production, throws an error if user is not authenticated.
- * 
+ *
  * @param ctx - Convex query or mutation context
  * @returns User identity object with tokenIdentifier
  * @throws Error "Authentication required" if not authenticated in production
- * 
+ *
  * @example
+ * ```typescript
  * export const createItem = mutation({
  *   handler: async (ctx, args) => {
  *     const identity = await requireAuth(ctx);
@@ -87,17 +88,18 @@ async function getDevUser(ctx: QueryCtx | MutationCtx) {
  *     });
  *   }
  * });
+ * ```
  */
 export async function requireAuth(ctx: QueryCtx | MutationCtx) {
   // In development with bypass enabled, return the dev user
   if (DEV_AUTH_DEFAULT) {
     return await getDevUser(ctx);
   }
-  
+
   // Normal auth flow
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) {
-    throw new Error("Authentication required");
+    throw new Error('Authentication required');
   }
   return identity;
 }
@@ -106,11 +108,12 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx) {
  * Gets authentication if available, returns null if not authenticated.
  * In development with DEV_AUTH_DEFAULT=true, always returns the dev user.
  * Use this for queries that work with or without authentication.
- * 
+ *
  * @param ctx - Convex query or mutation context
  * @returns User identity object or null
- * 
+ *
  * @example
+ * ```typescript
  * export const listItems = query({
  *   handler: async (ctx) => {
  *     const identity = await getAuth(ctx);
@@ -126,13 +129,14 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx) {
  *       .collect();
  *   }
  * });
+ * ```
  */
 export async function getAuth(ctx: QueryCtx | MutationCtx) {
   // In development with default auth enabled, return the dev user
   if (DEV_AUTH_DEFAULT) {
     return await getDevUser(ctx);
   }
-  
+
   return await ctx.auth.getUserIdentity();
 }
 
@@ -140,11 +144,12 @@ export async function getAuth(ctx: QueryCtx | MutationCtx) {
  * Gets authentication for Convex actions.
  * Actions don't have database access, so this returns the config directly
  * rather than looking up the user in the database.
- * 
+ *
  * @param ctx - Convex action context
  * @returns User identity object or null
- * 
+ *
  * @example
+ * ```typescript
  * export const callExternalAPI = action({
  *   handler: async (ctx, args) => {
  *     const identity = await getAuthForAction(ctx);
@@ -154,6 +159,7 @@ export async function getAuth(ctx: QueryCtx | MutationCtx) {
  *     // Use identity.tokenIdentifier for external API calls
  *   }
  * });
+ * ```
  */
 export async function getAuthForAction(ctx: ActionCtx) {
   // In development with default auth enabled, return the dev user config
@@ -161,6 +167,6 @@ export async function getAuthForAction(ctx: ActionCtx) {
     validateDevConfig();
     return getDEV_USER_CONFIG();
   }
-  
+
   return await ctx.auth.getUserIdentity();
 }

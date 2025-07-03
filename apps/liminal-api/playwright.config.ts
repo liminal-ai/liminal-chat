@@ -11,14 +11,14 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+
   use: {
     // Base URL for Convex backend HTTP endpoints
     baseURL: process.env.CONVEX_HTTP_URL || 'https://modest-squirrel-498.convex.site',
-    
+
     // Collect trace on first retry
     trace: 'on-first-retry',
-    
+
     // Timeouts
     actionTimeout: 10000,
     navigationTimeout: 30000,

@@ -1,7 +1,7 @@
-import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
-import { requireAuth, getAuth } from "./lib/auth";
+import { v } from 'convex/values';
+import { mutation, query } from './_generated/server';
+import { Id } from './_generated/dataModel';
+import { requireAuth, getAuth } from './lib/auth';
 
 // Message type validators based on type
 const _messageContentValidators = {
@@ -30,18 +30,19 @@ const _messageContentValidators = {
 /**
  * Creates a new message in a conversation.
  * Verifies ownership and validates author permissions.
- * 
- * @param conversationId - The ID of the conversation
- * @param authorType - Type of author: "user", "agent", or "system"
- * @param authorId - ID of the author (must match user token for "user" type)
- * @param type - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error"
- * @param content - Message content (structure depends on type)
- * @param metadata - Optional metadata like model, tokens, etc.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.authorType - Type of author: "user", "agent", or "system"
+ * @param args.authorId - ID of the author (must match user token for "user" type)
+ * @param args.type - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error"
+ * @param args.content - Message content (structure depends on type)
+ * @param args.metadata - Optional metadata like model, tokens, etc.
  * @returns The ID of the created message
  * @throws Error if conversation not found or user doesn't own it
  * @throws Error if user message authorId doesn't match authenticated user
- * 
+ *
  * @example
+ * ```typescript
  * const messageId = await ctx.runMutation(api.messages.create, {
  *   conversationId: "j123...",
  *   authorType: "user",
@@ -49,29 +50,32 @@ const _messageContentValidators = {
  *   type: "text",
  *   content: "Hello, AI!"
  * });
+ * ```
  */
 export const create = mutation({
   args: {
-    conversationId: v.id("conversations"),
-    authorType: v.union(v.literal("user"), v.literal("agent"), v.literal("system")),
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
     authorId: v.string(),
     type: v.union(
-      v.literal("text"),
-      v.literal("tool_call"),
-      v.literal("tool_output"),
-      v.literal("chain_of_thought"),
-      v.literal("error")
+      v.literal('text'),
+      v.literal('tool_call'),
+      v.literal('tool_output'),
+      v.literal('chain_of_thought'),
+      v.literal('error'),
     ),
     content: v.any(), // Validated based on type
-    metadata: v.optional(v.object({
-      model: v.optional(v.string()),
-      provider: v.optional(v.string()),
-      promptTokens: v.optional(v.number()),
-      completionTokens: v.optional(v.number()),
-      totalTokens: v.optional(v.number()),
-      finishReason: v.optional(v.string()),
-      visibility: v.optional(v.array(v.string())),
-    })),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await requireAuth(ctx);
@@ -79,16 +83,16 @@ export const create = mutation({
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation || conversation.userId !== identity.tokenIdentifier) {
-      throw new Error("Conversation not found");
+      throw new Error('Conversation not found');
     }
 
     // For user messages, ensure authorId matches authenticated user
-    if (args.authorType === "user" && args.authorId !== identity.tokenIdentifier) {
-      throw new Error("Invalid author ID for user message");
+    if (args.authorType === 'user' && args.authorId !== identity.tokenIdentifier) {
+      throw new Error('Invalid author ID for user message');
     }
 
     // Create the message
-    const messageId = await ctx.db.insert("messages", {
+    const messageId = await ctx.db.insert('messages', {
       conversationId: args.conversationId,
       authorType: args.authorType,
       authorId: args.authorId,
@@ -111,27 +115,31 @@ export const create = mutation({
 /**
  * Lists messages in a conversation with pagination support.
  * Messages are returned in chronological order (oldest first).
- * 
- * @param conversationId - The ID of the conversation
- * @param paginationOpts - Pagination options
- * @param paginationOpts.numItems - Number of items per page (default: 50)
- * @param paginationOpts.cursor - Cursor for pagination
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.paginationOpts - Pagination options
+ * @param args.paginationOpts.numItems - Number of items per page (default: 50)
+ * @param args.paginationOpts.cursor - Cursor for pagination
  * @returns Paginated message list with page array and isDone flag
  * @returns Empty result if not authenticated or not owner
- * 
+ *
  * @example
+ * ```typescript
  * const { page, isDone } = await ctx.runQuery(api.messages.list, {
  *   conversationId: "j123...",
  *   paginationOpts: { numItems: 20 }
  * });
+ * ```
  */
 export const list = query({
   args: {
-    conversationId: v.id("conversations"),
-    paginationOpts: v.optional(v.object({
-      numItems: v.number(),
-      cursor: v.optional(v.union(v.string(), v.null())),
-    })),
+    conversationId: v.id('conversations'),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.optional(v.union(v.string(), v.null())),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await getAuth(ctx);
@@ -152,11 +160,9 @@ export const list = query({
     };
 
     return await ctx.db
-      .query("messages")
-      .withIndex("by_conversation", (q) => 
-        q.eq("conversationId", args.conversationId)
-      )
-      .order("asc") // Oldest first for chat display
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .order('asc') // Oldest first for chat display
       .paginate(paginationOptions);
   },
 });
@@ -164,20 +170,21 @@ export const list = query({
 /**
  * Gets all messages for a conversation with cursor-based pagination.
  * Includes protection against loading too many messages at once.
- * 
- * @param conversationId - The ID of the conversation
- * @param limit - Maximum messages to return (default: 100, max: 1000)
- * @param cursor - Message ID to start after (for pagination)
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.limit - Maximum messages to return (default: 100, max: 1000)
+ * @param args.cursor - Message ID to start after (for pagination)
  * @returns Object with messages array, hasMore flag, and nextCursor
  * @returns Empty result if not authenticated or not owner
- * 
+ *
  * @example
+ * ```typescript
  * // First page
  * const { messages, hasMore, nextCursor } = await ctx.runQuery(api.messages.getAll, {
  *   conversationId: "j123...",
  *   limit: 50
  * });
- * 
+ *
  * // Next page
  * if (hasMore && nextCursor) {
  *   const nextPage = await ctx.runQuery(api.messages.getAll, {
@@ -186,10 +193,11 @@ export const list = query({
  *     cursor: nextCursor
  *   });
  * }
+ * ```
  */
 export const getAll = query({
   args: {
-    conversationId: v.id("conversations"),
+    conversationId: v.id('conversations'),
     limit: v.optional(v.number()),
     cursor: v.optional(v.string()),
   },
@@ -210,7 +218,7 @@ export const getAll = query({
     // Get cursor message if provided
     let cursorCreatedAt: number | null = null;
     if (args.cursor) {
-      const cursorMessage = await ctx.db.get(args.cursor as Id<"messages">);
+      const cursorMessage = await ctx.db.get(args.cursor as Id<'messages'>);
       if (cursorMessage && cursorMessage.conversationId === args.conversationId) {
         cursorCreatedAt = cursorMessage.createdAt;
       }
@@ -218,22 +226,22 @@ export const getAll = query({
 
     // Build query with cursor filter if needed
     const baseQuery = ctx.db
-      .query("messages")
-      .withIndex("by_conversation", (q) => 
-        q.eq("conversationId", args.conversationId)
-      );
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId));
 
     // Apply cursor filter and order, then take limit + 1
-    const messages = await (cursorCreatedAt !== null
-      ? baseQuery.filter((q) => q.gt(q.field("createdAt"), cursorCreatedAt))
-      : baseQuery)
-      .order("asc")
+    const messages = await (
+      cursorCreatedAt !== null
+        ? baseQuery.filter((q) => q.gt(q.field('createdAt'), cursorCreatedAt))
+        : baseQuery
+    )
+      .order('asc')
       .take(effectiveLimit + 1);
 
     // Check if there are more messages
     const hasMore = messages.length > effectiveLimit;
     let nextCursor: string | null = null;
-    
+
     if (hasMore) {
       // Remove the extra message
       messages.pop();
@@ -254,14 +262,15 @@ export const getAll = query({
 /**
  * Creates multiple messages at once in a conversation.
  * Useful for importing chat history or setting up initial context.
- * 
- * @param conversationId - The ID of the conversation
- * @param messages - Array of message objects to create
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.messages - Array of message objects to create
  * @returns Array of created message IDs
  * @throws Error if conversation not found or user doesn't own it
  * @throws Error if any user message authorId doesn't match authenticated user
- * 
+ *
  * @example
+ * ```typescript
  * const messageIds = await ctx.runMutation(api.messages.createBatch, {
  *   conversationId: "j123...",
  *   messages: [
@@ -284,31 +293,36 @@ export const getAll = query({
  *     }
  *   ]
  * });
+ * ```
  */
 export const createBatch = mutation({
   args: {
-    conversationId: v.id("conversations"),
-    messages: v.array(v.object({
-      authorType: v.union(v.literal("user"), v.literal("agent"), v.literal("system")),
-      authorId: v.string(),
-      type: v.union(
-        v.literal("text"),
-        v.literal("tool_call"),
-        v.literal("tool_output"),
-        v.literal("chain_of_thought"),
-        v.literal("error")
-      ),
-      content: v.any(),
-      metadata: v.optional(v.object({
-        model: v.optional(v.string()),
-        provider: v.optional(v.string()),
-        promptTokens: v.optional(v.number()),
-        completionTokens: v.optional(v.number()),
-        totalTokens: v.optional(v.number()),
-        finishReason: v.optional(v.string()),
-        visibility: v.optional(v.array(v.string())),
-      })),
-    })),
+    conversationId: v.id('conversations'),
+    messages: v.array(
+      v.object({
+        authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+        authorId: v.string(),
+        type: v.union(
+          v.literal('text'),
+          v.literal('tool_call'),
+          v.literal('tool_output'),
+          v.literal('chain_of_thought'),
+          v.literal('error'),
+        ),
+        content: v.any(),
+        metadata: v.optional(
+          v.object({
+            model: v.optional(v.string()),
+            provider: v.optional(v.string()),
+            promptTokens: v.optional(v.number()),
+            completionTokens: v.optional(v.number()),
+            totalTokens: v.optional(v.number()),
+            finishReason: v.optional(v.string()),
+            visibility: v.optional(v.array(v.string())),
+          }),
+        ),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await requireAuth(ctx);
@@ -316,20 +330,20 @@ export const createBatch = mutation({
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation || conversation.userId !== identity.tokenIdentifier) {
-      throw new Error("Conversation not found");
+      throw new Error('Conversation not found');
     }
 
     const now = Date.now();
-    const messageIds: Id<"messages">[] = [];
+    const messageIds: Id<'messages'>[] = [];
 
     // Insert all messages
     for (const message of args.messages) {
       // For user messages, ensure authorId matches authenticated user
-      if (message.authorType === "user" && message.authorId !== identity.tokenIdentifier) {
-        throw new Error("Invalid author ID for user message");
+      if (message.authorType === 'user' && message.authorId !== identity.tokenIdentifier) {
+        throw new Error('Invalid author ID for user message');
       }
 
-      const messageId = await ctx.db.insert("messages", {
+      const messageId = await ctx.db.insert('messages', {
         conversationId: args.conversationId,
         authorType: message.authorType,
         authorId: message.authorId,
@@ -338,7 +352,7 @@ export const createBatch = mutation({
         createdAt: now,
         metadata: message.metadata,
       });
-      
+
       messageIds.push(messageId);
     }
 
@@ -354,34 +368,38 @@ export const createBatch = mutation({
 
 /**
  * Counts messages in a conversation, optionally filtered by type.
- * 
- * @param conversationId - The ID of the conversation
- * @param type - Optional filter by message type
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.type - Optional filter by message type
  * @returns The count of messages matching the criteria
  * @returns 0 if not authenticated or not owner
- * 
+ *
  * @example
+ * ```typescript
  * // Count all messages
  * const total = await ctx.runQuery(api.messages.count, {
  *   conversationId: "j123..."
  * });
- * 
+ *
  * // Count only error messages
  * const errors = await ctx.runQuery(api.messages.count, {
  *   conversationId: "j123...",
  *   type: "error"
  * });
+ * ```
  */
 export const count = query({
   args: {
-    conversationId: v.id("conversations"),
-    type: v.optional(v.union(
-      v.literal("text"),
-      v.literal("tool_call"),
-      v.literal("tool_output"),
-      v.literal("chain_of_thought"),
-      v.literal("error")
-    )),
+    conversationId: v.id('conversations'),
+    type: v.optional(
+      v.union(
+        v.literal('text'),
+        v.literal('tool_call'),
+        v.literal('tool_output'),
+        v.literal('chain_of_thought'),
+        v.literal('error'),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await getAuth(ctx);
@@ -394,15 +412,13 @@ export const count = query({
     }
 
     const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_conversation", (q) => 
-        q.eq("conversationId", args.conversationId)
-      )
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
       .collect();
 
     // Filter by type if specified
     if (args.type !== undefined) {
-      return messages.filter(m => m.type === args.type).length;
+      return messages.filter((m) => m.type === args.type).length;
     }
 
     return messages.length;
@@ -412,22 +428,24 @@ export const count = query({
 /**
  * Gets the latest messages from a conversation.
  * Returns messages in chronological order, useful for building context windows.
- * 
- * @param conversationId - The ID of the conversation
- * @param limit - Number of messages to return (default: 10)
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.limit - Number of messages to return (default: 10)
  * @returns Array of the latest messages in chronological order
  * @returns Empty array if not authenticated or not owner
- * 
+ *
  * @example
+ * ```typescript
  * // Get last 5 messages for context
  * const context = await ctx.runQuery(api.messages.getLatest, {
  *   conversationId: "j123...",
  *   limit: 5
  * });
+ * ```
  */
 export const getLatest = query({
   args: {
-    conversationId: v.id("conversations"),
+    conversationId: v.id('conversations'),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -443,11 +461,9 @@ export const getLatest = query({
     const limit = args.limit || 10;
 
     const messages = await ctx.db
-      .query("messages")
-      .withIndex("by_conversation", (q) => 
-        q.eq("conversationId", args.conversationId)
-      )
-      .order("desc")
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .order('desc')
       .take(limit);
 
     // Return in chronological order

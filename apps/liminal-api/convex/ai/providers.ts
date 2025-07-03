@@ -1,6 +1,6 @@
 // Provider configuration and registry
 
-import { env } from "../lib/env";
+import { env } from '../lib/env';
 
 export interface ProviderConfig {
   name: string;
