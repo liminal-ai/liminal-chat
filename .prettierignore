@@ -1,0 +1,30 @@
+# Generated files
+**/convex/_generated
+**/.next
+**/dist
+**/build
+**/out
+**/.turbo
+
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Test coverage
+**/coverage
+
+# Environment
+.env*
+
+# Documentation
+*.md
+docs/tsdocs/api/
+
+# Convex
+.convex/
+
+# Other
+*.log
+.DS_Store

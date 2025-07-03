@@ -118,7 +118,13 @@ apps/domain-data/augy-scratchpad/
 # Legacy code
 apps/domain/
 
-# Package lock files - common source of false positives
+# Package lock files - common source of false positives (contain integrity hashes)
 package-lock\.json
 yarn\.lock
 pnpm-lock\.yaml
+
+# TypeDoc generated documentation assets - contains base64 encoded JS data
+apps/liminal-api/docs/api/assets/.*\.js
+docs/tsdocs/api/assets/.*\.js
+.*/typedoc/assets/.*\.js
+.*/docs/.*/assets/.*\.js

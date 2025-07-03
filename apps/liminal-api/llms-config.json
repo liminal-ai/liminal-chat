@@ -1,0 +1,43 @@
+{
+  "project_name": "Liminal Chat API",
+  "version": "0.0.0",
+  "description": "Convex backend for Liminal Chat - real-time data sync, authentication with Clerk, and HTTP endpoints for Vercel AI SDK integration",
+  "base_url": "https://your-deployment.convex.cloud",
+  "docs_url": "https://github.com/leegmoore/liminal-chat/tree/main/apps/liminal-api",
+  "endpoints": ["/health", "/test", "/clerk-webhook", "/api/chat-text", "/api/chat-stream"],
+  "auth": {
+    "method": "Clerk JWT",
+    "details": "Pass JWT token in Authorization header: Bearer YOUR_CLERK_JWT"
+  },
+  "convex_functions": {
+    "users": [
+      "getCurrentUser",
+      "syncUser",
+      "testAuth",
+      "getUserCount",
+      "getSampleUser",
+      "initializeDevUser"
+    ],
+    "conversations": ["create", "list", "get", "update", "archive", "count"],
+    "messages": ["create", "createBatch", "list", "getAll", "count", "getLatest"],
+    "chat": ["simpleChatAction", "streamingChatAction"]
+  },
+  "environment_variables": [
+    "CLERK_ISSUER_URL",
+    "CLERK_WEBHOOK_SECRET",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GOOGLE_GENERATIVE_AI_API_KEY",
+    "PERPLEXITY_API_KEY",
+    "OPENROUTER_API_KEY",
+    "VERCEL_API_KEY"
+  ],
+  "dev_environment": {
+    "variables": ["DEV_AUTH_DEFAULT", "DEV_USER_ID", "DEV_USER_EMAIL", "DEV_USER_NAME"],
+    "description": "Development authentication bypass for local testing"
+  },
+  "support": {
+    "contact": "support@liminal.chat",
+    "url": "https://github.com/leegmoore/liminal-chat/issues"
+  }
+}

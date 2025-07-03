@@ -1,0 +1,27 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./convex"],
+  "entryPointStrategy": "expand",
+  "out": "../../docs/tsdocs/api",
+  "exclude": ["**/node_modules/**", "**/_generated/**", "**/tests/**", "**/test-utils/**"],
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "plugin": [],
+  "name": "Liminal Chat API Documentation",
+  "navigationLinks": {
+    "Liminal Chat": "https://github.com/leegmoore/liminal-chat"
+  },
+  "tsconfig": "./convex/tsconfig.json",
+  "readme": "./README.md",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "disableSources": false,
+  "hideGenerator": true,
+  "theme": "default",
+  "sort": ["static-first", "alphabetical"],
+  "validation": {
+    "notExported": false,
+    "invalidLink": true
+  }
+}
