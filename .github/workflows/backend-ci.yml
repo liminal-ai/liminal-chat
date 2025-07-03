@@ -16,7 +16,7 @@ jobs:
   quality-gates:
     name: Quality Gates
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
             echo "⚠️ Format check is DISABLED" >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
-          
+
           echo "Checking code formatting..."
           if ! pnpm format:check; then
             echo "Files need formatting. Auto-fixing..."
@@ -86,7 +86,7 @@ jobs:
             echo "⚠️ Security scan is DISABLED" >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
-          
+
           echo "Running critical security scans..."
           pnpm precommit:trufflehog
           pnpm precommit:env-files
@@ -105,7 +105,7 @@ jobs:
         run: |
           echo "Checking for vulnerable dependencies..."
           pnpm audit --prod
-          
+
       - name: Dependency Audit Disabled Warning
         if: ${{ vars.DISABLE_DEPENDENCY_AUDIT }}
         run: |
@@ -155,31 +155,31 @@ jobs:
           echo "## ⚠️ DISABLED QUALITY GATES ⚠️" >> $GITHUB_STEP_SUMMARY
           echo "The following gates are currently disabled:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [ "${{ vars.DISABLE_FORMAT_CHECK }}" = "true" ]; then
             echo "- ❌ **Format Check** (DISABLE_FORMAT_CHECK=true)" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ vars.DISABLE_SECURITY_CHECK }}" = "true" ]; then
             echo "- ❌ **Security Scan** (DISABLE_SECURITY_CHECK=true) 🚨 **CRITICAL RISK**" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ vars.DISABLE_DEPENDENCY_AUDIT }}" = "true" ]; then
             echo "- ❌ **Dependency Audit** (DISABLE_DEPENDENCY_AUDIT=true)" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ vars.DISABLE_LINT_CHECK }}" = "true" ]; then
             echo "- ❌ **Lint Check** (DISABLE_LINT_CHECK=true)" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ vars.DISABLE_TYPECHECK }}" = "true" ]; then
             echo "- ❌ **TypeScript Check** (DISABLE_TYPECHECK=true)" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           if [ "${{ vars.DISABLE_INTEGRATION_TESTS }}" = "true" ]; then
             echo "- ❌ **Integration Tests** (DISABLE_INTEGRATION_TESTS=true)" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**To re-enable:** Go to Repository Settings → Secrets and variables → Actions → Variables" >> $GITHUB_STEP_SUMMARY
 
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality-gates
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -231,10 +231,10 @@ jobs:
           STAGING_URL: ${{ vars.CONVEX_STAGING_URL }}
         run: |
           echo "Running health check against staging environment..."
-          
+
           # Wait a moment for deployment to be ready
           sleep 10
-          
+
           # Health check
           if curl -f "$STAGING_URL/health"; then
             echo "✅ Staging deployment successful and healthy"
