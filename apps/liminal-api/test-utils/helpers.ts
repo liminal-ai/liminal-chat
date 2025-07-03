@@ -22,7 +22,20 @@ export function hasApiKey(provider: string): boolean {
   };
   
   const keyName = keyNames[provider];
-  return !!process.env[keyName];
+  if (!keyName) {
+    console.warn(`⚠️ Unknown provider '${provider}' - cannot check for API key`);
+    return false;
+  }
+  
+  const hasKey = !!process.env[keyName];
+  if (!hasKey) {
+    console.info(
+      `ℹ️ Skipping ${provider} tests - ${keyName} not set\n` +
+      `To enable ${provider} tests, set the environment variable:\n` +
+      `export ${keyName}="your-api-key"`
+    );
+  }
+  return hasKey;
 }
 
 // Parse Vercel AI SDK data stream response
@@ -60,6 +73,14 @@ export async function makeChatRequest(
   // Add auth token if provided via environment variable
   if (process.env.CLERK_TEST_TOKEN) {
     headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
+  } else if (process.env.NODE_ENV !== 'test' && 
+             !(process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production')) {
+    console.warn(
+      '⚠️ No authentication token provided for tests\n' +
+      'To test with authentication:\n' +
+      '1. Set CLERK_TEST_TOKEN environment variable, OR\n' +
+      '2. Enable dev auth with DEV_AUTH_DEFAULT=true (development only)'
+    );
   }
   
   const response = await request.post(endpoint, { 

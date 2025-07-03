@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuth, requireAuth, DEV_USER_CONFIG, validateDevConfig } from "./lib/auth";
+import { getAuth, requireAuth, getDEV_USER_CONFIG, validateDevConfig } from "./lib/auth";
+import { env } from "./lib/env";
 
 // Query to get the current authenticated user
 export const getCurrentUser = query({
@@ -119,20 +120,26 @@ export const initializeDevUser = mutation({
   args: {},
   handler: async (ctx) => {
     // Production environment protection
-    if (process.env.NODE_ENV === 'production') {
+    if (env.isProduction) {
       throw new Error(
-        'initializeDevUser is not allowed in production environment. ' +
-        'This function creates unauthorized development users and must only be used in development.'
+        '🚫 Security Error: initializeDevUser is not allowed in production\n\n' +
+        'This function creates unauthorized development users and must only be used in development.\n' +
+        'If you need to test authentication in production, please use proper Clerk authentication.\n\n' +
+        'To use this function:\n' +
+        '1. Ensure NODE_ENV is set to "development"\n' +
+        '2. Set DEV_AUTH_DEFAULT=true in your environment\n' +
+        '3. Configure DEV_USER_ID, DEV_USER_EMAIL, and DEV_USER_NAME'
       );
     }
     
     // Validate that dev config is properly set
     validateDevConfig();
     
+    const devUserConfig = getDEV_USER_CONFIG();
     const DEV_USER = {
-      tokenIdentifier: DEV_USER_CONFIG.tokenIdentifier,
-      email: DEV_USER_CONFIG.email,
-      name: DEV_USER_CONFIG.name,
+      tokenIdentifier: devUserConfig.tokenIdentifier,
+      email: devUserConfig.email,
+      name: devUserConfig.name,
     };
     
     // Ensure all required fields are present

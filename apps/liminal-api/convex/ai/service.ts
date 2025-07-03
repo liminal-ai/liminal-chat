@@ -3,6 +3,7 @@
 import { generateText as vercelGenerateText, streamText as vercelStreamText } from "ai";
 import { ProviderName } from "./providers";
 import { model, ModelParams } from "./modelBuilder";
+import { createRateLimitError } from "../lib/errors";
 
 // Parameters for AI operations
 export interface GenerateTextParams {
@@ -43,24 +44,41 @@ export class AIService {
   async generateText(params: GenerateTextParams) {
     const { prompt, messages, params: _modelParams, provider } = params;
 
-    // Build the model
-    const builder = this.buildModel(params);
-    const llm = await builder.build();
+    try {
+      // Build the model
+      const builder = this.buildModel(params);
+      const llm = await builder.build();
 
-    // Call Vercel AI SDK
-    const result = await vercelGenerateText({
-      model: llm,
-      ...(prompt ? { prompt } : {}),
-      ...(messages ? { messages } : {}),
-    });
+      // Call Vercel AI SDK
+      const result = await vercelGenerateText({
+        model: llm,
+        ...(prompt ? { prompt } : {}),
+        ...(messages ? { messages } : {}),
+      });
 
-    return {
-      text: result.text,
-      usage: result.usage,
-      finishReason: result.finishReason,
-      model: builder.getConfig().modelId,
-      provider,
-    };
+      return {
+        text: result.text,
+        usage: result.usage,
+        finishReason: result.finishReason,
+        model: builder.getConfig().modelId,
+        provider,
+      };
+    } catch (error: any) {
+      // Handle common API errors with helpful messages
+      if (error.message?.includes('rate limit')) {
+        throw createRateLimitError(provider, error.retryAfter);
+      }
+      
+      if (error.message?.includes('model not found') || error.message?.includes('does not exist')) {
+        // For model errors, we'd need to know available models
+        // For now, re-throw with the original error
+        throw error;
+      }
+      
+      // For API key errors, the env module already provides good errors
+      // Re-throw other errors as-is
+      throw error;
+    }
   }
 
   // Stream text

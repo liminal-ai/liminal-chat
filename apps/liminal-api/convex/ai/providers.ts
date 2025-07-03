@@ -1,5 +1,7 @@
 // Provider configuration and registry
 
+import { env } from "../lib/env";
+
 export interface ProviderConfig {
   name: string;
   defaultModel: string;
@@ -52,8 +54,25 @@ export function getProviderConfig(name: ProviderName): ProviderConfig {
   return config;
 }
 
-// Get API key for a provider
-export function getProviderApiKey(name: ProviderName): string | undefined {
-  const config = getProviderConfig(name);
-  return process.env[config.keyName];
+// Get API key for a provider with better error handling
+export function getProviderApiKey(name: ProviderName): string {
+  switch (name) {
+    case 'openai':
+      return env.OPENAI_API_KEY;
+    case 'anthropic':
+      return env.ANTHROPIC_API_KEY;
+    case 'google':
+      return env.GOOGLE_GENERATIVE_AI_API_KEY;
+    case 'perplexity':
+      return env.PERPLEXITY_API_KEY;
+    case 'vercel':
+      return env.VERCEL_API_KEY;
+    case 'openrouter':
+      return env.OPENROUTER_API_KEY;
+    default: {
+      // TypeScript exhaustive check
+      const _exhaustiveCheck: never = name;
+      return _exhaustiveCheck;
+    }
+  }
 }

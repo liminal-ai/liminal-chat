@@ -86,9 +86,8 @@ export class ModelBuilder {
     const modelId = this.modelId || config.defaultModel;
     const apiKey = getProviderApiKey(this.provider);
 
-    if (!apiKey) {
-      throw new Error(`Missing API key for provider ${this.provider}: ${config.keyName}`);
-    }
+    // The getProviderApiKey function now throws with a helpful error message
+    // if the API key is missing, so we don't need additional error handling here
 
     // Dynamic imports based on provider
     switch (this.provider) {
