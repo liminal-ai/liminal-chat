@@ -51,23 +51,23 @@ jobs:
         working-directory: apps/liminal-api
         run: npx convex codegen
 
-      # Format Check (Auto-fix)
+      # Format Check (Fail Fast)
       - name: Format Check
         id: format
         if: ${{ vars.DISABLE_FORMAT_CHECK != 'true' }}
         run: |
           echo "Checking code formatting..."
           if ! pnpm format:check; then
-            echo "Files need formatting. Auto-fixing..."
-            pnpm format:fix
-            
-            # Check if we're in a PR and can auto-commit
-            if [ "${{ github.event_name }}" = "pull_request" ]; then
-              echo "::warning::Code was automatically formatted. Please pull latest changes."
-            fi
-            
-            # Re-check after fixing
-            pnpm format:check
+            echo "::error::Code formatting issues found"
+            echo ""
+            echo "To fix this:"
+            echo "1. Run: pnpm format:fix"
+            echo "2. Commit the changes"
+            echo "3. Configure Prettier in your IDE for future changes"
+            echo "4. Consider setting up the git pre-commit hook"
+            echo ""
+            echo "This usually means you didn't run the commitprep workflow locally."
+            exit 1
           fi
 
       - name: Format Check Disabled Warning
