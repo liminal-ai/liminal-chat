@@ -230,13 +230,28 @@ jobs:
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_STAGING_DEPLOY_KEY }}
         run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::warning::⚠️ STAGING DEPLOYMENT SKIPPED"
+            echo "CONVEX_STAGING_DEPLOY_KEY secret is not configured."
+            echo "Please see .github/CI-SETUP.md for staging setup instructions."
+            echo "Staging deployment will be skipped until properly configured."
+            exit 0
+          fi
           echo "Deploying to Convex staging environment..."
           npx convex deploy
 
       - name: Health Check Staging
         env:
           STAGING_URL: ${{ vars.CONVEX_STAGING_URL }}
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_STAGING_DEPLOY_KEY }}
         run: |
+          # Skip health check if staging deployment was skipped
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::warning::⚠️ STAGING HEALTH CHECK SKIPPED"
+            echo "Staging deployment was skipped due to missing configuration."
+            exit 0
+          fi
+
           echo "Running health check against staging environment..."
 
           # Validate staging URL is set
@@ -260,9 +275,21 @@ jobs:
           fi
 
       - name: Staging Deployment Summary
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_STAGING_DEPLOY_KEY }}
         run: |
-          echo "## 🚀 Staging Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "Backend successfully deployed to staging environment." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Staging URL:** ${{ vars.CONVEX_STAGING_URL }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Health Check:** ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "## ⚠️ Staging Deployment Skipped" >> $GITHUB_STEP_SUMMARY
+            echo "Staging deployment was skipped due to missing configuration." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Required Setup:**" >> $GITHUB_STEP_SUMMARY
+            echo "- Configure \`CONVEX_STAGING_DEPLOY_KEY\` secret" >> $GITHUB_STEP_SUMMARY
+            echo "- Configure \`CONVEX_STAGING_URL\` variable" >> $GITHUB_STEP_SUMMARY
+            echo "- See \`.github/CI-SETUP.md\` for detailed instructions" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## 🚀 Staging Deployment Complete" >> $GITHUB_STEP_SUMMARY
+            echo "Backend successfully deployed to staging environment." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Staging URL:** ${{ vars.CONVEX_STAGING_URL }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Health Check:** ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          fi
