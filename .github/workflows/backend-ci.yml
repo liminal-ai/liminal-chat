@@ -47,6 +47,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Convex types
+        working-directory: apps/liminal-api
+        run: npx convex codegen
+
       # Format Check (Auto-fix)
       - name: Format Check
         id: format
@@ -219,6 +223,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Generate Convex types
+        working-directory: apps/liminal-api
+        run: npx convex codegen
 
       - name: Deploy to Staging
         working-directory: apps/liminal-api
