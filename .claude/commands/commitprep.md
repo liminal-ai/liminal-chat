@@ -45,11 +45,11 @@ Type Check (Stop on errors)
    - Stop if type errors found
 
 Documentation Generation (Auto-update)
-   - Command: `cd apps/liminal-api && pnpm docs:llm`
+   - Command: `pnpm --filter liminal-api docs:llm`
      - Regenerates llms.txt and api-for-claude.md
      - Ensures documentation reflects latest code changes
    - Command: `git add docs/tsdocs/llms.txt docs/tsdocs/api-for-claude.md`
-     - Stage the updated documentation files
+     - Stage the updated documentation files from repository root
    - Continue even if generation has warnings
 
 Final Summary
