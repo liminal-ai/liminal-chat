@@ -2,6 +2,8 @@
 
 This is the Convex backend for Liminal Chat, providing real-time data synchronization, authentication with Clerk, and HTTP endpoints for integration with Vercel AI SDK.
 
+**CI/CD Status**: Phase 1 complete with staging deployment configured.
+
 ## Architecture Overview
 
 - **Database**: Convex real-time database with TypeScript schema validation
