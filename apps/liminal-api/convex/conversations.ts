@@ -1,10 +1,10 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Id as _Id } from './_generated/dataModel';
-import { requireAuth, getAuth } from './lib/auth';
+// Remove auth imports
 
 /**
- * Creates a new conversation for the authenticated user.
+ * Creates a new conversation (public endpoint).
  *
  * @param args.title - The title of the conversation
  * @param args.type - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard")
@@ -40,11 +40,12 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const userId = 'anonymous';
 
     const now = Date.now();
     return await ctx.db.insert('conversations', {
-      userId: identity.tokenIdentifier,
+      userId: userId,
       title: args.title,
       type: args.type || 'standard',
       metadata: args.metadata,
@@ -85,8 +86,8 @@ export const list = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return { page: [], isDone: true };
+    // Public endpoint - no auth required
+    // Public endpoint - return all conversations
 
     const { archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
 
@@ -96,20 +97,9 @@ export const list = query({
       cursor: paginationOpts.cursor ?? null,
     };
 
-    // Use the appropriate index based on whether we're filtering by archived
-    if (archived !== undefined) {
-      return await ctx.db
-        .query('conversations')
-        .withIndex('by_user_archived', (q) =>
-          q.eq('userId', identity.tokenIdentifier).eq('metadata.archived', archived),
-        )
-        .order('desc')
-        .paginate(paginationOptions);
-    }
-
+    // Public endpoint - return all conversations (no user filtering or indexing)
     return await ctx.db
       .query('conversations')
-      .withIndex('by_user', (q) => q.eq('userId', identity.tokenIdentifier))
       .order('desc')
       .paginate(paginationOptions);
   },
@@ -137,13 +127,13 @@ export const get = query({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return null;
+    // Public endpoint - no auth required
+    // Public endpoint
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return null;
     }
 
@@ -185,12 +175,13 @@ export const update = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -232,12 +223,13 @@ export const archive = mutation({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -272,12 +264,13 @@ export const updateLastMessageAt = mutation({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -308,14 +301,14 @@ export const count = query({
     archived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return 0;
+    // Public endpoint - no auth required
+    // Public endpoint
 
     const { archived } = args;
 
     const query = ctx.db
       .query('conversations')
-      .withIndex('by_user', (q) => q.eq('userId', identity.tokenIdentifier));
+      // Public endpoint - no user filtering;
 
     const conversations = await query.collect();
 

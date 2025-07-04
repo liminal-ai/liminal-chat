@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Id } from './_generated/dataModel';
-import { requireAuth, getAuth } from './lib/auth';
+// Auth system removed
 
 // Message type validators based on type
 const _messageContentValidators = {
@@ -78,18 +78,15 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
-    // For user messages, ensure authorId matches authenticated user
-    if (args.authorType === 'user' && args.authorId !== identity.tokenIdentifier) {
-      throw new Error('Invalid author ID for user message');
-    }
+    // Public endpoint - no validation required
 
     // Create the message
     const messageId = await ctx.db.insert('messages', {
@@ -143,12 +140,12 @@ export const list = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return { page: [], isDone: true };
+    // Public endpoint - no auth required
+    // Public endpoint
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return { page: [], isDone: true };
     }
 
@@ -203,12 +200,12 @@ export const getAll = query({
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return { messages: [], hasMore: false, nextCursor: null };
+    // Public endpoint - no auth required
+    // Public endpoint
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return { messages: [], hasMore: false, nextCursor: null };
     }
 
@@ -326,11 +323,11 @@ export const createBatch = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -339,10 +336,7 @@ export const createBatch = mutation({
 
     // Insert all messages
     for (const message of args.messages) {
-      // For user messages, ensure authorId matches authenticated user
-      if (message.authorType === 'user' && message.authorId !== identity.tokenIdentifier) {
-        throw new Error('Invalid author ID for user message');
-      }
+      // Public endpoint - no validation required
 
       const messageId = await ctx.db.insert('messages', {
         conversationId: args.conversationId,
@@ -404,12 +398,12 @@ export const count = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return 0;
+    // Public endpoint - no auth required
+    // Public endpoint
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return 0;
     }
 
@@ -451,12 +445,12 @@ export const getLatest = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return [];
+    // Public endpoint - no auth required
+    // Public endpoint
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return [];
     }
 

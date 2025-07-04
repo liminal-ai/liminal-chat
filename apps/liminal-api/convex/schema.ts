@@ -1,32 +1,17 @@
 // Liminal Chat Convex Schema
-// This schema includes user authentication via Clerk
+// Public API schema - no authentication
 
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
 export default defineSchema(
   {
-    // Users table for storing user profiles from Clerk
-    users: defineTable({
-      // Clerk user ID (this will be the tokenIdentifier from Clerk JWT)
-      tokenIdentifier: v.string(),
-      // User's email from Clerk
-      email: v.string(),
-      // User's name from Clerk
-      name: v.optional(v.string()),
-      // User's profile image URL from Clerk
-      imageUrl: v.optional(v.string()),
-      // Timestamps
-      createdAt: v.number(),
-      updatedAt: v.number(),
-    })
-      .index('by_token', ['tokenIdentifier'])
-      .index('by_email', ['email']),
+    // Users table removed - no authentication system
 
     // Conversations table - stores chat sessions
     conversations: defineTable({
-      // User who owns this conversation
-      userId: v.string(), // tokenIdentifier from Clerk
+      // Anonymous user identifier
+      userId: v.string(), // No authentication system
       // Conversation title (auto-generated or user-provided)
       title: v.string(),
       // Type of conversation determines orchestration needs
@@ -45,9 +30,7 @@ export default defineSchema(
       // Timestamps
       createdAt: v.number(),
       updatedAt: v.number(),
-    })
-      .index('by_user', ['userId', 'lastMessageAt'])
-      .index('by_user_archived', ['userId', 'metadata.archived', 'lastMessageAt']),
+    }),
 
     // Messages table - stores all messages in conversations
     messages: defineTable({
@@ -55,7 +38,7 @@ export default defineSchema(
       conversationId: v.id('conversations'),
       // Who created this message
       authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
-      authorId: v.string(), // userId for users, agent name for agents
+      authorId: v.string(), // anonymous for users, agent name for agents
       // What kind of message
       type: v.union(
         v.literal('text'),

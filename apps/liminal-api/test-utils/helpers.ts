@@ -61,34 +61,29 @@ export function parseDataStream(text: string): string[] {
 }
 
 // Make a chat request with standard error handling
-export async function makeChatRequest(
+// No auth required anymore - all endpoints are public
+function getAuthHeaders(): Record<string, string> {
+  return {};
+}
+
+// Make an authenticated GET request
+export async function makeAuthenticatedRequest(
   request: APIRequestContext,
   endpoint: string,
-  data: any,
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
+  data?: any,
 ): Promise<{ response: any; body: any }> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    ...getAuthHeaders(),
   };
 
-  // Add auth token if provided via environment variable
-  if (process.env.CLERK_TEST_TOKEN) {
-    headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-  } else if (
-    process.env.NODE_ENV !== 'test' &&
-    !(process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production')
-  ) {
-    console.warn(
-      '⚠️ No authentication token provided for tests\n' +
-        'To test with authentication:\n' +
-        '1. Set CLERK_TEST_TOKEN environment variable, OR\n' +
-        '2. Enable dev auth with DEV_AUTH_DEFAULT=true (development only)',
-    );
+  const options: any = { headers };
+  if (data && method !== 'GET') {
+    options.data = data;
   }
 
-  const response = await request.post(endpoint, {
-    data,
-    headers,
-  });
+  const response = await request[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](endpoint, options);
   const body = await response.text();
 
   try {
@@ -96,4 +91,13 @@ export async function makeChatRequest(
   } catch {
     return { response, body };
   }
+}
+
+// Make a chat request with standard error handling (backward compatibility)
+export async function makeChatRequest(
+  request: APIRequestContext,
+  endpoint: string,
+  data: any,
+): Promise<{ response: any; body: any }> {
+  return makeAuthenticatedRequest(request, endpoint, 'POST', data);
 }

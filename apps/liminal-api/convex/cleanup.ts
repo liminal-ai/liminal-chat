@@ -35,10 +35,7 @@ export const clearTestData = mutation({
     return {
       messagesDeleted,
       conversationsDeleted,
-      usersPreserved: await ctx.db
-        .query('users')
-        .collect()
-        .then((users) => users.length),
+      usersPreserved: 0, // Users table removed
     };
   },
 });
@@ -49,7 +46,7 @@ export const clearTestData = mutation({
 export const getDataCounts = mutation({
   args: {},
   handler: async (ctx) => {
-    const users = await ctx.db.query('users').collect();
+    const users: any[] = []; // Users table removed
     const conversations = await ctx.db.query('conversations').collect();
     const messages = await ctx.db.query('messages').collect();
 

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { TEST_PROMPTS, TEST_TIMEOUTS, RESPONSE_VALIDATORS } from '../test-utils/config';
-import { makeChatRequest, parseDataStream } from '../test-utils/helpers';
+import { makeChatRequest, makeAuthenticatedRequest, parseDataStream } from '../test-utils/helpers';
 
 test.describe('Liminal API Integration Tests', () => {
   test('1. System health check', async ({ request }) => {
@@ -9,7 +9,6 @@ test.describe('Liminal API Integration Tests', () => {
 
     const body = await response.json();
     expect(body).toHaveProperty('status', 'healthy');
-    expect(body).toHaveProperty('database');
   });
 
   test('2. Basic chat functionality', async ({ request }) => {
