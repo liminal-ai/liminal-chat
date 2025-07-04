@@ -2,6 +2,7 @@
 
 import { useQuery } from 'convex/react';
 import { api } from '@liminal-api/convex/_generated/api';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 interface Conversation {
   _id: string;
@@ -11,20 +12,17 @@ interface Conversation {
   lastMessageAt?: number;
 }
 
-export default function ConversationsPage() {
-  // Use proper useQuery hooks with error handling
+function ConversationsContent() {
+  // Convex useQuery throws errors on failure, returns undefined when loading
   const totalCount = useQuery(api.conversations.count, {});
   const conversationsResult = useQuery(api.conversations.list, {
     paginationOpts: { numItems: 10 },
   });
 
-  // Check for loading and error states
+  // Check for loading states
   const isLoading = totalCount === undefined || conversationsResult === undefined;
   const conversations = conversationsResult?.page || [];
-
-  // Handle errors (useQuery throws errors, but we can also check for empty results after loading)
-  const hasError = !isLoading && totalCount === null;
-  const isEmpty = !isLoading && !hasError && conversations.length === 0;
+  const isEmpty = !isLoading && conversations.length === 0;
 
   if (isLoading) {
     return (
@@ -35,27 +33,6 @@ export default function ConversationsPage() {
             <div className="flex items-center space-x-3">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               <span className="text-blue-800">Loading conversations from Convex...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Conversations</h1>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-center space-x-3">
-              <div className="text-red-600">⚠️</div>
-              <div className="text-red-800">
-                <h3 className="font-semibold">Failed to load conversations</h3>
-                <p className="text-sm mt-1">
-                  Unable to connect to the Convex backend. Please try refreshing the page.
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -139,7 +116,7 @@ export default function ConversationsPage() {
           <h3 className="font-semibold text-gray-800 mb-3">Debug Information</h3>
           <div className="text-sm text-gray-600 space-y-1">
             <p>
-              Environment: <code>development</code>
+              Environment: <code>{process.env.NODE_ENV}</code>
             </p>
             <p>
               Convex URL: <code>{process.env.NEXT_PUBLIC_CONVEX_URL}</code>
@@ -149,5 +126,13 @@ export default function ConversationsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConversationsPage() {
+  return (
+    <ErrorBoundary>
+      <ConversationsContent />
+    </ErrorBoundary>
   );
 }
