@@ -21,7 +21,7 @@ export default function ConversationsPage() {
   // Check for loading and error states
   const isLoading = totalCount === undefined || conversationsResult === undefined;
   const conversations = conversationsResult?.page || [];
-  
+
   // Handle errors (useQuery throws errors, but we can also check for empty results after loading)
   const hasError = !isLoading && totalCount === null;
   const isEmpty = !isLoading && !hasError && conversations.length === 0;
@@ -52,7 +52,9 @@ export default function ConversationsPage() {
               <div className="text-red-600">⚠️</div>
               <div className="text-red-800">
                 <h3 className="font-semibold">Failed to load conversations</h3>
-                <p className="text-sm mt-1">Unable to connect to the Convex backend. Please try refreshing the page.</p>
+                <p className="text-sm mt-1">
+                  Unable to connect to the Convex backend. Please try refreshing the page.
+                </p>
               </div>
             </div>
           </div>
