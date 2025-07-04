@@ -14,6 +14,7 @@ All HTTP endpoints are available at: `{BASE_URL}`
 Replace `{BASE_URL}` with your Convex HTTP endpoint URL (format: `https://<deployment-name>.convex.site`)
 
 ### 1. Health Check
+
 ```bash
 GET /health
 ```
@@ -21,11 +22,13 @@ GET /health
 Returns database connectivity status and basic health information.
 
 Example:
+
 ```bash
 curl {BASE_URL}/health
 ```
 
 ### 2. Test Endpoint
+
 ```bash
 GET /test
 ```
@@ -33,6 +36,7 @@ GET /test
 Returns authentication status and basic test information.
 
 Example:
+
 ```bash
 # Without authentication
 curl {BASE_URL}/test
@@ -42,6 +46,7 @@ curl -H 'Authorization: Bearer YOUR_JWT' {BASE_URL}/test
 ```
 
 ### 3. Clerk Webhook
+
 ```bash
 POST /clerk-webhook
 ```
@@ -51,6 +56,7 @@ Webhook endpoint for Clerk authentication events. This is used internally by Cle
 ## Testing
 
 Use the provided test script:
+
 ```bash
 ./test-endpoints.sh
 ```
@@ -64,5 +70,6 @@ Use the provided test script:
 ## Environment Variables
 
 The following environment variables are configured:
+
 - `CONVEX_URL`: The WebSocket/Query/Mutation API URL (`.convex.cloud`)
 - `CONVEX_HTTP_URL`: The HTTP Actions URL (`.convex.site`)

@@ -41,45 +41,14 @@ const REQUIRED_ENV_VARS = {
     docs: 'https://openrouter.ai/keys',
   },
 
-  // Authentication
-  CLERK_ISSUER_URL: {
-    description: 'Clerk JWT issuer URL for authentication',
-    example: 'https://your-app.clerk.accounts.dev',
-    docs: 'https://clerk.com/docs/backend-requests/handling-cors#clerk-issuer-url',
-  },
-  CLERK_WEBHOOK_SECRET: {
-    description: 'Clerk webhook signing secret for Svix verification',
-    example: 'whsec_...',
-    docs: 'https://clerk.com/docs/integrations/webhooks',
-  },
+  // Auth system removed
 } as const;
 
 /**
  * Conditionally required environment variables
  */
-const CONDITIONAL_ENV_VARS = {
-  DEV_AUTH: {
-    condition: () =>
-      process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production',
-    vars: {
-      DEV_USER_ID: {
-        description: 'Development user Clerk ID',
-        example: 'user_2zINPyhtT9Wem9OeVW4eZDs21KI',
-        docs: 'Required when DEV_AUTH_DEFAULT is true (development only)',
-      },
-      DEV_USER_EMAIL: {
-        description: 'Development user email',
-        example: 'dev@liminal.chat',
-        docs: 'Required when DEV_AUTH_DEFAULT is true (development only)',
-      },
-      DEV_USER_NAME: {
-        description: 'Development user display name',
-        example: 'Dev User',
-        docs: 'Required when DEV_AUTH_DEFAULT is true (development only)',
-      },
-    },
-  },
-} as const;
+// Development auth system removed
+const _CONDITIONAL_ENV_VARS = {} as const;
 
 /**
  * Optional environment variables with defaults
@@ -90,11 +59,7 @@ const OPTIONAL_ENV_VARS = {
     default: 'development',
     values: ['development', 'production', 'test'],
   },
-  DEV_AUTH_DEFAULT: {
-    description: 'Enable development authentication bypass',
-    default: 'false',
-    values: ['true', 'false'],
-  },
+  // Dev auth removed
 } as const;
 
 /**
@@ -137,40 +102,17 @@ export const env = {
   get OPENROUTER_API_KEY(): string {
     return getRequiredEnv('OPENROUTER_API_KEY');
   },
-  get CLERK_ISSUER_URL(): string {
-    return getRequiredEnv('CLERK_ISSUER_URL');
-  },
-  get CLERK_WEBHOOK_SECRET(): string {
-    return getRequiredEnv('CLERK_WEBHOOK_SECRET');
-  },
+  // Auth system removed
 
-  // Conditional vars
-  get DEV_USER_ID(): string {
-    return getConditionalEnv('DEV_USER_ID', 'DEV_AUTH');
-  },
-  get DEV_USER_EMAIL(): string {
-    return getConditionalEnv('DEV_USER_EMAIL', 'DEV_AUTH');
-  },
-  get DEV_USER_NAME(): string {
-    return getConditionalEnv('DEV_USER_NAME', 'DEV_AUTH');
-  },
+  // Auth vars removed
 
   // Optional vars with defaults
   get NODE_ENV(): string {
     return process.env.NODE_ENV || OPTIONAL_ENV_VARS.NODE_ENV.default;
   },
-  get DEV_AUTH_DEFAULT(): boolean {
-    return process.env.DEV_AUTH_DEFAULT === 'true';
-  },
-
   // Helper to check if in production
   get isProduction(): boolean {
     return process.env.NODE_ENV === 'production';
-  },
-
-  // Helper to check if dev auth is enabled (with production protection)
-  get isDevAuthEnabled(): boolean {
-    return process.env.DEV_AUTH_DEFAULT === 'true' && process.env.NODE_ENV !== 'production';
   },
 };
 
@@ -196,25 +138,7 @@ function getRequiredEnv(key: keyof typeof REQUIRED_ENV_VARS): string {
 /**
  * Get a conditionally required environment variable
  */
-function getConditionalEnv(key: string, conditionName: keyof typeof CONDITIONAL_ENV_VARS): string {
-  const condition = CONDITIONAL_ENV_VARS[conditionName];
-  if (condition.condition()) {
-    const value = process.env[key];
-    if (!value) {
-      const config = condition.vars[key as keyof typeof condition.vars];
-      throw new ConvexError(
-        `Missing required environment variable: ${key}\n` +
-          `Description: ${config.description}\n` +
-          `Example: ${config.example}\n` +
-          `Note: ${config.docs}\n\n` +
-          `To set this variable in Convex:\n` +
-          `npx convex env set ${key} "your-value-here"`,
-      );
-    }
-    return value;
-  }
-  return '';
-}
+// Conditional env function removed - no conditional vars
 
 /**
  * Validates all environment variables at startup.
@@ -241,16 +165,7 @@ export function validateEnvironment(): { valid: boolean; errors: string[] } {
     }
   }
 
-  // Check conditional vars
-  for (const [conditionName, condition] of Object.entries(CONDITIONAL_ENV_VARS)) {
-    if (condition.condition()) {
-      for (const [key, config] of Object.entries(condition.vars)) {
-        if (!process.env[key]) {
-          errors.push(`${key}: ${config.description} (required when ${conditionName})`);
-        }
-      }
-    }
-  }
+  // No conditional vars to check
 
   return {
     valid: errors.length === 0,
@@ -285,19 +200,7 @@ export function logEnvironmentStatus(): void {
     console.log(`  ${key}: ${status} (${masked})`);
   }
 
-  // Conditional vars
-  console.log('\nConditional Variables:');
-  for (const [conditionName, condition] of Object.entries(CONDITIONAL_ENV_VARS)) {
-    const isRequired = condition.condition();
-    console.log(`  ${conditionName} (required: ${isRequired}):`);
-    if (isRequired) {
-      for (const key of Object.keys(condition.vars)) {
-        const value = process.env[key];
-        const status = value ? '✅ Set' : '❌ Missing';
-        console.log(`    ${key}: ${status}`);
-      }
-    }
-  }
+  // No conditional vars to display
 
   // Optional vars
   console.log('\nOptional Variables:');

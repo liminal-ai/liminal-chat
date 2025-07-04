@@ -5,8 +5,20 @@
 import { mutation } from './_generated/server';
 
 /**
- * Clear all messages and conversations (but preserve users)
- * Use this to clean up test data during development
+ * Clears all messages and conversations from the database.
+ * This is a development utility for cleaning up test data.
+ * Since authentication was removed, there are no users to preserve.
+ *
+ * @returns Object containing deletion counts
+ * @returns {number} messagesDeleted - Number of messages deleted
+ * @returns {number} conversationsDeleted - Number of conversations deleted
+ * @returns {number} usersPreserved - Always 0 since users table was removed
+ *
+ * @example
+ * ```typescript
+ * const result = await ctx.runMutation(api.cleanup.clearTestData, {});
+ * console.log(`Deleted ${result.messagesDeleted} messages and ${result.conversationsDeleted} conversations`);
+ * ```
  */
 export const clearTestData = mutation({
   args: {},
@@ -35,21 +47,30 @@ export const clearTestData = mutation({
     return {
       messagesDeleted,
       conversationsDeleted,
-      usersPreserved: await ctx.db
-        .query('users')
-        .collect()
-        .then((users) => users.length),
+      usersPreserved: 0, // Users table removed
     };
   },
 });
 
 /**
- * Get data counts for monitoring cleanup
+ * Returns current count of data records in the database.
+ * Useful for monitoring data growth and verifying cleanup operations.
+ *
+ * @returns Object containing current record counts
+ * @returns {number} users - Always 0 since users table was removed
+ * @returns {number} conversations - Current number of conversations
+ * @returns {number} messages - Current number of messages
+ *
+ * @example
+ * ```typescript
+ * const counts = await ctx.runMutation(api.cleanup.getDataCounts, {});
+ * console.log(`Database contains: ${counts.conversations} conversations, ${counts.messages} messages`);
+ * ```
  */
 export const getDataCounts = mutation({
   args: {},
   handler: async (ctx) => {
-    const users = await ctx.db.query('users').collect();
+    const users: any[] = []; // Users table removed
     const conversations = await ctx.db.query('conversations').collect();
     const messages = await ctx.db.query('messages').collect();
 

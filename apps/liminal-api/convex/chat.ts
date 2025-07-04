@@ -5,7 +5,7 @@ import { v } from 'convex/values';
 import { aiService } from './ai/service';
 import { api } from './_generated/api';
 import { Id } from './_generated/dataModel';
-import { getAuthForAction } from './lib/auth';
+// Remove auth import
 
 /**
  * Non-streaming text generation action for simple chat completions.
@@ -58,14 +58,13 @@ export const simpleChatAction = action({
   }> => {
     const { prompt, provider = 'openrouter', model, conversationId } = args;
 
-    // Get authenticated user (with dev user support)
-    const identity = await getAuthForAction(ctx);
-    const userId = identity?.tokenIdentifier || 'anonymous';
+    // No auth required - use anonymous user
+    const userId = 'anonymous';
 
     let actualConversationId = conversationId;
 
     // If no conversationId provided, create a new conversation
-    if (!actualConversationId && identity) {
+    if (!actualConversationId) {
       actualConversationId = await ctx.runMutation(api.conversations.create, {
         title: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
         type: 'standard',
@@ -77,7 +76,7 @@ export const simpleChatAction = action({
     }
 
     // Save user message if we have a conversation
-    if (actualConversationId && identity) {
+    if (actualConversationId) {
       await ctx.runMutation(api.messages.create, {
         conversationId: actualConversationId,
         authorType: 'user',
@@ -95,7 +94,7 @@ export const simpleChatAction = action({
     });
 
     // Save assistant response if we have a conversation
-    if (actualConversationId && identity) {
+    if (actualConversationId) {
       await ctx.runMutation(api.messages.create, {
         conversationId: actualConversationId,
         authorType: 'agent',
@@ -176,9 +175,8 @@ export const streamingChatAction = action({
   }> => {
     const { messages, provider = 'openrouter', model, conversationId } = args;
 
-    // Get authenticated user (with dev user support)
-    const identity = await getAuthForAction(ctx);
-    const userId = identity?.tokenIdentifier || 'anonymous';
+    // No auth required - use anonymous user
+    const userId = 'anonymous';
 
     let actualConversationId = conversationId;
 
@@ -189,7 +187,7 @@ export const streamingChatAction = action({
     }
 
     // If no conversationId provided, create a new conversation
-    if (!actualConversationId && identity) {
+    if (!actualConversationId) {
       actualConversationId = await ctx.runMutation(api.conversations.create, {
         title: userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : ''),
         type: 'standard',
@@ -201,7 +199,7 @@ export const streamingChatAction = action({
     }
 
     // Save user message if we have a conversation
-    if (actualConversationId && identity) {
+    if (actualConversationId) {
       await ctx.runMutation(api.messages.create, {
         conversationId: actualConversationId,
         authorType: 'user',

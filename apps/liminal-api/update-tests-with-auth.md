@@ -3,13 +3,14 @@
 ## 1. Generate a Test Token
 
 1. Open `test-token-generator.html` in a browser:
+
    ```bash
    open test-token-generator.html
    ```
 
 2. Sign in with your Clerk account
 
-3. Click "Generate Test Token" 
+3. Click "Generate Test Token"
 
 4. Copy the generated token (starts with `Bearer `)
 
@@ -33,6 +34,7 @@ export CLERK_TEST_TOKEN="Bearer YOUR_GENERATED_TOKEN"
 ```
 
 Then update tests to use:
+
 ```typescript
 headers: {
   'Content-Type': 'application/json',

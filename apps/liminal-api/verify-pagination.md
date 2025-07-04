@@ -7,10 +7,12 @@ Successfully added pagination protection to the `messages.getAll` query in `/app
 ### Key Changes:
 
 1. **Added pagination parameters**:
+
    - `limit`: Optional number parameter (default: 100, max: 1000)
    - `cursor`: Optional string parameter for cursor-based pagination
 
 2. **Pagination logic**:
+
    - Validates limit to ensure it's between 1 and 1000
    - Uses Convex's `.take()` method to limit results
    - Implements cursor-based pagination using message timestamps
@@ -30,40 +32,40 @@ Successfully added pagination protection to the `messages.getAll` query in `/app
 ```typescript
 // Get first page with default limit (100 messages)
 const firstPage = await convex.query(api.messages.getAll, {
-  conversationId: "conversation123"
+  conversationId: 'conversation123',
 });
 
 // Get first page with custom limit
 const customPage = await convex.query(api.messages.getAll, {
-  conversationId: "conversation123",
-  limit: 50
+  conversationId: 'conversation123',
+  limit: 50,
 });
 
 // Get next page using cursor
 const nextPage = await convex.query(api.messages.getAll, {
-  conversationId: "conversation123",
+  conversationId: 'conversation123',
   cursor: firstPage.nextCursor,
-  limit: 100
+  limit: 100,
 });
 
 // Paginate through all messages safely
 async function getAllMessagesSafely(conversationId) {
   const allMessages = [];
   let cursor = null;
-  
+
   do {
     const page = await convex.query(api.messages.getAll, {
       conversationId,
       cursor,
-      limit: 100
+      limit: 100,
     });
-    
+
     allMessages.push(...page.messages);
     cursor = page.nextCursor;
-    
+
     if (!page.hasMore) break;
   } while (cursor);
-  
+
   return allMessages;
 }
 ```

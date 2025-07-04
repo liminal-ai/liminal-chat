@@ -6,24 +6,24 @@ These environment variables must be set in the Convex deployment using `npx conv
 
 ### AI Provider API Keys
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | No* | `sk-proj-...` |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API key | No* | `sk-ant-api03-...` |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Gemini API key | No* | `AIzaSy...` |
-| `PERPLEXITY_API_KEY` | Perplexity API key | No* | `pplx-...` |
-| `VERCEL_API_KEY` | Vercel v0 API key | No* | `v1:...` |
-| `OPENROUTER_API_KEY` | OpenRouter API key | Yes** | `sk-or-v1-...` |
+| Variable                       | Description              | Required | Example            |
+| ------------------------------ | ------------------------ | -------- | ------------------ |
+| `OPENAI_API_KEY`               | OpenAI API key           | No\*     | `sk-proj-...`      |
+| `ANTHROPIC_API_KEY`            | Anthropic Claude API key | No\*     | `sk-ant-api03-...` |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Gemini API key    | No\*     | `AIzaSy...`        |
+| `PERPLEXITY_API_KEY`           | Perplexity API key       | No\*     | `pplx-...`         |
+| `VERCEL_API_KEY`               | Vercel v0 API key        | No\*     | `v1:...`           |
+| `OPENROUTER_API_KEY`           | OpenRouter API key       | Yes\*\*  | `sk-or-v1-...`     |
 
 \* At least one provider API key is required for the chat functionality to work.
-\** OpenRouter is the default provider and is required unless you change the default.
+\*\* OpenRouter is the default provider and is required unless you change the default.
 
 ### Authentication
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `CLERK_ISSUER_URL` | Clerk issuer URL for JWT verification | Yes | `https://your-app.clerk.accounts.dev` |
-| `DEV_AUTH_DEFAULT` | Bypass auth in development (REMOVE FOR PRODUCTION) | No | `true` |
+| Variable           | Description                                        | Required | Example                               |
+| ------------------ | -------------------------------------------------- | -------- | ------------------------------------- |
+| `CLERK_ISSUER_URL` | Clerk issuer URL for JWT verification              | Yes      | `https://your-app.clerk.accounts.dev` |
+| `DEV_AUTH_DEFAULT` | Bypass auth in development (REMOVE FOR PRODUCTION) | No       | `true`                                |
 
 ## Setting Environment Variables
 
@@ -104,8 +104,9 @@ The publishable key starts with `pk_` and is safe to use in client-side code, bu
 ### Testing environment variables
 
 Add this to any Convex function to debug:
+
 ```typescript
-console.log("Environment check:", {
+console.log('Environment check:', {
   hasOpenAI: !!process.env.OPENAI_API_KEY,
   hasAnthropic: !!process.env.ANTHROPIC_API_KEY,
   // etc...

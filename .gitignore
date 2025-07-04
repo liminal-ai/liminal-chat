@@ -122,3 +122,6 @@ apps/domain-data/augy-scratchpad/
 
 # Legacy code - migrating away from this
 apps/domain/
+
+# WorkOS pivot POC - exploration directory
+workos-pivot-poc/

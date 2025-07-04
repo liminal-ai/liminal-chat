@@ -40,6 +40,7 @@ npx convex dev
 ```
 
 This will:
+
 - Create a new Convex project (if not already created)
 - Generate TypeScript types
 - Start the development server
@@ -60,6 +61,7 @@ Your Convex deployment URL will be displayed, e.g., `https://modest-squirrel-498
 
 1. In the Convex dashboard, go to **Settings** → **Environment Variables**
 2. Add the following:
+
    ```
    CLERK_ISSUER_URL=https://your-clerk-domain.clerk.accounts.dev
    ```
@@ -91,11 +93,13 @@ CONVEX_DEPLOYMENT=development
 The following endpoints are available for testing:
 
 #### Health Check
+
 ```bash
 curl https://your-deployment.convex.cloud/health
 ```
 
 Expected response:
+
 ```json
 {
   "status": "healthy",
@@ -109,11 +113,13 @@ Expected response:
 ```
 
 #### Test Endpoint (Node.js Runtime Verification)
+
 ```bash
 curl https://your-deployment.convex.cloud/test
 ```
 
 Expected response:
+
 ```json
 {
   "status": "success",
@@ -142,6 +148,7 @@ Expected response:
 ### 2. Test Authentication
 
 With a valid Clerk JWT token:
+
 ```bash
 curl -H "Authorization: Bearer YOUR_CLERK_JWT" https://your-deployment.convex.cloud/test
 ```
@@ -174,6 +181,7 @@ npx convex run users:getUserCount
 ### Convex Functions
 
 #### users.ts
+
 - `getCurrentUser` - Get authenticated user profile
 - `syncUser` - Create/update user from Clerk data
 - `testAuth` - Test authentication status
@@ -190,9 +198,10 @@ The HTTP actions are designed to work with Vercel AI SDK:
 4. **Database Access**: Direct queries to Convex database
 
 Example integration:
+
 ```typescript
 // In your Vercel AI SDK route
-import { ConvexHttpClient } from "convex/browser";
+import { ConvexHttpClient } from 'convex/browser';
 
 const client = new ConvexHttpClient(process.env.CONVEX_URL);
 const response = await fetch(`${process.env.CONVEX_URL}/test`);
@@ -201,6 +210,7 @@ const response = await fetch(`${process.env.CONVEX_URL}/test`);
 ## Development Workflow
 
 1. Start Convex dev server:
+
    ```bash
    npx convex dev
    ```
@@ -226,16 +236,19 @@ const response = await fetch(`${process.env.CONVEX_URL}/test`);
 ## Troubleshooting
 
 ### Node.js Runtime Not Working
+
 - Ensure the file starts with `"use node";`
 - Check that you're importing Node.js modules correctly
 - Verify in the `/test` endpoint that Node.js version is shown
 
 ### Authentication Issues
+
 - Verify Clerk issuer URL is correctly set in Convex
 - Check that JWT template in Clerk is named "convex"
 - Ensure Authorization header is properly formatted
 
 ### Database Queries Failing
+
 - Check schema definitions in `schema.ts`
 - Verify indexes are properly defined
 - Use Convex dashboard to inspect data

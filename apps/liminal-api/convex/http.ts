@@ -7,71 +7,22 @@ import {
 } from 'convex-helpers/server/hono';
 import { ActionCtx } from './_generated/server';
 import { api } from './_generated/api';
-import { Webhook } from 'svix';
+// Svix import removed
 import { Id } from './_generated/dataModel';
-import { env } from './lib/env';
+// Env import removed
 
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();
 
-// Enhanced health check endpoint
+// Simple health check endpoint - public access
 app.get('/health', async (c) => {
-  const ctx = c.env;
-  try {
-    // Query the users table to verify database connectivity
-    const userCount = await ctx.runQuery(api.users.getUserCount);
-
-    // Get a sample user (without sensitive data)
-    const sampleUser = await ctx.runQuery(api.users.getSampleUser);
-
-    const response = {
-      status: 'healthy',
-      database: {
-        connected: true,
-        userCount,
-        hasSampleUser: !!sampleUser,
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    return c.json(response);
-  } catch (error) {
-    return c.json(
-      {
-        status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      },
-      503,
-    );
-  }
+  return c.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// TypeScript types for Clerk webhook events
-interface ClerkWebhookEvent {
-  type: 'user.created' | 'user.updated' | 'user.deleted';
-  data: {
-    id: string;
-    email_addresses?: Array<{
-      email_address: string;
-      verification?: {
-        status: string;
-      };
-    }>;
-    first_name?: string;
-    last_name?: string;
-    username?: string;
-    image_url?: string;
-    created_at: number;
-    updated_at: number;
-  };
-  object: string;
-  event_attributes?: {
-    http_request: {
-      client_ip: string;
-    };
-  };
-}
+// Clerk types removed
 
 // TypeScript types for conversation endpoints
 interface CreateConversationRequest {
@@ -93,100 +44,7 @@ interface UpdateConversationRequest {
   };
 }
 
-// Clerk webhook endpoint with Svix signature verification
-app.post('/clerk-webhook', async (c) => {
-  const _ctx = c.env;
-
-  // Security: Get the webhook secret from environment with better error handling
-  let webhookSecret: string;
-  try {
-    webhookSecret = env.CLERK_WEBHOOK_SECRET;
-  } catch (error) {
-    console.error('CLERK_WEBHOOK_SECRET configuration error:', error);
-    return c.json(
-      {
-        error: 'Webhook configuration error',
-        details:
-          process.env.NODE_ENV === 'development'
-            ? error instanceof Error
-              ? error.message
-              : 'Unknown error'
-            : 'An internal error occurred while processing the webhook configuration',
-      },
-      500,
-    );
-  }
-
-  // Security: Extract required headers for signature verification
-  const svixId = c.req.header('svix-id');
-  const svixTimestamp = c.req.header('svix-timestamp');
-  const svixSignature = c.req.header('svix-signature');
-
-  if (!svixId || !svixTimestamp || !svixSignature) {
-    console.warn('Missing required webhook headers for signature verification');
-    return c.json({ error: 'Missing webhook headers' }, 401);
-  }
-
-  try {
-    // Get the raw body for signature verification
-    const body = await c.req.text();
-
-    // Security: Verify the webhook signature using Svix
-    const webhook = new Webhook(webhookSecret);
-    let event: ClerkWebhookEvent;
-
-    try {
-      // This will throw an error if signature verification fails
-      event = webhook.verify(body, {
-        'svix-id': svixId,
-        'svix-timestamp': svixTimestamp,
-        'svix-signature': svixSignature,
-      }) as ClerkWebhookEvent;
-    } catch (verifyError) {
-      console.error('Webhook signature verification failed:', verifyError);
-      return c.json({ error: 'Invalid webhook signature' }, 401);
-    }
-
-    // Security check passed - process the verified webhook event
-    console.log(`Processing verified Clerk webhook event: ${event.type}`);
-
-    // Handle different webhook events from Clerk
-    switch (event.type) {
-      case 'user.created':
-      case 'user.updated': {
-        const userData = event.data;
-
-        // Extract user information
-        const email = userData.email_addresses?.[0]?.email_address;
-
-        if (email) {
-          // Note: We can't directly call syncUser here because webhooks don't have auth context
-          // Instead, we'd need to store this data temporarily or use a different approach
-          // TODO: Implement proper webhook handling without auth context
-          console.log(`User ${event.type}: ${email}`);
-        }
-        break;
-      }
-
-      case 'user.deleted': {
-        // Handle user deletion if needed
-        // TODO: Implement proper user deletion handling
-        console.log(`User deleted: ${event.data.id}`);
-        break;
-      }
-
-      default: {
-        // Log unhandled event types for monitoring
-        console.log(`Unhandled webhook event type: ${(event as any).type}`);
-      }
-    }
-
-    return c.json({ status: 'OK' });
-  } catch (error) {
-    console.error('Webhook processing error:', error);
-    return c.json({ error: 'Webhook processing failed' }, 500);
-  }
-});
+// Clerk webhook removed
 
 // Non-streaming text chat endpoint - returns complete text response
 app.post('/api/chat-text', async (c) => {
@@ -531,7 +389,7 @@ http.route({
  *
  * Available endpoints:
  * - GET /health - System health check
- * - POST /clerk-webhook - Clerk user sync webhook
+ * - Clerk webhook removed
  * - POST /api/chat-text - Non-streaming chat completion
  * - POST /api/chat - Streaming chat (Vercel AI SDK format)
  * - POST /api/completion - Streaming completion

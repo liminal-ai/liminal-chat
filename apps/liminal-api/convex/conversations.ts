@@ -1,16 +1,16 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { Id as _Id } from './_generated/dataModel';
-import { requireAuth, getAuth } from './lib/auth';
+// Remove auth imports
 
 /**
- * Creates a new conversation for the authenticated user.
+ * Creates a new conversation in the public API.
+ * All conversations are created as anonymous and publicly accessible.
  *
  * @param args.title - The title of the conversation
  * @param args.type - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard")
  * @param args.metadata - Optional metadata including provider, model, and tags
  * @returns The ID of the created conversation
- * @throws Error if not authenticated
  *
  * @example
  * ```typescript
@@ -40,11 +40,12 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const _userId = 'anonymous';
 
     const now = Date.now();
     return await ctx.db.insert('conversations', {
-      userId: identity.tokenIdentifier,
+      userId: _userId,
       title: args.title,
       type: args.type || 'standard',
       metadata: args.metadata,
@@ -56,14 +57,14 @@ export const create = mutation({
 });
 
 /**
- * Lists the authenticated user's conversations with pagination support.
+ * Lists all conversations in the public API with pagination support.
+ * Returns all conversations without user filtering since the API is public.
  *
  * @param args.archived - Filter by archived status (optional)
  * @param args.paginationOpts - Pagination options
  * @param args.paginationOpts.numItems - Number of items per page (default: 50)
  * @param args.paginationOpts.cursor - Cursor for pagination (optional)
  * @returns Paginated conversation list with page array and isDone flag
- * @returns Empty result if not authenticated
  *
  * @example
  * ```typescript
@@ -85,10 +86,10 @@ export const list = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return { page: [], isDone: true };
+    // Public endpoint - no auth required
+    // Public endpoint - return all conversations
 
-    const { archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
+    const { archived: _archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
 
     // Ensure cursor is always defined for pagination
     const paginationOptions = {
@@ -96,31 +97,17 @@ export const list = query({
       cursor: paginationOpts.cursor ?? null,
     };
 
-    // Use the appropriate index based on whether we're filtering by archived
-    if (archived !== undefined) {
-      return await ctx.db
-        .query('conversations')
-        .withIndex('by_user_archived', (q) =>
-          q.eq('userId', identity.tokenIdentifier).eq('metadata.archived', archived),
-        )
-        .order('desc')
-        .paginate(paginationOptions);
-    }
-
-    return await ctx.db
-      .query('conversations')
-      .withIndex('by_user', (q) => q.eq('userId', identity.tokenIdentifier))
-      .order('desc')
-      .paginate(paginationOptions);
+    // Public endpoint - return all conversations (no user filtering or indexing)
+    return await ctx.db.query('conversations').order('desc').paginate(paginationOptions);
   },
 });
 
 /**
- * Gets a single conversation by ID.
- * Verifies ownership before returning the conversation.
+ * Gets a single conversation by ID from the public API.
+ * Returns any conversation since all are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation to retrieve
- * @returns The conversation object or null if not found/not owned by user
+ * @returns The conversation object or null if not found
  *
  * @example
  * ```typescript
@@ -137,13 +124,13 @@ export const get = query({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return null;
+    // Public endpoint - no auth required
+    // Public endpoint
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       return null;
     }
 
@@ -152,13 +139,13 @@ export const get = query({
 });
 
 /**
- * Updates a conversation's title and/or metadata.
- * Only the conversation owner can update it.
+ * Updates a conversation's title and/or metadata in the public API.
+ * Any conversation can be updated since all are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation to update
  * @param args.title - New title (optional)
  * @param args.metadata - Metadata to update (optional, merged with existing)
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  *
  * @example
  * ```typescript
@@ -185,12 +172,13 @@ export const update = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -214,11 +202,11 @@ export const update = mutation({
 });
 
 /**
- * Archives a conversation (soft delete).
+ * Archives a conversation (soft delete) in the public API.
  * The conversation remains in the database but is marked as archived.
  *
  * @param args.conversationId - The ID of the conversation to archive
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  *
  * @example
  * ```typescript
@@ -232,12 +220,13 @@ export const archive = mutation({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -256,7 +245,7 @@ export const archive = mutation({
  * Called internally when new messages are added to maintain sort order.
  *
  * @param args.conversationId - The ID of the conversation to update
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  * @internal
  *
  * @example
@@ -272,12 +261,13 @@ export const updateLastMessageAt = mutation({
     conversationId: v.id('conversations'),
   },
   handler: async (ctx, args) => {
-    const identity = await requireAuth(ctx);
+    // Public endpoint - no auth required
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation || conversation.userId !== identity.tokenIdentifier) {
+    if (!conversation) {
       throw new Error('Conversation not found');
     }
 
@@ -289,18 +279,17 @@ export const updateLastMessageAt = mutation({
 });
 
 /**
- * Counts the total number of conversations for the authenticated user.
+ * Counts the total number of conversations in the public API.
  *
  * @param args.archived - Filter by archived status (optional)
  * @returns The count of conversations matching the filter
- * @returns 0 if not authenticated
  *
  * @example
  * ```typescript
  * const activeCount = await ctx.runQuery(api.conversations.count, {
  *   archived: false
  * });
- * console.log(`You have ${activeCount} active conversations`);
+ * console.log(`Found ${activeCount} active conversations`);
  * ```
  */
 export const count = query({
@@ -308,20 +297,16 @@ export const count = query({
     archived: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const identity = await getAuth(ctx);
-    if (!identity) return 0;
+    // Public endpoint - no auth required
+    // Public endpoint
 
-    const { archived } = args;
+    const { archived: _archived } = args;
 
-    const query = ctx.db
-      .query('conversations')
-      .withIndex('by_user', (q) => q.eq('userId', identity.tokenIdentifier));
-
-    const conversations = await query.collect();
+    const conversations = await ctx.db.query('conversations').collect();
 
     // Filter by archived status if specified
-    if (archived !== undefined) {
-      return conversations.filter((c) => c.metadata?.archived === archived).length;
+    if (_archived !== undefined) {
+      return conversations.filter((c) => c.metadata?.archived === _archived).length;
     }
 
     return conversations.length;

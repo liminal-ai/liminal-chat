@@ -12,7 +12,6 @@ The authentication is configured to use Clerk (https://clerk.com) with the follo
 
 ## Environment Variables
 
-
 ## Database Schema
 
 The `users` table stores authenticated user information:
@@ -52,7 +51,7 @@ To use authentication in your Convex functions:
 ```typescript
 const identity = await ctx.auth.getUserIdentity();
 if (!identity) {
-  throw new Error("Unauthenticated");
+  throw new Error('Unauthenticated');
 }
 ```
 

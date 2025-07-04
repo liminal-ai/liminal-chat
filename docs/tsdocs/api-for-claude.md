@@ -37,83 +37,100 @@ Non-streaming text generation action for simple chat completions.
 Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Generated text response with metadata  
 
-**`streamingChatAction`** (action) - convex/chat.ts:148  
+**`streamingChatAction`** (action) - convex/chat.ts:147  
 Streaming chat action that prepares conversation context.  
 Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Conversation context for streaming  
 Throws: Error if last message is not from user  
 
+#### cleanup.ts
+
+**`clearTestData`** (query) - convex/cleanup.ts:23  
+Clears all messages and conversations from the database.  
+Returns: usersPreserved - Always 0 since users table was removed  
+
+**`getDataCounts`** (query) - convex/cleanup.ts:70  
+Returns current count of data records in the database.  
+Returns: messages - Current number of messages  
+
 #### conversations.ts
 
 **`create`** (mutation) - convex/conversations.ts:28  
-Creates a new conversation for the authenticated user.  
+Creates a new conversation in the public API.  
 Args: - The title of the conversation, - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard"), - Optional metadata including provider, model, and tags  
 Returns: The ID of the created conversation  
-Throws: Error if not authenticated  
 
-**`list`** (query) - convex/conversations.ts:77  
-Lists the authenticated user's conversations with pagination support.  
+**`list`** (query) - convex/conversations.ts:78  
+Lists all conversations in the public API with pagination support.  
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
-Returns: Empty result if not authenticated  
+Returns: Paginated conversation list with page array and isDone flag  
 
-**`get`** (query) - convex/conversations.ts:135  
-Gets a single conversation by ID.  
+**`get`** (query) - convex/conversations.ts:122  
+Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
-Returns: The conversation object or null if not found/not owned by user  
+Returns: The conversation object or null if not found  
 
-**`update`** (mutation) - convex/conversations.ts:174  
-Updates a conversation's title and/or metadata.  
+**`update`** (mutation) - convex/conversations.ts:161  
+Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`archive`** (mutation) - convex/conversations.ts:230  
-Archives a conversation (soft delete).  
+**`archive`** (mutation) - convex/conversations.ts:218  
+Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`updateLastMessageAt`** (mutation) - convex/conversations.ts:270  
+**`updateLastMessageAt`** (mutation) - convex/conversations.ts:259  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/conversations.ts:306  
-Counts the total number of conversations for the authenticated user.  
+**`count`** (query) - convex/conversations.ts:295  
+Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
-Returns: 0 if not authenticated  
+Returns: The count of conversations matching the filter  
 
 #### messages.ts
 
-**`create`** (mutation) - convex/messages.ts:55  
-Creates a new message in a conversation.  
-Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author (must match user token for "user" type), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
+**`create`** (mutation) - convex/messages.ts:54  
+Creates a new message in a conversation using the public API.  
+Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author ("anonymous" for users, provider name for agents), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
 Returns: The ID of the created message  
-Throws: Error if conversation not found or user doesn't own it, Error if user message authorId doesn't match authenticated user  
+Throws: Error if conversation not found  
 
-**`list`** (query) - convex/messages.ts:135  
+**`list`** (query) - convex/messages.ts:132  
 Lists messages in a conversation with pagination support.  
 Args: - The ID of the conversation, - Pagination options, - Number of items per page (default: 50), - Cursor for pagination  
-Returns: Empty result if not authenticated or not owner  
+Returns: Empty result if conversation not found  
 
-**`getAll`** (query) - convex/messages.ts:199  
+**`getAll`** (query) - convex/messages.ts:197  
 Gets all messages for a conversation with cursor-based pagination.  
 Args: - The ID of the conversation, - Maximum messages to return (default: 100, max: 1000), - Message ID to start after (for pagination)  
-Returns: Empty result if not authenticated or not owner  
+Returns: Empty result if conversation not found  
 
-**`createBatch`** (mutation) - convex/messages.ts:299  
-Creates multiple messages at once in a conversation.  
+**`createBatch`** (mutation) - convex/messages.ts:297  
+Creates multiple messages at once in a conversation using the public API.  
 Args: - The ID of the conversation, - Array of message objects to create  
 Returns: Array of created message IDs  
-Throws: Error if conversation not found or user doesn't own it, Error if any user message authorId doesn't match authenticated user  
+Throws: Error if conversation not found  
 
-**`count`** (query) - convex/messages.ts:393  
+**`count`** (query) - convex/messages.ts:389  
 Counts messages in a conversation, optionally filtered by type.  
 Args: - The ID of the conversation, - Optional filter by message type  
-Returns: 0 if not authenticated or not owner  
+Returns: 0 if conversation not found  
 
-**`getLatest`** (query) - convex/messages.ts:448  
+**`getLatest`** (query) - convex/messages.ts:445  
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
-Returns: Empty array if not authenticated or not owner  
+Returns: Empty array if conversation not found  
+
+#### migrations.ts
+
+**`addUpdatedAtToMessages`** (query) - convex/migrations.ts:14  
+Migration: Add updatedAt field to existing messages  
+
+**`addUpdatedAtToConversations`** (query) - convex/migrations.ts:43  
+Migration: Add updatedAt field to existing conversations  
 
 #### startup.ts
 
@@ -122,42 +139,6 @@ Internal mutation to validate environment configuration at startup
 
 **`checkEnvironmentHealth`** (internalMutation) - convex/startup.ts:49  
 Internal mutation to check environment health  
-
-#### users.ts
-
-**`getCurrentUser`** (query) - convex/users.ts:19  
-Gets the current authenticated user from the database.  
-Returns: The user object if authenticated, null otherwise  
-
-**`syncUser`** (query) - convex/users.ts:57  
-Synchronizes user data from authentication provider to the database.  
-Args: - The mutation arguments, - User's email address, - User's display name (optional), - URL to user's profile image (optional)  
-Throws: Error if not authenticated  
-
-**`testAuth`** (query) - convex/users.ts:105  
-Tests the authentication status and returns user information.  
-Returns: Object with authentication status and user data  
-
-**`getUserCount`** (query) - convex/users.ts:141  
-Gets the total count of users in the database.  
-Returns: The total number of users  
-
-**`getSampleUser`** (query) - convex/users.ts:166  
-Gets a sanitized sample user for health checks.  
-Returns: Sanitized user data or null if no users exist  
-
-**`initializeDevUser`** (query) - convex/users.ts:213  
-Initializes the default development user for local testing.  
-Returns: Object with creation status  
-Throws: Error if called in production environment, Error if dev environment variables are not configured  
-
-#### webhooks.ts
-
-**`clerkWebhook`** (httpAction) - convex/webhooks.ts:20  
-Webhook handler for Clerk user lifecycle events.  
-Args: - Convex action context, - HTTP request containing Clerk webhook payload  
-Returns: HTTP response confirming webhook processing  
-Throws: WebhookError if signature verification fails  
 
 ### convex/ai/
 
@@ -199,42 +180,16 @@ Interfaces: `GenerateTextParams`
 
 ### convex/lib/
 
-#### auth.ts
-
-**`getDEV_USER_CONFIG`** (function) - convex/lib/auth.ts:19  
-Gets the development user configuration.  
-Returns: Development user configuration object  
-
-**`validateDevConfig`** (function) - convex/lib/auth.ts:49  
-Validates that development user configuration is properly set.  
-Throws: ConvexError if dev auth is enabled but required env vars are missing  
-
-**`requireAuth`** (function) - convex/lib/auth.ts:93  
-Requires authentication for a query or mutation.  
-Args: - Convex query or mutation context  
-Returns: User identity object with tokenIdentifier  
-Throws: Error "Authentication required" if not authenticated in production  
-
-**`getAuth`** (function) - convex/lib/auth.ts:134  
-Gets authentication if available, returns null if not authenticated.  
-Args: - Convex query or mutation context  
-Returns: User identity object or null  
-
-**`getAuthForAction`** (function) - convex/lib/auth.ts:164  
-Gets authentication for Convex actions.  
-Args: - Convex action context  
-Returns: User identity object or null  
-
 #### env.ts
 
-**`env`** (function) - convex/lib/env.ts:120  
+**`env`** (function) - convex/lib/env.ts:85  
 Type-safe environment variable access.  
 
-**`validateEnvironment`** (function) - convex/lib/env.ts:234  
+**`validateEnvironment`** (function) - convex/lib/env.ts:158  
 Validates all environment variables at startup.  
 Returns: Validation result  
 
-**`logEnvironmentStatus`** (function) - convex/lib/env.ts:276  
+**`logEnvironmentStatus`** (function) - convex/lib/env.ts:191  
 Logs environment configuration status to console.  
 
 #### errors.ts
@@ -276,9 +231,10 @@ Configuration error with helpful instructions.
 ## Function Index by Type
 
 ### Convex Queries
+cleanup.ts: `clearTestData`, `getDataCounts`  
 conversations.ts: `list`, `get`, `count`  
 messages.ts: `list`, `getAll`, `count`, `getLatest`  
-users.ts: `getCurrentUser`, `syncUser`, `testAuth`, `getUserCount`, `getSampleUser`, `initializeDevUser`  
+migrations.ts: `addUpdatedAtToMessages`, `addUpdatedAtToConversations`  
 
 ### Convex Mutations
 conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`  
@@ -286,4 +242,3 @@ messages.ts: `create`, `createBatch`
 
 ### Convex Actions
 chat.ts: `simpleChatAction`, `streamingChatAction`  
-webhooks.ts: `clerkWebhook`  
