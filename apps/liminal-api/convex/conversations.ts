@@ -4,13 +4,13 @@ import { Id as _Id } from './_generated/dataModel';
 // Remove auth imports
 
 /**
- * Creates a new conversation (public endpoint).
+ * Creates a new conversation in the public API.
+ * All conversations are created as anonymous and publicly accessible.
  *
  * @param args.title - The title of the conversation
  * @param args.type - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard")
  * @param args.metadata - Optional metadata including provider, model, and tags
  * @returns The ID of the created conversation
- * @throws Error if not authenticated
  *
  * @example
  * ```typescript
@@ -57,14 +57,14 @@ export const create = mutation({
 });
 
 /**
- * Lists the authenticated user's conversations with pagination support.
+ * Lists all conversations in the public API with pagination support.
+ * Returns all conversations without user filtering since the API is public.
  *
  * @param args.archived - Filter by archived status (optional)
  * @param args.paginationOpts - Pagination options
  * @param args.paginationOpts.numItems - Number of items per page (default: 50)
  * @param args.paginationOpts.cursor - Cursor for pagination (optional)
  * @returns Paginated conversation list with page array and isDone flag
- * @returns Empty result if not authenticated
  *
  * @example
  * ```typescript
@@ -103,11 +103,11 @@ export const list = query({
 });
 
 /**
- * Gets a single conversation by ID.
- * Verifies ownership before returning the conversation.
+ * Gets a single conversation by ID from the public API.
+ * Returns any conversation since all are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation to retrieve
- * @returns The conversation object or null if not found/not owned by user
+ * @returns The conversation object or null if not found
  *
  * @example
  * ```typescript
@@ -139,13 +139,13 @@ export const get = query({
 });
 
 /**
- * Updates a conversation's title and/or metadata.
- * Only the conversation owner can update it.
+ * Updates a conversation's title and/or metadata in the public API.
+ * Any conversation can be updated since all are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation to update
  * @param args.title - New title (optional)
  * @param args.metadata - Metadata to update (optional, merged with existing)
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  *
  * @example
  * ```typescript
@@ -202,11 +202,11 @@ export const update = mutation({
 });
 
 /**
- * Archives a conversation (soft delete).
+ * Archives a conversation (soft delete) in the public API.
  * The conversation remains in the database but is marked as archived.
  *
  * @param args.conversationId - The ID of the conversation to archive
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  *
  * @example
  * ```typescript
@@ -245,7 +245,7 @@ export const archive = mutation({
  * Called internally when new messages are added to maintain sort order.
  *
  * @param args.conversationId - The ID of the conversation to update
- * @throws Error "Conversation not found" if not found or not owned by user
+ * @throws Error "Conversation not found" if conversation doesn't exist
  * @internal
  *
  * @example
@@ -279,18 +279,17 @@ export const updateLastMessageAt = mutation({
 });
 
 /**
- * Counts the total number of conversations for the authenticated user.
+ * Counts the total number of conversations in the public API.
  *
  * @param args.archived - Filter by archived status (optional)
  * @returns The count of conversations matching the filter
- * @returns 0 if not authenticated
  *
  * @example
  * ```typescript
  * const activeCount = await ctx.runQuery(api.conversations.count, {
  *   archived: false
  * });
- * console.log(`You have ${activeCount} active conversations`);
+ * console.log(`Found ${activeCount} active conversations`);
  * ```
  */
 export const count = query({

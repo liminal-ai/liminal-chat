@@ -28,25 +28,24 @@ const _messageContentValidators = {
 };
 
 /**
- * Creates a new message in a conversation.
- * Verifies ownership and validates author permissions.
+ * Creates a new message in a conversation using the public API.
+ * All conversations and messages are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.authorType - Type of author: "user", "agent", or "system"
- * @param args.authorId - ID of the author (must match user token for "user" type)
+ * @param args.authorId - ID of the author ("anonymous" for users, provider name for agents)
  * @param args.type - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error"
  * @param args.content - Message content (structure depends on type)
  * @param args.metadata - Optional metadata like model, tokens, etc.
  * @returns The ID of the created message
- * @throws Error if conversation not found or user doesn't own it
- * @throws Error if user message authorId doesn't match authenticated user
+ * @throws Error if conversation not found
  *
  * @example
  * ```typescript
  * const messageId = await ctx.runMutation(api.messages.create, {
  *   conversationId: "j123...",
  *   authorType: "user",
- *   authorId: identity.tokenIdentifier,
+ *   authorId: "anonymous",
  *   type: "text",
  *   content: "Hello, AI!"
  * });
@@ -113,13 +112,14 @@ export const create = mutation({
 /**
  * Lists messages in a conversation with pagination support.
  * Messages are returned in chronological order (oldest first).
+ * All conversations are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.paginationOpts - Pagination options
  * @param args.paginationOpts.numItems - Number of items per page (default: 50)
  * @param args.paginationOpts.cursor - Cursor for pagination
  * @returns Paginated message list with page array and isDone flag
- * @returns Empty result if not authenticated or not owner
+ * @returns Empty result if conversation not found
  *
  * @example
  * ```typescript
@@ -168,12 +168,13 @@ export const list = query({
 /**
  * Gets all messages for a conversation with cursor-based pagination.
  * Includes protection against loading too many messages at once.
+ * All conversations are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.limit - Maximum messages to return (default: 100, max: 1000)
  * @param args.cursor - Message ID to start after (for pagination)
  * @returns Object with messages array, hasMore flag, and nextCursor
- * @returns Empty result if not authenticated or not owner
+ * @returns Empty result if conversation not found
  *
  * @example
  * ```typescript
@@ -258,14 +259,14 @@ export const getAll = query({
 });
 
 /**
- * Creates multiple messages at once in a conversation.
+ * Creates multiple messages at once in a conversation using the public API.
  * Useful for importing chat history or setting up initial context.
+ * All conversations are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.messages - Array of message objects to create
  * @returns Array of created message IDs
- * @throws Error if conversation not found or user doesn't own it
- * @throws Error if any user message authorId doesn't match authenticated user
+ * @throws Error if conversation not found
  *
  * @example
  * ```typescript
@@ -274,7 +275,7 @@ export const getAll = query({
  *   messages: [
  *     {
  *       authorType: "user",
- *       authorId: identity.tokenIdentifier,
+ *       authorId: "anonymous",
  *       type: "text",
  *       content: "What is TypeScript?"
  *     },
@@ -364,11 +365,12 @@ export const createBatch = mutation({
 
 /**
  * Counts messages in a conversation, optionally filtered by type.
+ * All conversations are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.type - Optional filter by message type
  * @returns The count of messages matching the criteria
- * @returns 0 if not authenticated or not owner
+ * @returns 0 if conversation not found
  *
  * @example
  * ```typescript
@@ -424,11 +426,12 @@ export const count = query({
 /**
  * Gets the latest messages from a conversation.
  * Returns messages in chronological order, useful for building context windows.
+ * All conversations are publicly accessible.
  *
  * @param args.conversationId - The ID of the conversation
  * @param args.limit - Number of messages to return (default: 10)
  * @returns Array of the latest messages in chronological order
- * @returns Empty array if not authenticated or not owner
+ * @returns Empty array if conversation not found
  *
  * @example
  * ```typescript

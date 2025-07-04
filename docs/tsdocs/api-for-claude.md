@@ -45,83 +45,84 @@ Throws: Error if last message is not from user
 
 #### cleanup.ts
 
-**`clearTestData`** (query) - convex/cleanup.ts:11  
-Clear all messages and conversations (but preserve users)  
+**`clearTestData`** (query) - convex/cleanup.ts:23  
+Clears all messages and conversations from the database.  
+Returns: usersPreserved - Always 0 since users table was removed  
 
-**`getDataCounts`** (query) - convex/cleanup.ts:46  
-Get data counts for monitoring cleanup  
+**`getDataCounts`** (query) - convex/cleanup.ts:70  
+Returns current count of data records in the database.  
+Returns: messages - Current number of messages  
 
 #### conversations.ts
 
 **`create`** (mutation) - convex/conversations.ts:28  
-Creates a new conversation (public endpoint).  
+Creates a new conversation in the public API.  
 Args: - The title of the conversation, - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard"), - Optional metadata including provider, model, and tags  
 Returns: The ID of the created conversation  
-Throws: Error if not authenticated  
 
 **`list`** (query) - convex/conversations.ts:78  
-Lists the authenticated user's conversations with pagination support.  
+Lists all conversations in the public API with pagination support.  
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
-Returns: Empty result if not authenticated  
+Returns: Paginated conversation list with page array and isDone flag  
 
 **`get`** (query) - convex/conversations.ts:122  
-Gets a single conversation by ID.  
+Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
-Returns: The conversation object or null if not found/not owned by user  
+Returns: The conversation object or null if not found  
 
 **`update`** (mutation) - convex/conversations.ts:161  
-Updates a conversation's title and/or metadata.  
+Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
 **`archive`** (mutation) - convex/conversations.ts:218  
-Archives a conversation (soft delete).  
+Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
 **`updateLastMessageAt`** (mutation) - convex/conversations.ts:259  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
-Throws: Error "Conversation not found" if not found or not owned by user  
+Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/conversations.ts:296  
-Counts the total number of conversations for the authenticated user.  
+**`count`** (query) - convex/conversations.ts:295  
+Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
-Returns: 0 if not authenticated  
+Returns: The count of conversations matching the filter  
 
 #### messages.ts
 
-**`create`** (mutation) - convex/messages.ts:55  
-Creates a new message in a conversation.  
-Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author (must match user token for "user" type), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
+**`create`** (mutation) - convex/messages.ts:54  
+Creates a new message in a conversation using the public API.  
+Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author ("anonymous" for users, provider name for agents), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
 Returns: The ID of the created message  
-Throws: Error if conversation not found or user doesn't own it, Error if user message authorId doesn't match authenticated user  
+Throws: Error if conversation not found  
 
 **`list`** (query) - convex/messages.ts:132  
 Lists messages in a conversation with pagination support.  
 Args: - The ID of the conversation, - Pagination options, - Number of items per page (default: 50), - Cursor for pagination  
-Returns: Empty result if not authenticated or not owner  
+Returns: Empty result if conversation not found  
 
-**`getAll`** (query) - convex/messages.ts:196  
+**`getAll`** (query) - convex/messages.ts:197  
 Gets all messages for a conversation with cursor-based pagination.  
 Args: - The ID of the conversation, - Maximum messages to return (default: 100, max: 1000), - Message ID to start after (for pagination)  
-Returns: Empty result if not authenticated or not owner  
+Returns: Empty result if conversation not found  
 
-**`createBatch`** (mutation) - convex/messages.ts:296  
-Creates multiple messages at once in a conversation.  
+**`createBatch`** (mutation) - convex/messages.ts:297  
+Creates multiple messages at once in a conversation using the public API.  
 Args: - The ID of the conversation, - Array of message objects to create  
 Returns: Array of created message IDs  
-Throws: Error if conversation not found or user doesn't own it, Error if any user message authorId doesn't match authenticated user  
+Throws: Error if conversation not found  
 
-**`count`** (query) - convex/messages.ts:387  
+**`count`** (query) - convex/messages.ts:389  
 Counts messages in a conversation, optionally filtered by type.  
 Args: - The ID of the conversation, - Optional filter by message type  
-Returns: 0 if not authenticated or not owner  
+Returns: 0 if conversation not found  
 
-**`getLatest`** (query) - convex/messages.ts:442  
+**`getLatest`** (query) - convex/messages.ts:445  
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
-Returns: Empty array if not authenticated or not owner  
+Returns: Empty array if conversation not found  
 
 #### migrations.ts
 
