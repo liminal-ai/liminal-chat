@@ -48,7 +48,7 @@ const REQUIRED_ENV_VARS = {
  * Conditionally required environment variables
  */
 // Development auth system removed
-const CONDITIONAL_ENV_VARS = {} as const;
+const _CONDITIONAL_ENV_VARS = {} as const;
 
 /**
  * Optional environment variables with defaults

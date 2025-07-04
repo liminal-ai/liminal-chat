@@ -21,6 +21,7 @@ The confusion around .env files in Convex stems from a fundamental difference in
 ### 2. Convex Cloud Environment Variables
 
 Running `npx convex env list` shows these are already set in the Convex deployment:
+
 ```
 ANTHROPIC_API_KEY=sk-ant-api03...
 CLERK_ISSUER_URL=https://deep-shrew-9.clerk.accounts.dev
@@ -46,6 +47,7 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
 1. **No .env file in Convex directory**: This is CORRECT. Convex doesn't read from local .env files for runtime variables.
 
 2. **`.env.local` exists but contains different variables**: This file contains:
+
    - Clerk keys (for local development with Next.js)
    - Convex deployment info (used by Convex CLI)
    - NOT the AI provider API keys
@@ -57,6 +59,7 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
 ### For Development
 
 1. **Set variables in Convex cloud** (already done):
+
    ```bash
    npx convex env set OPENAI_API_KEY "your-key"
    npx convex env set ANTHROPIC_API_KEY "your-key"
@@ -79,7 +82,8 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
 
 1. **Security**: Never commit API keys to Git. The current `.env` files with keys should be in `.gitignore`.
 
-2. **Local vs Cloud**: 
+2. **Local vs Cloud**:
+
    - `.env.local` = Used by Next.js and Convex CLI
    - Convex cloud env vars = Used by Convex functions at runtime
 
@@ -88,6 +92,7 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
 ## Recommended Actions
 
 1. **Add to .gitignore** (if not already):
+
    ```
    apps/domain/.env
    apps/liminal-api/.env.local
@@ -96,6 +101,7 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
    ```
 
 2. **Create .env.example files** for documentation:
+
    ```bash
    # apps/liminal-api/.env.local.example
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
@@ -112,16 +118,19 @@ VERCEL_API_KEY=v1:cfya1ry8I0Ri1jwv...
 
 To verify environment variables are working:
 
-1. **Check in Convex dashboard**: 
+1. **Check in Convex dashboard**:
+
    ```bash
    npx convex dashboard
    ```
+
    Navigate to Settings → Environment Variables
 
 2. **Test in code**:
+
    ```typescript
    // In any Convex function
-   console.log("API Key exists:", !!process.env.OPENAI_API_KEY);
+   console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
    ```
 
 3. **Run the chat endpoints** to ensure AI providers work correctly.

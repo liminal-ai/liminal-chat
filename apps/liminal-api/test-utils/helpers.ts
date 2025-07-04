@@ -83,7 +83,10 @@ export async function makeAuthenticatedRequest(
     options.data = data;
   }
 
-  const response = await request[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](endpoint, options);
+  const response = await request[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](
+    endpoint,
+    options,
+  );
   const body = await response.text();
 
   try {

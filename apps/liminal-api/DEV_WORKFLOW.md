@@ -5,16 +5,20 @@ This document explains how to work with the Liminal API Convex project during de
 ## Initial Setup
 
 ### 1. Environment Variables
+
 Ensure your `.env.local` file contains:
+
 - Clerk authentication keys (already configured)
 - `CONVEX_DEPLOYMENT` URL (will be added after first run)
 
 ### 2. Install Dependencies
+
 ```bash
 pnpm install
 ```
 
 ### 3. Initialize Convex Deployment
+
 For the first time setup, you need to create a Convex deployment:
 
 ```bash
@@ -23,17 +27,20 @@ pnpm dev
 ```
 
 When prompted:
+
 1. Choose "Create a new project"
 2. Enter a project name (e.g., "liminal-api")
 3. The CLI will create a deployment and provide a URL
 
 The deployment URL will be automatically saved to:
+
 - `.env.local` as `CONVEX_DEPLOYMENT`
 - `convex.json` configuration file
 
 ## Development Commands
 
 ### Starting Development
+
 ```bash
 # Start Convex dev server with hot reloading
 pnpm dev
@@ -46,18 +53,22 @@ pnpm dev:dashboard
 ```
 
 ### Hot Reloading
+
 Convex automatically detects changes to:
+
 - Functions in `convex/` directory
 - Schema changes
 - Environment variable updates
 
 When you save a file:
+
 1. Convex CLI detects the change
 2. Recompiles TypeScript
 3. Pushes updates to the development deployment
 4. Updates are live immediately without restart
 
 ### TypeScript Development
+
 ```bash
 # Run TypeScript in watch mode
 pnpm dev:typecheck
@@ -70,6 +81,7 @@ pnpm typecheck
 ```
 
 ### Viewing Logs
+
 ```bash
 # Stream development logs
 pnpm logs
@@ -81,6 +93,7 @@ pnpm logs:prod
 ## Convex Dashboard
 
 Access your Convex dashboard to:
+
 - View and query data
 - Monitor function executions
 - Manage environment variables
@@ -95,9 +108,11 @@ Or visit: https://dashboard.convex.dev
 ## Deployment Process
 
 ### Development Deployment
+
 Development deployments are automatically updated when running `pnpm dev`.
 
 ### Production Deployment
+
 ```bash
 # Deploy to production
 pnpm deploy:prod
@@ -109,11 +124,13 @@ pnpm logs:prod
 ## Environment Variables
 
 ### View Environment Variables
+
 ```bash
 pnpm env:pull
 ```
 
 ### Set Environment Variables
+
 ```bash
 pnpm env:set KEY=value
 ```
@@ -121,6 +138,7 @@ pnpm env:set KEY=value
 Environment variables are deployment-specific. Set them separately for dev and prod.
 
 ### Development Authentication (Optional)
+
 For local development without Clerk authentication, you can enable a dev user bypass:
 
 ```bash
@@ -133,7 +151,8 @@ npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
 npx convex env set DEV_USER_NAME "Dev User"
 ```
 
-**Important**: 
+**Important**:
+
 - These variables are for development only and should NEVER be used in production
 - The `DEV_USER_ID` should match a valid Clerk user ID from your development environment
 - After setting these variables, run the `initializeDevUser` mutation once to create the user in your database
@@ -155,12 +174,15 @@ liminal-api/
 ## Troubleshooting
 
 ### Reset Generated Files
+
 If you encounter issues with generated types:
+
 ```bash
 pnpm reset
 ```
 
 ### Clean Build
+
 ```bash
 pnpm clean
 pnpm dev
@@ -168,11 +190,13 @@ pnpm dev
 
 ### Common Issues
 
-1. **"Cannot find module '_generated'"**
+1. **"Cannot find module '\_generated'"**
+
    - Run `pnpm dev` to generate types
    - Check that `convex/_generated/` exists
 
 2. **Authentication Errors**
+
    - Verify Clerk keys in `.env.local`
    - Check CLERK_ISSUER_URL format
 

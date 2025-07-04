@@ -9,7 +9,7 @@ import { ActionCtx } from './_generated/server';
 import { api } from './_generated/api';
 // Svix import removed
 import { Id } from './_generated/dataModel';
-import { env } from './lib/env';
+// Env import removed
 
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();

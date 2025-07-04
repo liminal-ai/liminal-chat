@@ -41,11 +41,11 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     // Public endpoint - no auth required
-    const userId = 'anonymous';
+    const _userId = 'anonymous';
 
     const now = Date.now();
     return await ctx.db.insert('conversations', {
-      userId: userId,
+      userId: _userId,
       title: args.title,
       type: args.type || 'standard',
       metadata: args.metadata,
@@ -89,7 +89,7 @@ export const list = query({
     // Public endpoint - no auth required
     // Public endpoint - return all conversations
 
-    const { archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
+    const { archived: _archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
 
     // Ensure cursor is always defined for pagination
     const paginationOptions = {
@@ -98,10 +98,7 @@ export const list = query({
     };
 
     // Public endpoint - return all conversations (no user filtering or indexing)
-    return await ctx.db
-      .query('conversations')
-      .order('desc')
-      .paginate(paginationOptions);
+    return await ctx.db.query('conversations').order('desc').paginate(paginationOptions);
   },
 });
 
@@ -176,7 +173,7 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     // Public endpoint - no auth required
-    const userId = 'anonymous';
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -224,7 +221,7 @@ export const archive = mutation({
   },
   handler: async (ctx, args) => {
     // Public endpoint - no auth required
-    const userId = 'anonymous';
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -265,7 +262,7 @@ export const updateLastMessageAt = mutation({
   },
   handler: async (ctx, args) => {
     // Public endpoint - no auth required
-    const userId = 'anonymous';
+    const _userId = 'anonymous';
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -304,17 +301,13 @@ export const count = query({
     // Public endpoint - no auth required
     // Public endpoint
 
-    const { archived } = args;
+    const { archived: _archived } = args;
 
-    const query = ctx.db
-      .query('conversations')
-      // Public endpoint - no user filtering;
-
-    const conversations = await query.collect();
+    const conversations = await ctx.db.query('conversations').collect();
 
     // Filter by archived status if specified
-    if (archived !== undefined) {
-      return conversations.filter((c) => c.metadata?.archived === archived).length;
+    if (_archived !== undefined) {
+      return conversations.filter((c) => c.metadata?.archived === _archived).length;
     }
 
     return conversations.length;
