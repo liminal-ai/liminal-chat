@@ -14,24 +14,18 @@ interface ChatPageProps {
 }
 
 function ChatContent({ conversationId }: { conversationId: string }) {
-  console.log('ChatContent conversationId:', conversationId);
-
   const [message, setMessage] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('openai');
 
   // Fetch conversation and messages
-  const conversation = useQuery(api.conversations.get, { 
-    conversationId: conversationId as Id<'conversations'> 
+  const conversation = useQuery(api.conversations.get, {
+    conversationId: conversationId as Id<'conversations'>,
   });
   const messagesResult = useQuery(api.messages.list, {
     conversationId: conversationId as Id<'conversations'>,
     paginationOpts: { numItems: 50 },
   });
   const messages = messagesResult?.page || [];
-
-  console.log('conversation:', conversation);
-  console.log('messagesResult:', messagesResult);
-  console.log('messages:', messages);
 
   // Send message action
   const sendMessage = useAction(api.chat.simpleChatAction);
@@ -41,19 +35,12 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const handleSend = async () => {
     if (!message.trim()) return;
 
-    console.log('Sending message:', {
-      prompt: message,
-      provider: selectedProvider,
-      conversationId,
-    });
-
     try {
       const result = await sendMessage({
         prompt: message,
         provider: selectedProvider as any,
         conversationId: conversationId as Id<'conversations'>,
       });
-      console.log('Send message result:', result);
       setMessage('');
 
       // Note: Convex useQuery should automatically update
@@ -170,7 +157,6 @@ function ChatContent({ conversationId }: { conversationId: string }) {
 
 export default function ChatPage({ params }: ChatPageProps) {
   const { id } = use(params);
-  console.log('ChatPage id:', id);
 
   return (
     <ErrorBoundary>
