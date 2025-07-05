@@ -57,8 +57,8 @@ importers:
         specifier: ^1.25.2
         version: 1.25.2(react@18.3.1)
       convex-helpers:
-        specifier: ^0.1.95
-        version: 0.1.95(convex@1.25.2)(hono@4.8.3)(react@18.3.1)(typescript@5.8.3)(zod@3.25.74)
+        specifier: ^0.1.96
+        version: 0.1.96(convex@1.25.2)(hono@4.8.3)(react@18.3.1)(typescript@5.8.3)(zod@3.25.74)
       hono:
         specifier: ^4.8.3
         version: 4.8.3
@@ -118,7 +118,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       convex:
-        specifier: 1.25.2
+        specifier: ^1.25.2
         version: 1.25.2(react@18.3.1)
       lucide-react:
         specifier: ^0.456.0
@@ -2724,8 +2724,8 @@ packages:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
 
-  /convex-helpers@0.1.95(convex@1.25.2)(hono@4.8.3)(react@18.3.1)(typescript@5.8.3)(zod@3.25.74):
-    resolution: {integrity: sha512-M3VK71l8uNxJCGhtPfOjKJOkyr7KRN/kHa1MGNwH2PQO3BDMCBvDbNZcQQPWZWU5npKecLoDMcHy0fvYPfM1QA==}
+  /convex-helpers@0.1.96(convex@1.25.2)(hono@4.8.3)(react@18.3.1)(typescript@5.8.3)(zod@3.25.74):
+    resolution: {integrity: sha512-/qh5NemdRi9LWlPOkUbdxrkT+aVAOqYoiCxJ+7/5w4MKIRyoJhwGHxHHI65tFJJ4geTCJyLlZwtZee/K4VyCIw==}
     hasBin: true
     peerDependencies:
       '@standard-schema/spec': ^1.0.0
