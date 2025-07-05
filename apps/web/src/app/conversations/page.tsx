@@ -83,7 +83,8 @@ function ConversationsContent() {
             {conversations.map((conversation: Conversation) => (
               <div
                 key={conversation._id}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:bg-gray-50 cursor-pointer transition-all"
+                onClick={() => (window.location.href = `/chat/${conversation._id}`)}
               >
                 <div className="flex justify-between items-start">
                   <div>
