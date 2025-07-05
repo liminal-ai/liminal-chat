@@ -19,11 +19,7 @@
 ## July 2, 2025 - Environment Setup & Testing
 
 ### Environment Variables Fixed
-Successfully set missing Convex cloud environment variables:
-- `DEV_USER_ID`: "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
-- `DEV_USER_EMAIL`: "dev@liminal.chat"
-- `DEV_USER_NAME`: "Dev User"
-- `CLERK_WEBHOOK_SECRET`: "[REDACTED]"
+Successfully set missing Convex cloud environment variables for development.
 
 ### Integration Tests Status
 ✅ **All 11 Playwright integration tests now passing**:
