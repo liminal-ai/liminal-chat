@@ -23,7 +23,7 @@ Successfully set missing Convex cloud environment variables:
 - `DEV_USER_ID`: "user_2zINPyhtT9Wem9OeVW4eZDs21KI"
 - `DEV_USER_EMAIL`: "dev@liminal.chat"
 - `DEV_USER_NAME`: "Dev User"
-- `CLERK_WEBHOOK_SECRET`: "whsec_test_secret_for_development_only"
+- `CLERK_WEBHOOK_SECRET`: "[REDACTED]"
 
 ### Integration Tests Status
 ✅ **All 11 Playwright integration tests now passing**:
