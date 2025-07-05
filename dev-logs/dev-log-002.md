@@ -86,27 +86,8 @@ Implemented a robust environment configuration system addressing all critical is
 - **Type safety**: Full TypeScript types for all environment access
 - **Developer experience**: Clear, actionable error messages with setup commands
 
-### Environment Variables Structure
-```typescript
-// Required (always validated)
-- OPENAI_API_KEY
-- ANTHROPIC_API_KEY  
-- GOOGLE_GENERATIVE_AI_API_KEY
-- PERPLEXITY_API_KEY
-- VERCEL_API_KEY
-- OPENROUTER_API_KEY
-- CLERK_ISSUER_URL
-- CLERK_WEBHOOK_SECRET
-
-// Conditional (only when DEV_AUTH_DEFAULT=true)
-- DEV_USER_ID
-- DEV_USER_EMAIL
-- DEV_USER_NAME
-
-// Optional with defaults
-- NODE_ENV (default: "development")
-- DEV_AUTH_DEFAULT (default: "false")
-```
+### Configuration Management
+Implemented comprehensive environment configuration system with proper validation and security.
 
 ## July 3, 2025 - Major Documentation, Security, and Architecture Improvements
 
@@ -494,7 +475,7 @@ export const create = mutation({
 **Resolution Process**:
 1. **Identified CI Failure**: GitHub Actions failed on format check for `main.js` file
 2. **Debug Investigation**: Used `gh run view --log-failed` to identify specific files
-3. **Directory Correction**: Moved to project root `/Users/leemoore/code/liminal-chat`
+3. **Directory Correction**: Moved to project root directory
 4. **Format Fix**: Ran `pnpm format:fix` from correct directory
 5. **CI Success**: All formatting issues resolved, CI now passing
 
