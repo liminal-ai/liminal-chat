@@ -9,13 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+type ProviderType = 'openai' | 'anthropic' | 'google' | 'perplexity' | 'vercel' | 'openrouter';
+
 interface ChatPageProps {
   params: Promise<{ id: string }>;
 }
 
 function ChatContent({ conversationId }: { conversationId: string }) {
   const [message, setMessage] = useState('');
-  const [selectedProvider, setSelectedProvider] = useState('openai');
+  const [selectedProvider, setSelectedProvider] = useState<ProviderType>('openai');
 
   // Fetch conversation and messages
   const conversation = useQuery(api.conversations.get, {
@@ -38,7 +40,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
     try {
       const result = await sendMessage({
         prompt: message,
-        provider: selectedProvider as any,
+        provider: selectedProvider,
         conversationId: conversationId as Id<'conversations'>,
       });
       setMessage('');
@@ -122,7 +124,7 @@ function ChatContent({ conversationId }: { conversationId: string }) {
                 <label className="text-sm font-medium">Provider:</label>
                 <select
                   value={selectedProvider}
-                  onChange={(e) => setSelectedProvider(e.target.value)}
+                  onChange={(e) => setSelectedProvider(e.target.value as ProviderType)}
                   className="px-3 py-2 border rounded-md"
                 >
                   <option value="openai">OpenAI</option>
