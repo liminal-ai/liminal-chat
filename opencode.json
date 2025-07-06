@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
+      "enabled": true,
+      "environment": {}
+    },
+    "context7": {
+      "type": "local", 
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true,
+      "environment": {}
+    },
+    "firecrawl": {
+      "type": "local",
+      "command": ["npx", "-y", "firecrawl-mcp"],
+      "enabled": true,
+      "environment": {
+        "FIRECRAWL_API_KEY": "fc-5793dcadde394cf98f8ed2965a4b64d5"
+      }
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "@modelcontextprotocol/server-memory"],
+      "enabled": true,
+      "environment": {}
+    }
+  }
+}
