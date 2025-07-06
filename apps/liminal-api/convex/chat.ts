@@ -80,7 +80,35 @@ export const simpleChatAction = action({
       });
     }
 
-    // Save user message if we have a conversation
+    // Fetch conversation history BEFORE saving current message to avoid duplicates
+    const messagesResult = await ctx.runQuery(api.messages.list, {
+      conversationId: actualConversationId,
+      paginationOpts: { numItems: 99 }, // Leave room for current message
+    });
+
+    const conversationMessages = messagesResult?.page || [];
+
+    // Convert existing conversation history to AI SDK format
+    const existingMessages = conversationMessages.map((msg) => ({
+      role:
+        msg.authorType === 'user'
+          ? ('user' as const)
+          : msg.authorType === 'system'
+            ? ('system' as const)
+            : ('assistant' as const),
+      content: msg.content,
+    }));
+
+    // Add current user message to the conversation context
+    const messages = [
+      ...existingMessages,
+      {
+        role: 'user' as const,
+        content: prompt,
+      },
+    ];
+
+    // Save user message to database (after building AI context to avoid duplicates)
     if (actualConversationId) {
       await ctx.runMutation(api.messages.create, {
         conversationId: actualConversationId,
@@ -90,25 +118,6 @@ export const simpleChatAction = action({
         content: prompt,
       });
     }
-
-    // Fetch conversation history to maintain context
-    const messagesResult = await ctx.runQuery(api.messages.list, {
-      conversationId: actualConversationId,
-      paginationOpts: { numItems: 100 }, // Get recent history
-    });
-
-    const conversationMessages = messagesResult?.page || [];
-
-    // Convert to AI SDK format
-    const messages = conversationMessages.map((msg) => ({
-      role:
-        msg.authorType === 'user'
-          ? ('user' as const)
-          : msg.authorType === 'system'
-            ? ('system' as const)
-            : ('assistant' as const),
-      content: msg.content,
-    }));
 
     // Use AI service with conversation history
     const result = await aiService.generateText({
