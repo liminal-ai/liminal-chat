@@ -13,13 +13,52 @@ interface Conversation {
   lastMessageAt?: number;
 }
 
+function ConversationItem({ conversation }: { conversation: Conversation }) {
+  const router = useRouter();
+
+  // Get message count for this conversation
+  const messageCount = useQuery(api.messages.count, {
+    conversationId: conversation._id as any,
+  });
+
+  return (
+    <div
+      key={conversation._id}
+      className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:bg-gray-50 cursor-pointer transition-all"
+      onClick={() => router.push(`/chat/${conversation._id}`)}
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="font-semibold text-lg">{conversation.title}</h3>
+          <div className="mt-2 text-sm text-gray-600 space-y-1">
+            <p>
+              Type: <span className="font-medium">{conversation.type}</span>
+            </p>
+            <p>
+              Messages: <span className="font-medium">{messageCount ?? 0}</span>
+            </p>
+            <p>
+              ID: <code className="bg-gray-100 px-2 py-1 rounded text-xs">{conversation._id}</code>
+            </p>
+            <p>Created: {new Date(conversation._creationTime).toLocaleString()}</p>
+            {conversation.lastMessageAt && (
+              <p>Last message: {new Date(conversation.lastMessageAt).toLocaleString()}</p>
+            )}
+          </div>
+        </div>
+        <div className="text-xs text-gray-400">#{conversation._id.slice(-6)}</div>
+      </div>
+    </div>
+  );
+}
+
 function ConversationsContent() {
   const router = useRouter();
 
   // Convex useQuery throws errors on failure, returns undefined when loading
   const totalCount = useQuery(api.conversations.count, {});
   const conversationsResult = useQuery(api.conversations.list, {
-    paginationOpts: { numItems: 10 },
+    paginationOpts: { numItems: 20 },
   });
 
   // Check for loading states
@@ -84,33 +123,7 @@ function ConversationsContent() {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Recent Conversations</h2>
             {conversations.map((conversation: Conversation) => (
-              <div
-                key={conversation._id}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:bg-gray-50 cursor-pointer transition-all"
-                onClick={() => router.push(`/chat/${conversation._id}`)}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg">{conversation.title}</h3>
-                    <div className="mt-2 text-sm text-gray-600 space-y-1">
-                      <p>
-                        Type: <span className="font-medium">{conversation.type}</span>
-                      </p>
-                      <p>
-                        ID:{' '}
-                        <code className="bg-gray-100 px-2 py-1 rounded text-xs">
-                          {conversation._id}
-                        </code>
-                      </p>
-                      <p>Created: {new Date(conversation._creationTime).toLocaleString()}</p>
-                      {conversation.lastMessageAt && (
-                        <p>Last message: {new Date(conversation.lastMessageAt).toLocaleString()}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-xs text-gray-400">#{conversation._id.slice(-6)}</div>
-                </div>
-              </div>
+              <ConversationItem key={conversation._id} conversation={conversation} />
             ))}
           </div>
         )}

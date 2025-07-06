@@ -86,11 +86,25 @@ export const simpleChatAction = action({
       });
     }
 
-    // Use AI service for clean abstraction
+    // Fetch conversation history to maintain context
+    const messagesResult = await ctx.runQuery(api.messages.list, {
+      conversationId: actualConversationId,
+      paginationOpts: { numItems: 100 }, // Get recent history
+    });
+
+    const conversationMessages = messagesResult?.page || [];
+
+    // Convert to AI SDK format
+    const messages = conversationMessages.map((msg) => ({
+      role: msg.authorType === 'user' ? ('user' as const) : ('assistant' as const),
+      content: msg.content,
+    }));
+
+    // Use AI service with conversation history
     const result = await aiService.generateText({
       provider: provider,
       modelId: model,
-      prompt,
+      messages,
     });
 
     // Save assistant response if we have a conversation
