@@ -2,11 +2,12 @@
 
 import { useQuery } from 'convex/react';
 import { api } from '@liminal-api/convex/_generated/api';
+import { Id } from '@liminal-api/convex/_generated/dataModel';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRouter } from 'next/navigation';
 
 interface Conversation {
-  _id: string;
+  _id: Id<'conversations'>;
   title: string;
   type: string;
   _creationTime: number;
@@ -18,7 +19,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
 
   // Get message count for this conversation
   const messageCount = useQuery(api.messages.count, {
-    conversationId: conversation._id as any,
+    conversationId: conversation._id,
   });
 
   return (

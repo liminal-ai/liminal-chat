@@ -101,7 +101,12 @@ export const simpleChatAction = action({
 
     // Convert to AI SDK format
     const messages = conversationMessages.map((msg) => ({
-      role: msg.authorType === 'user' ? ('user' as const) : ('assistant' as const),
+      role:
+        msg.authorType === 'user'
+          ? ('user' as const)
+          : msg.authorType === 'system'
+            ? ('system' as const)
+            : ('assistant' as const),
       content: msg.content,
     }));
 
