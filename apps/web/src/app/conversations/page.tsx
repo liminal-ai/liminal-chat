@@ -3,6 +3,7 @@
 import { useQuery } from 'convex/react';
 import { api } from '@liminal-api/convex/_generated/api';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { useRouter } from 'next/navigation';
 
 interface Conversation {
   _id: string;
@@ -13,6 +14,8 @@ interface Conversation {
 }
 
 function ConversationsContent() {
+  const router = useRouter();
+
   // Convex useQuery throws errors on failure, returns undefined when loading
   const totalCount = useQuery(api.conversations.count, {});
   const conversationsResult = useQuery(api.conversations.list, {
@@ -83,7 +86,8 @@ function ConversationsContent() {
             {conversations.map((conversation: Conversation) => (
               <div
                 key={conversation._id}
-                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md hover:bg-gray-50 cursor-pointer transition-all"
+                onClick={() => router.push(`/chat/${conversation._id}`)}
               >
                 <div className="flex justify-between items-start">
                   <div>

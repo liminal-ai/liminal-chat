@@ -1,4 +1,4 @@
-# Liminal Chat Development Log - Phase 3+
+# Liminal Chat Development Log 003 - Phase 3+
 *Started: July 4, 2025*
 
 ## Project Status Summary
@@ -13,7 +13,7 @@ CLI → Convex (Backend) + Vercel AI SDK → Next.js Frontend → Multiple AI Pr
 ## Completed Major Milestones
 
 ### ✅ Phase 1: Convex Foundation (Complete)
-- Convex backend initialized and deployed (`https://modest-squirrel-498.convex.cloud`)
+- Convex backend initialized and deployed to cloud environment
 - Database schema defined (conversations, messages, users)
 - Authentication system migrated from Clerk to public API for development velocity
 - All 6 AI providers integrated and tested (OpenAI, Anthropic, Google, Perplexity, Vercel, OpenRouter)
@@ -88,7 +88,7 @@ CLI → Convex (Backend) + Vercel AI SDK → Next.js Frontend → Multiple AI Pr
 #### Start Development Environment
 ```bash
 # Terminal 1: Convex backend
-cd /Users/leemoore/code/liminal-chat
+cd [project-root]
 pnpm --filter liminal-api dev
 
 # Terminal 2: Next.js frontend  
@@ -126,20 +126,8 @@ pnpm --filter liminal-api test
 
 ### 🔧 Known Working Configurations
 
-#### Environment Variables (Verified)
-```bash
-# Frontend (.env.local)
-NEXT_PUBLIC_CONVEX_URL=https://modest-squirrel-498.convex.cloud
-
-# Backend (Convex Cloud) - use: npx convex env list
-OPENAI_API_KEY=sk-... ✅ Working
-ANTHROPIC_API_KEY=sk-ant-... ✅ Working  
-GOOGLE_GENERATIVE_AI_API_KEY=... ✅ Working
-PERPLEXITY_API_KEY=pplx-... ✅ Working
-VERCEL_API_KEY=... ✅ Working
-OPENROUTER_API_KEY=sk-or-... ✅ Working
-DEV_AUTH_DEFAULT=true ✅ Public API mode
-```
+#### Configuration Status
+All provider integrations verified and working. Frontend properly configured to connect to backend services.
 
 #### Version Pins (Critical for Stability)
 ```json
