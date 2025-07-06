@@ -9,25 +9,30 @@ import { Id } from './_generated/dataModel';
 
 /**
  * Non-streaming text generation action for simple chat completions.
- * Creates or continues a conversation with message persistence.
+ * Creates or continues a conversation with full message history context.
+ * Automatically fetches and includes conversation history to maintain context continuity.
  * Used by the `/api/chat-text` HTTP endpoint.
  *
  * @param args.prompt - The user's input prompt
  * @param args.model - Optional model override (provider-specific)
  * @param args.provider - AI provider to use (default: "openrouter")
  * @param args.conversationId - Optional existing conversation to continue
- * @returns Generated text response with metadata
+ * @returns Generated text response with metadata including conversationId
  *
  * @example
  * ```typescript
  * const result = await ctx.runAction(api.chat.simpleChatAction, {
  *   prompt: "Explain TypeScript generics",
  *   provider: "openai",
- *   model: "gpt-4"
+ *   model: "gpt-4",
+ *   conversationId: "existing-conversation-id" // Optional for context
  * });
  * console.log(result.text);
  * console.log(`Conversation ID: ${result.conversationId}`);
  * ```
+ *
+ * @note Fetches up to 100 recent messages from the conversation to provide
+ * full context to the AI model, ensuring conversation continuity and coherence.
  */
 export const simpleChatAction = action({
   args: {
@@ -75,7 +80,35 @@ export const simpleChatAction = action({
       });
     }
 
-    // Save user message if we have a conversation
+    // Fetch conversation history BEFORE saving current message to avoid duplicates
+    const messagesResult = await ctx.runQuery(api.messages.list, {
+      conversationId: actualConversationId,
+      paginationOpts: { numItems: 99 }, // Leave room for current message
+    });
+
+    const conversationMessages = messagesResult?.page || [];
+
+    // Convert existing conversation history to AI SDK format
+    const existingMessages = conversationMessages.map((msg) => ({
+      role:
+        msg.authorType === 'user'
+          ? ('user' as const)
+          : msg.authorType === 'system'
+            ? ('system' as const)
+            : ('assistant' as const),
+      content: msg.content,
+    }));
+
+    // Add current user message to the conversation context
+    const messages = [
+      ...existingMessages,
+      {
+        role: 'user' as const,
+        content: prompt,
+      },
+    ];
+
+    // Save user message to database (after building AI context to avoid duplicates)
     if (actualConversationId) {
       await ctx.runMutation(api.messages.create, {
         conversationId: actualConversationId,
@@ -86,11 +119,11 @@ export const simpleChatAction = action({
       });
     }
 
-    // Use AI service for clean abstraction
+    // Use AI service with conversation history
     const result = await aiService.generateText({
       provider: provider,
       modelId: model,
-      prompt,
+      messages,
     });
 
     // Save assistant response if we have a conversation
