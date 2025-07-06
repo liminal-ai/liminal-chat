@@ -8,7 +8,7 @@
       "environment": {}
     },
     "context7": {
-      "type": "local", 
+      "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
       "enabled": true,
       "environment": {}
