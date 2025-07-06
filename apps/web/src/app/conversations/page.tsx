@@ -15,7 +15,7 @@ interface Conversation {
 
 function ConversationsContent() {
   const router = useRouter();
-  
+
   // Convex useQuery throws errors on failure, returns undefined when loading
   const totalCount = useQuery(api.conversations.count, {});
   const conversationsResult = useQuery(api.conversations.list, {

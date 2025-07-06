@@ -18,6 +18,8 @@ interface ChatPageProps {
 function ChatContent({ conversationId }: { conversationId: string }) {
   const [message, setMessage] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<ProviderType>('openai');
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch conversation and messages
   const conversation = useQuery(api.conversations.get, {
@@ -37,6 +39,9 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const handleSend = async () => {
     if (!message.trim()) return;
 
+    setIsSending(true);
+    setError(null);
+
     try {
       const result = await sendMessage({
         prompt: message,
@@ -44,11 +49,11 @@ function ChatContent({ conversationId }: { conversationId: string }) {
         conversationId: conversationId as Id<'conversations'>,
       });
       setMessage('');
-
-      // Note: Convex useQuery should automatically update
-      // when new messages are added to the database
     } catch (error) {
+      setError('Failed to send message. Please try again.');
       console.error('Failed to send message:', error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -119,6 +124,12 @@ function ChatContent({ conversationId }: { conversationId: string }) {
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-4">
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div className="text-red-600 text-sm">{error}</div>
+                </div>
+              )}
               {/* Provider Selection */}
               <div className="flex items-center space-x-4">
                 <label className="text-sm font-medium">Provider:</label>
@@ -142,11 +153,12 @@ function ChatContent({ conversationId }: { conversationId: string }) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type your message..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                  onKeyPress={(e) => e.key === 'Enter' && !isSending && handleSend()}
+                  disabled={isSending}
                   className="flex-1"
                 />
-                <Button onClick={handleSend} disabled={!message.trim()}>
-                  Send
+                <Button onClick={handleSend} disabled={!message.trim() || isSending}>
+                  {isSending ? 'Sending...' : 'Send'}
                 </Button>
               </div>
             </div>
