@@ -5,6 +5,7 @@
   "description": "A threshold between human and AI communication",
   "scripts": {
     "claude": "./scripts/claude-shell.sh",
+    "research": "claude-code -p 'You are a research assistant with access to WebSearch, Context7, Firecrawl, and Perplexity via Convex. Help research technical questions thoroughly.'",
     "dev": "pnpm -r --parallel run dev",
     "convex:dev": "pnpm -F liminal-api run dev",
     "convex:dashboard": "pnpm -F liminal-api run dev:dashboard",
@@ -37,8 +38,10 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.53.1",
+    "@types/node": "^24.0.10",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
+    "node-fetch": "^3.3.2",
     "prettier": "^3.6.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

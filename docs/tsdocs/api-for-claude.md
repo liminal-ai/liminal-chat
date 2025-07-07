@@ -37,7 +37,7 @@ Non-streaming text generation action for simple chat completions.
 Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Generated text response with metadata including conversationId  
 
-**`streamingChatAction`** (action) - convex/chat.ts:166  
+**`streamingChatAction`** (action) - convex/chat.ts:180  
 Streaming chat action that prepares conversation context.  
 Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Conversation context for streaming  

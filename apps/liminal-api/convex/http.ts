@@ -14,11 +14,12 @@ import { Id } from './_generated/dataModel';
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();
 
-// Simple health check endpoint - public access
+// Simple health check endpoint - no auth required for testing
 app.get('/health', async (c) => {
   return c.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
+    service: 'liminal-api',
   });
 });
 
@@ -71,6 +72,61 @@ app.post('/api/chat-text', async (c) => {
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
+      },
+      500,
+    );
+  }
+});
+
+// Perplexity search endpoint - enhanced web research with citations
+app.post('/api/perplexity', async (c) => {
+  const ctx = c.env;
+  try {
+    const body = await c.req.json();
+    const { query, model, systemPrompt } = body;
+
+    if (!query) {
+      return c.json({ error: 'Search query is required' }, 400);
+    }
+
+    // Enhanced system prompt for Perplexity research
+    const defaultSystemPrompt = `You are a professional research assistant with access to real-time web information. Provide comprehensive, accurate, and current information with proper citations.
+
+Guidelines:
+- Always include citations and sources for your information
+- Focus on authoritative and recent sources
+- Provide technical details when relevant
+- Structure your response clearly with headings if helpful
+- If information is conflicting across sources, note the discrepancy
+- Include relevant links when available`;
+
+    const finalPrompt = systemPrompt
+      ? `${systemPrompt}\n\nUser Query: ${query}`
+      : `${defaultSystemPrompt}\n\nUser Query: ${query}`;
+
+    // Use best Perplexity model by default
+    const selectedModel = model || 'llama-3.1-sonar-huge-128k-online';
+
+    const result = await ctx.runAction(api.chat.simpleChatAction, {
+      prompt: finalPrompt,
+      model: selectedModel,
+      provider: 'perplexity',
+    });
+
+    return c.json({
+      ...result,
+      metadata: {
+        model: selectedModel,
+        provider: 'perplexity',
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Perplexity endpoint error:', error);
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        provider: 'perplexity',
       },
       500,
     );

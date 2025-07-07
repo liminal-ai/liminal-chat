@@ -61,8 +61,39 @@ export function parseDataStream(text: string): string[] {
 }
 
 // Make a chat request with standard error handling
-// No auth required anymore - all endpoints are public
+// Get WorkOS M2M access token for API authentication using WorkOS SDK
+async function getM2MAccessToken(): Promise<string> {
+  const { WorkOS } = await import('@workos-inc/node');
+
+  const apiKey = process.env.WORKOS_API_KEY;
+  const clientId = process.env.WORKOS_M2M_CLIENT_ID;
+  const clientSecret = process.env.WORKOS_M2M_CLIENT_SECRET;
+
+  if (!apiKey || !clientId || !clientSecret) {
+    throw new Error(
+      'WORKOS_API_KEY, WORKOS_M2M_CLIENT_ID and WORKOS_M2M_CLIENT_SECRET must be set for authenticated tests',
+    );
+  }
+
+  const workos = new WorkOS(apiKey);
+
+  try {
+    // Use WorkOS SDK for client credentials flow
+    const response = await workos.userManagement.getAccessToken({
+      clientId,
+      clientSecret,
+      grantType: 'client_credentials',
+    });
+
+    return response.accessToken;
+  } catch (error) {
+    throw new Error(`Failed to get M2M token: ${error}`);
+  }
+}
+
+// Get auth headers for API requests
 function getAuthHeaders(): Record<string, string> {
+  // For now, return empty - will be populated by makeAuthenticatedRequest
   return {};
 }
 
@@ -73,9 +104,12 @@ export async function makeAuthenticatedRequest(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   data?: any,
 ): Promise<{ response: any; body: any }> {
+  // Get M2M access token for authentication
+  const accessToken = await getM2MAccessToken();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...getAuthHeaders(),
+    Authorization: `Bearer ${accessToken}`,
   };
 
   const options: any = { headers };
@@ -96,11 +130,25 @@ export async function makeAuthenticatedRequest(
   }
 }
 
-// Make a chat request with standard error handling (backward compatibility)
+// Make a chat request with standard error handling (no auth required)
 export async function makeChatRequest(
   request: APIRequestContext,
   endpoint: string,
   data: any,
 ): Promise<{ response: any; body: any }> {
-  return makeAuthenticatedRequest(request, endpoint, 'POST', data);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  const response = await request.post(endpoint, {
+    headers,
+    data,
+  });
+  const body = await response.text();
+
+  try {
+    return { response, body: JSON.parse(body) };
+  } catch {
+    return { response, body };
+  }
 }

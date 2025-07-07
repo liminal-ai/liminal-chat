@@ -34,6 +34,7 @@
     "@ai-sdk/perplexity": "^1.1.9",
     "@ai-sdk/vercel": "^0.0.1",
     "@openrouter/ai-sdk-provider": "^0.7.2",
+    "@workos-inc/node": "^7.57.0",
     "ai": "^4.3.16",
     "convex": "^1.25.2",
     "convex-helpers": "^0.1.96",
