@@ -6,7 +6,24 @@ let cachedToken: string | null = null;
 let tokenManager: SystemUserTokenManager | null = null;
 let tokenExpiry: number | null = null;
 
+// Check if WorkOS environment variables are available
+function hasWorkOSEnvironment(): boolean {
+  return !!(
+    process.env.SYSTEM_USER_EMAIL &&
+    process.env.SYSTEM_USER_PASSWORD &&
+    process.env.WORKOS_CLIENT_ID &&
+    process.env.WORKOS_API_KEY
+  );
+}
+
 async function getOrCreateToken(): Promise<string> {
+  // Check if environment variables are available
+  if (!hasWorkOSEnvironment()) {
+    throw new Error(
+      'WorkOS environment variables not configured. Tests requiring authentication will be skipped.'
+    );
+  }
+
   // Initialize token manager if not exists
   if (!tokenManager) {
     tokenManager = SystemUserTokenManager.fromEnv();
@@ -33,6 +50,12 @@ export const test = base.extend<{
   authenticatedRequest: APIRequestContext;
 }>({
   authenticatedRequest: async ({ request }, use) => {
+    // Skip tests if WorkOS environment variables are not available
+    if (!hasWorkOSEnvironment()) {
+      test.skip(true, 'WorkOS environment variables not configured for integration tests');
+      return;
+    }
+
     const token = await getOrCreateToken();
 
     // Create proxy that adds auth header to all requests

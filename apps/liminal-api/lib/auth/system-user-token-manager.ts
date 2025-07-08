@@ -173,5 +173,17 @@ export class SystemUserTokenManager {
 /**
  * Global singleton instance for integration testing.
  * Use this in tests to avoid creating multiple token managers.
+ * Lazy initialization to avoid environment variable validation at module load time.
  */
-export const systemUserTokenManager = SystemUserTokenManager.fromEnv();
+let _systemUserTokenManager: SystemUserTokenManager | null = null;
+export const systemUserTokenManager = {
+  get instance(): SystemUserTokenManager {
+    if (!_systemUserTokenManager) {
+      _systemUserTokenManager = SystemUserTokenManager.fromEnv();
+    }
+    return _systemUserTokenManager;
+  },
+  reset(): void {
+    _systemUserTokenManager = null;
+  },
+};
