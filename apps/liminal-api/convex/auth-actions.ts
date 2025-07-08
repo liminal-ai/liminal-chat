@@ -4,6 +4,7 @@ import { action } from './_generated/server';
 import { v } from 'convex/values';
 import { WorkOS } from '@workos-inc/node';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
+import { AuthenticatedUser } from '@liminal/shared-types';
 
 // Validate required environment variables
 const WORKOS_API_KEY = process.env.WORKOS_API_KEY;
@@ -24,16 +25,6 @@ const workos = new WorkOS(WORKOS_API_KEY);
 const jwksUrl = workos.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
 const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  customClaims: {
-    system_user?: string;
-    test_context?: string;
-    environment?: string;
-    permissions?: string[];
-  };
-}
 
 /**
  * Internal function to validate WorkOS JWT token

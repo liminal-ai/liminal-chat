@@ -20,8 +20,8 @@ async function getOrCreateToken(): Promise<string> {
     console.log('🔄 Refreshing WorkOS system user token...');
     cachedToken = await tokenManager.getValidToken();
 
-    // Cache for 1 hour (WorkOS tokens typically last longer)
-    tokenExpiry = now + 60 * 60 * 1000;
+    // Cache for 50 minutes to align with SystemUserTokenManager
+    tokenExpiry = now + 50 * 60 * 1000;
     console.log('✅ Token cached until:', new Date(tokenExpiry).toISOString());
   }
 
@@ -45,12 +45,19 @@ export const test = base.extend<{
           ['get', 'post', 'put', 'patch', 'delete', 'head'].includes(prop as string)
         ) {
           return function (url: string, options: any = {}) {
+            const headers: Record<string, string> = {
+              ...options.headers,
+              Authorization: `Bearer ${token}`,
+            };
+            
+            // Add Content-Type for data-sending methods if not already set
+            if (['post', 'put', 'patch'].includes(prop as string) && !headers['Content-Type']) {
+              headers['Content-Type'] = 'application/json';
+            }
+            
             return (original as any).call(target, url, {
               ...options,
-              headers: {
-                ...options.headers,
-                Authorization: `Bearer ${token}`,
-              },
+              headers,
             });
           };
         }
