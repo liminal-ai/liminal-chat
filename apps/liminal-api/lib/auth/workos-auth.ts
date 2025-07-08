@@ -1,12 +1,24 @@
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { WorkOS } from '@workos-inc/node';
 
+// Validate required environment variables
+const WORKOS_API_KEY = process.env.WORKOS_API_KEY;
+const WORKOS_CLIENT_ID = process.env.WORKOS_CLIENT_ID;
+
+if (!WORKOS_API_KEY) {
+  throw new Error('WORKOS_API_KEY environment variable is required');
+}
+
+if (!WORKOS_CLIENT_ID) {
+  throw new Error('WORKOS_CLIENT_ID environment variable is required');
+}
+
 // Initialize WorkOS client for JWKS URL
-const workos = new WorkOS(process.env.WORKOS_API_KEY);
+const workos = new WorkOS(WORKOS_API_KEY);
 
 // Create JWKS for WorkOS token verification using the correct method
-const jwksUrl = workos.userManagement.getJwksUrl(process.env.WORKOS_CLIENT_ID!);
-const JWKS = createRemoteJWKSet(jwksUrl);
+const jwksUrl = workos.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
+const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
 export interface WorkOSUser {
   id: string;

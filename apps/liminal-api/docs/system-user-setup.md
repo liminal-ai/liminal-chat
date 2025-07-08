@@ -42,6 +42,7 @@ npx tsx scripts/create-system-user.ts
 ```
 
 This script will:
+
 - Create a WorkOS user with system metadata
 - Test authentication with the credentials
 - Display the user ID and configuration details
@@ -82,7 +83,7 @@ import { getSystemAuthHelper } from '../lib/test/system-auth-helper';
 
 test('authenticated endpoint access', async () => {
   const authHelper = await getSystemAuthHelper();
-  
+
   // Make authenticated requests
   const response = await authHelper.get('/api/health');
   expect(response.status).toBe(200);
@@ -94,7 +95,7 @@ test('authenticated endpoint access', async () => {
 ```typescript
 test('system user token validation', async () => {
   const authHelper = await getSystemAuthHelper();
-  
+
   // Verify token claims
   const claims = await authHelper.getTokenClaims();
   expect(claims.system_user).toBe(true);
@@ -107,13 +108,13 @@ test('system user token validation', async () => {
 ```typescript
 test('custom authenticated request', async () => {
   const authHelper = await getSystemAuthHelper();
-  
+
   const response = await authHelper.authenticatedFetch('/api/custom', {
     method: 'POST',
     body: JSON.stringify({ data: 'test' }),
     headers: {
-      'X-Custom-Header': 'value'
-    }
+      'X-Custom-Header': 'value',
+    },
   });
 });
 ```

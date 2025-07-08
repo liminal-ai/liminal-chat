@@ -147,9 +147,17 @@ export class SystemUserTokenManager {
     const clientId = process.env.WORKOS_CLIENT_ID;
     const apiKey = process.env.WORKOS_API_KEY;
 
-    if (!email || !password || !clientId || !apiKey) {
+    // Validate all required environment variables
+    const missingVars: string[] = [];
+    if (!email) missingVars.push('SYSTEM_USER_EMAIL');
+    if (!password) missingVars.push('SYSTEM_USER_PASSWORD');
+    if (!clientId) missingVars.push('WORKOS_CLIENT_ID');
+    if (!apiKey) missingVars.push('WORKOS_API_KEY');
+
+    if (missingVars.length > 0) {
       throw new Error(
-        'Missing required environment variables: SYSTEM_USER_EMAIL, SYSTEM_USER_PASSWORD, WORKOS_CLIENT_ID, WORKOS_API_KEY',
+        `Missing required environment variables: ${missingVars.join(', ')}. ` +
+          'Please ensure all variables are set before using SystemUserTokenManager.',
       );
     }
 

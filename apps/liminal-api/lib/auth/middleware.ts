@@ -1,4 +1,6 @@
 // Authentication middleware for WorkOS JWT validation
+import { validateWorkOSToken, extractBearerToken } from './workos-auth';
+
 export interface AuthenticatedUser {
   id: string;
   email: string;
@@ -11,46 +13,40 @@ export interface AuthenticatedUser {
 }
 
 /**
- * Simple JWT authentication middleware for WorkOS tokens
- * Uses basic JWT decoding without signature verification for integration testing
+ * Secure JWT authentication middleware for WorkOS tokens
+ * Uses proper signature verification via WorkOS JWKS
  */
-export function requireAuth(authHeader: string | undefined): AuthenticatedUser {
-  if (!authHeader) {
-    throw new Error('Authentication required');
+export async function requireAuth(authHeader: string | undefined): Promise<AuthenticatedUser> {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Invalid authorization header format');
   }
 
-  // Extract token
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-
-  // Simple JWT decode
-  const parts = token.split('.');
-  if (parts.length !== 3) {
-    throw new Error('Invalid token format');
+  const token = extractBearerToken(authHeader);
+  if (!token) {
+    throw new Error('Missing authorization token');
   }
 
-  try {
-    // Decode base64 payload (Edge runtime compatible)
-    const payload = JSON.parse(atob(parts[1]));
-
-    return {
-      id: payload.sub || '',
-      email: payload['urn:myapp:email'] || '',
-      customClaims: {
-        system_user: payload.system_user,
-        test_context: payload.test_context,
-        environment: payload.environment,
-        permissions: payload.permissions,
-      },
-    };
-  } catch (error) {
-    throw new Error('Invalid token payload');
+  const user = await validateWorkOSToken(token);
+  if (!user) {
+    throw new Error('Invalid or expired token');
   }
+
+  return {
+    id: user.id,
+    email: user.email,
+    customClaims: {
+      system_user: user.customClaims?.system_user,
+      test_context: user.customClaims?.test_context,
+      environment: user.customClaims?.environment,
+      permissions: user.customClaims?.permissions,
+    },
+  };
 }
 
 /**
  * Authentication middleware for Convex HTTP actions (streaming endpoints)
  */
-export function requireAuthForRequest(request: Request): AuthenticatedUser {
+export async function requireAuthForRequest(request: Request): Promise<AuthenticatedUser> {
   const authHeader = request.headers.get('Authorization');
-  return requireAuth(authHeader || undefined);
+  return await requireAuth(authHeader || undefined);
 }

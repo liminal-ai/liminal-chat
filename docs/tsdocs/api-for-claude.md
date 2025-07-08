@@ -30,6 +30,19 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 ### convex/
 
+#### auth-actions.ts
+
+**`validateWorkOSToken`** (action) - convex/auth-actions.ts:70  
+Validates a WorkOS JWT token and returns user information  
+
+**`requireAuth`** (action) - convex/auth-actions.ts:83  
+Validates authorization header and returns authenticated user  
+
+**`optionalAuth`** (action) - convex/auth-actions.ts:112  
+Optional authentication - returns null if no auth header provided  
+
+Interfaces: `AuthenticatedUser`  
+
 #### chat.ts
 
 **`simpleChatAction`** (action) - convex/chat.ts:37  
@@ -231,17 +244,17 @@ Configuration error with helpful instructions.
 
 #### middleware.ts
 
-**`requireAuth`** (function) - lib/auth/middleware.ts:17  
-Simple JWT authentication middleware for WorkOS tokens  
+**`requireAuth`** (function) - lib/auth/middleware.ts:19  
+Secure JWT authentication middleware for WorkOS tokens  
 
-**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:53  
+**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:49  
 Authentication middleware for Convex HTTP actions (streaming endpoints)  
 
 Interfaces: `AuthenticatedUser`  
 
 #### system-user-token-manager.ts
 
-**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:169  
+**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:177  
 Global singleton instance for integration testing.  
 
 **`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:26  
@@ -249,13 +262,13 @@ Manages authentication tokens for a system user in WorkOS.
 
 #### workos-auth.ts
 
-**`validateWorkOSToken`** (function) - lib/auth/workos-auth.ts:25  
+**`validateWorkOSToken`** (function) - lib/auth/workos-auth.ts:37  
 Validates a WorkOS JWT token and returns user information  
 
-**`extractBearerToken`** (function) - lib/auth/workos-auth.ts:61  
+**`extractBearerToken`** (function) - lib/auth/workos-auth.ts:73  
 Extract Bearer token from Authorization header  
 
-**`requireWorkOSAuth`** (function) - lib/auth/workos-auth.ts:71  
+**`requireWorkOSAuth`** (function) - lib/auth/workos-auth.ts:83  
 Middleware function to validate WorkOS authentication  
 
 Interfaces: `WorkOSUser`  
@@ -285,4 +298,5 @@ conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`
 messages.ts: `create`, `createBatch`  
 
 ### Convex Actions
+auth-actions.ts: `validateWorkOSToken`, `requireAuth`, `optionalAuth`  
 chat.ts: `simpleChatAction`, `streamingChatAction`  
