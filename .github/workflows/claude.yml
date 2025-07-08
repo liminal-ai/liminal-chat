@@ -11,11 +11,9 @@ on:
 jobs:
   claude:
     if: |
-      github.event.sender.type != 'Bot' && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-      )
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-pr')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-pr')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude-pr') || contains(github.event.issue.title, '@claude-pr')))
     runs-on: ubuntu-latest
     permissions:
       contents: read

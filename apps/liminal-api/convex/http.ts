@@ -14,12 +14,40 @@ import { Id } from './_generated/dataModel';
 // Create Hono app with Convex context
 const app: HonoWithConvex<ActionCtx> = new Hono();
 
-// Simple health check endpoint - public access
+// Health check endpoint - secure version
 app.get('/health', async (c) => {
-  return c.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-  });
+  try {
+    // Optional authentication for health check
+    const authHeader = c.req.header('Authorization');
+    let user = null;
+
+    // Use optional auth for health check
+    user = await c.env.runAction(api['auth-actions'].optionalAuth, { authHeader });
+
+    return c.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      service: 'liminal-api',
+      authenticated: !!user,
+      ...(user && {
+        user: {
+          id: user.id,
+          email: user.email,
+          isSystemUser: !!user.customClaims?.system_user,
+        },
+      }),
+    });
+  } catch (error) {
+    return c.json(
+      {
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        service: 'liminal-api',
+        error: 'Service unavailable',
+      },
+      503,
+    );
+  }
 });
 
 // Clerk types removed
@@ -50,6 +78,10 @@ interface UpdateConversationRequest {
 app.post('/api/chat-text', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const body = await c.req.json();
     const { prompt, model, conversationId } = body;
 
@@ -67,10 +99,83 @@ app.post('/api/chat-text', async (c) => {
 
     return c.json(result);
   } catch (error) {
-    console.error('Chat endpoint error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
+      },
+      500,
+    );
+  }
+});
+
+// Perplexity search endpoint - enhanced web research with citations
+app.post('/api/perplexity', async (c) => {
+  const ctx = c.env;
+  try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
+    const body = await c.req.json();
+    const { query, model, systemPrompt } = body;
+
+    if (!query) {
+      return c.json({ error: 'Search query is required' }, 400);
+    }
+
+    // Enhanced system prompt for Perplexity research
+    const defaultSystemPrompt = `You are a professional research assistant with access to real-time web information. Provide comprehensive, accurate, and current information with proper citations.
+
+Guidelines:
+- Always include citations and sources for your information
+- Focus on authoritative and recent sources
+- Provide technical details when relevant
+- Structure your response clearly with headings if helpful
+- If information is conflicting across sources, note the discrepancy
+- Include relevant links when available`;
+
+    const finalPrompt = systemPrompt
+      ? `${systemPrompt}\n\nUser Query: ${query}`
+      : `${defaultSystemPrompt}\n\nUser Query: ${query}`;
+
+    // Use best Perplexity model by default
+    const selectedModel = model || 'llama-3.1-sonar-huge-128k-online';
+
+    const result = await ctx.runAction(api.chat.simpleChatAction, {
+      prompt: finalPrompt,
+      model: selectedModel,
+      provider: 'perplexity',
+    });
+
+    return c.json({
+      ...result,
+      metadata: {
+        model: selectedModel,
+        provider: 'perplexity',
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
+    return c.json(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        provider: 'perplexity',
       },
       500,
     );
@@ -82,6 +187,10 @@ app.post('/api/chat-text', async (c) => {
 app.get('/api/conversations', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const archived = c.req.query('archived') === 'true';
     const cursor = c.req.query('cursor') || undefined;
     const limit = parseInt(c.req.query('limit') || '50');
@@ -96,7 +205,14 @@ app.get('/api/conversations', async (c) => {
 
     return c.json(result);
   } catch (error) {
-    console.error('List conversations error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
@@ -110,6 +226,10 @@ app.get('/api/conversations', async (c) => {
 app.post('/api/conversations', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const body: CreateConversationRequest = await c.req.json();
     const { title, type = 'standard', metadata } = body;
 
@@ -125,7 +245,14 @@ app.post('/api/conversations', async (c) => {
 
     return c.json({ id: conversationId }, 201);
   } catch (error) {
-    console.error('Create conversation error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
@@ -139,6 +266,10 @@ app.post('/api/conversations', async (c) => {
 app.get('/api/conversations/:id', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const conversationId = c.req.param('id') as Id<'conversations'>;
 
     // Get conversation details
@@ -160,7 +291,14 @@ app.get('/api/conversations/:id', async (c) => {
       messages,
     });
   } catch (error) {
-    console.error('Get conversation error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
@@ -174,6 +312,10 @@ app.get('/api/conversations/:id', async (c) => {
 app.patch('/api/conversations/:id', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const conversationId = c.req.param('id') as Id<'conversations'>;
     const body: UpdateConversationRequest = await c.req.json();
     const { title, metadata } = body;
@@ -186,7 +328,14 @@ app.patch('/api/conversations/:id', async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error('Update conversation error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
@@ -200,6 +349,10 @@ app.patch('/api/conversations/:id', async (c) => {
 app.delete('/api/conversations/:id', async (c) => {
   const ctx = c.env;
   try {
+    // Require authentication using Node.js action
+    const authHeader = c.req.header('Authorization');
+    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
     const conversationId = c.req.param('id') as Id<'conversations'>;
 
     await ctx.runMutation(api.conversations.archive, {
@@ -208,7 +361,14 @@ app.delete('/api/conversations/:id', async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error('Archive conversation error:', error);
+    // Handle authentication errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
+    ) {
+      return c.json({ error: error.message }, 401);
+    }
+
     return c.json(
       {
         error: error instanceof Error ? error.message : String(error),
@@ -233,6 +393,10 @@ http.route({
     const { createModelForHttp, getStreamingHeaders } = await import('./ai/httpHelpers');
 
     try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
       const body = await request.json();
       const { messages, model: requestedModel, provider = 'openrouter', conversationId } = body;
 
@@ -289,7 +453,18 @@ http.route({
       // Return data stream response with headers
       return result.toDataStreamResponse({ headers });
     } catch (error) {
-      console.error('Chat endpoint error:', error);
+      // Handle authentication errors
+      if (
+        error instanceof Error &&
+        (error.message.includes('Authentication required') ||
+          error.message.includes('Invalid token'))
+      ) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
       return new Response(
         JSON.stringify({
           error: error instanceof Error ? error.message : String(error),
@@ -307,13 +482,17 @@ http.route({
 http.route({
   path: '/api/completion',
   method: 'POST',
-  handler: httpAction(async (_ctx, request) => {
+  handler: httpAction(async (ctx, request) => {
     'use node';
 
     const { streamText } = await import('ai');
     const { createModelForHttp, getStreamingHeaders } = await import('./ai/httpHelpers');
 
     try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+
       const body = await request.json();
       const { prompt, model: requestedModel, provider = 'openrouter' } = body;
 
@@ -336,7 +515,18 @@ http.route({
       // Return data stream response with headers
       return result.toDataStreamResponse({ headers: getStreamingHeaders() });
     } catch (error) {
-      console.error('Completion endpoint error:', error);
+      // Handle authentication errors
+      if (
+        error instanceof Error &&
+        (error.message.includes('Authentication required') ||
+          error.message.includes('Invalid token'))
+      ) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
       return new Response(
         JSON.stringify({
           error: error instanceof Error ? error.message : String(error),

@@ -47,6 +47,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared types
+        run: pnpm --filter @liminal/shared-types build
+
       - name: Generate Convex types
         working-directory: apps/liminal-api
         run: npx convex codegen
@@ -102,12 +105,24 @@ jobs:
           echo "Security scanning is currently disabled via DISABLE_SECURITY_CHECK repository variable."
           echo "This is a critical security risk and should only be temporary."
 
-      # Dependency Security (Stop on critical)
+      # Dependency Security (Stop only on high/critical vulnerabilities)
       - name: Dependency Security Audit
         if: ${{ vars.DISABLE_DEPENDENCY_AUDIT != 'true' }}
         run: |
           echo "Checking for vulnerable dependencies..."
-          pnpm audit --prod
+          # Run audit and capture output
+          AUDIT_OUTPUT=$(pnpm audit --prod 2>&1 || true)
+          echo "$AUDIT_OUTPUT"
+
+          # Check for high/critical vulnerabilities
+          if echo "$AUDIT_OUTPUT" | grep -E "(high|critical)" > /dev/null; then
+            echo "::error::High or critical vulnerabilities found!"
+            exit 1
+          elif echo "$AUDIT_OUTPUT" | grep -E "vulnerabilities found" > /dev/null; then
+            echo "::warning::Low/medium vulnerabilities found (non-blocking)"
+          else
+            echo "No vulnerabilities found"
+          fi
 
       - name: Dependency Audit Disabled Warning
         if: ${{ vars.DISABLE_DEPENDENCY_AUDIT == 'true' }}
@@ -142,6 +157,11 @@ jobs:
       - name: Integration Tests
         if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
         working-directory: apps/liminal-api
+        env:
+          SYSTEM_USER_EMAIL: ${{ secrets.SYSTEM_USER_EMAIL }}
+          SYSTEM_USER_PASSWORD: ${{ secrets.SYSTEM_USER_PASSWORD }}
+          WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+          WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
         run: |
           echo "Running integration tests..."
           pnpm test

@@ -61,21 +61,44 @@ export function parseDataStream(text: string): string[] {
 }
 
 // Make a chat request with standard error handling
-// No auth required anymore - all endpoints are public
+// Get system user access token for API authentication
+async function getSystemUserAccessToken(): Promise<string> {
+  // Use require for CommonJS compatibility in tests
+  const { SystemUserTokenManager } = require('../lib/auth/system-user-token-manager');
+
+  try {
+    const tokenManager = SystemUserTokenManager.fromEnv();
+    return await tokenManager.getValidToken();
+  } catch (error) {
+    throw new Error(
+      `Failed to get system user token: ${error}\n\n` +
+        'Make sure you have:\n' +
+        '1. Created a system user (run: npx tsx scripts/create-system-user.ts)\n' +
+        '2. Set environment variables: SYSTEM_USER_EMAIL, SYSTEM_USER_PASSWORD\n' +
+        '3. Configured JWT template in WorkOS dashboard',
+    );
+  }
+}
+
+// Get auth headers for API requests
 function getAuthHeaders(): Record<string, string> {
+  // For now, return empty - will be populated by makeAuthenticatedRequest
   return {};
 }
 
-// Make an authenticated GET request
+// Make an authenticated GET request using system user tokens
 export async function makeAuthenticatedRequest(
   request: APIRequestContext,
   endpoint: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   data?: any,
 ): Promise<{ response: any; body: any }> {
+  // Get system user access token for authentication
+  const accessToken = await getSystemUserAccessToken();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...getAuthHeaders(),
+    Authorization: `Bearer ${accessToken}`,
   };
 
   const options: any = { headers };
@@ -96,11 +119,25 @@ export async function makeAuthenticatedRequest(
   }
 }
 
-// Make a chat request with standard error handling (backward compatibility)
+// Make a chat request with standard error handling (no auth required)
 export async function makeChatRequest(
   request: APIRequestContext,
   endpoint: string,
   data: any,
 ): Promise<{ response: any; body: any }> {
-  return makeAuthenticatedRequest(request, endpoint, 'POST', data);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  const response = await request.post(endpoint, {
+    headers,
+    data,
+  });
+  const body = await response.text();
+
+  try {
+    return { response, body: JSON.parse(body) };
+  } catch {
+    return { response, body };
+  }
 }

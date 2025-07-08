@@ -1,4 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import * as path from 'path';
+import { findProjectRoot } from './lib/utils/project-root';
+
+// Load environment variables from project root
+const rootDir = findProjectRoot(__dirname);
+config({ path: path.join(rootDir, '.env') });
 
 /**
  * Playwright configuration for Convex backend integration tests
@@ -10,7 +17,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: process.env.CI ? [['html', { open: 'never' }]] : 'line',
 
   use: {
     // Base URL for Convex backend HTTP endpoints

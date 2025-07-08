@@ -30,6 +30,17 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 ### convex/
 
+#### auth-actions.ts
+
+**`validateWorkOSToken`** (action) - convex/auth-actions.ts:66  
+Validates a WorkOS JWT token and returns user information  
+
+**`requireAuth`** (action) - convex/auth-actions.ts:79  
+Validates authorization header and returns authenticated user  
+
+**`optionalAuth`** (action) - convex/auth-actions.ts:108  
+Optional authentication - returns null if no auth header provided  
+
 #### chat.ts
 
 **`simpleChatAction`** (action) - convex/chat.ts:37  
@@ -37,7 +48,7 @@ Non-streaming text generation action for simple chat completions.
 Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Generated text response with metadata including conversationId  
 
-**`streamingChatAction`** (action) - convex/chat.ts:166  
+**`streamingChatAction`** (action) - convex/chat.ts:180  
 Streaming chat action that prepares conversation context.  
 Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Conversation context for streaming  
@@ -227,6 +238,55 @@ Returns: Error with webhook setup or debugging instructions
 **`ConfigurationError`** (class) - convex/lib/errors.ts:9  
 Configuration error with helpful instructions.  
 
+### lib/auth/
+
+#### middleware.ts
+
+**`requireAuth`** (function) - lib/auth/middleware.ts:9  
+Secure JWT authentication middleware for WorkOS tokens  
+
+**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:39  
+Authentication middleware for Convex HTTP actions (streaming endpoints)  
+
+#### system-user-token-manager.ts
+
+**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:178  
+Global singleton instance for integration testing.  
+
+**`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:27  
+Manages authentication tokens for a system user in WorkOS.  
+
+#### workos-auth.ts
+
+**`validateWorkOSToken`** (function) - lib/auth/workos-auth.ts:37  
+Validates a WorkOS JWT token and returns user information  
+
+**`extractBearerToken`** (function) - lib/auth/workos-auth.ts:73  
+Extract Bearer token from Authorization header  
+
+**`requireWorkOSAuth`** (function) - lib/auth/workos-auth.ts:83  
+Middleware function to validate WorkOS authentication  
+
+Interfaces: `WorkOSUser`  
+
+### lib/test/
+
+#### system-auth-helper.ts
+
+**`getSystemAuthHelper`** (function) - lib/test/system-auth-helper.ts:210  
+Gets or creates the global SystemAuthHelper instance.  
+Returns: Promise<SystemAuthHelper> Global auth helper  
+
+**`SystemAuthHelper`** (class) - lib/test/system-auth-helper.ts:28  
+Helper class for system user authentication in tests.  
+
+### lib/utils/
+
+#### project-root.ts
+
+**`findProjectRoot`** (function) - lib/utils/project-root.ts:7  
+Finds the project root by looking for package.json with "liminal-chat" name  
+
 
 ## Function Index by Type
 
@@ -241,4 +301,5 @@ conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`
 messages.ts: `create`, `createBatch`  
 
 ### Convex Actions
+auth-actions.ts: `validateWorkOSToken`, `requireAuth`, `optionalAuth`  
 chat.ts: `simpleChatAction`, `streamingChatAction`  
