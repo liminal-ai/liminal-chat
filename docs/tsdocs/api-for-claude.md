@@ -32,16 +32,14 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 #### auth-actions.ts
 
-**`validateWorkOSToken`** (action) - convex/auth-actions.ts:70  
+**`validateWorkOSToken`** (action) - convex/auth-actions.ts:66  
 Validates a WorkOS JWT token and returns user information  
 
-**`requireAuth`** (action) - convex/auth-actions.ts:83  
+**`requireAuth`** (action) - convex/auth-actions.ts:79  
 Validates authorization header and returns authenticated user  
 
-**`optionalAuth`** (action) - convex/auth-actions.ts:112  
+**`optionalAuth`** (action) - convex/auth-actions.ts:108  
 Optional authentication - returns null if no auth header provided  
-
-Interfaces: `AuthenticatedUser`  
 
 #### chat.ts
 
@@ -244,20 +242,18 @@ Configuration error with helpful instructions.
 
 #### middleware.ts
 
-**`requireAuth`** (function) - lib/auth/middleware.ts:19  
+**`requireAuth`** (function) - lib/auth/middleware.ts:9  
 Secure JWT authentication middleware for WorkOS tokens  
 
-**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:49  
+**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:39  
 Authentication middleware for Convex HTTP actions (streaming endpoints)  
-
-Interfaces: `AuthenticatedUser`  
 
 #### system-user-token-manager.ts
 
-**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:177  
+**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:178  
 Global singleton instance for integration testing.  
 
-**`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:26  
+**`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:27  
 Manages authentication tokens for a system user in WorkOS.  
 
 #### workos-auth.ts
@@ -277,12 +273,19 @@ Interfaces: `WorkOSUser`
 
 #### system-auth-helper.ts
 
-**`getSystemAuthHelper`** (function) - lib/test/system-auth-helper.ts:209  
+**`getSystemAuthHelper`** (function) - lib/test/system-auth-helper.ts:210  
 Gets or creates the global SystemAuthHelper instance.  
 Returns: Promise<SystemAuthHelper> Global auth helper  
 
-**`SystemAuthHelper`** (class) - lib/test/system-auth-helper.ts:27  
+**`SystemAuthHelper`** (class) - lib/test/system-auth-helper.ts:28  
 Helper class for system user authentication in tests.  
+
+### lib/utils/
+
+#### project-root.ts
+
+**`findProjectRoot`** (function) - lib/utils/project-root.ts:7  
+Finds the project root by looking for package.json with "liminal-chat" name  
 
 
 ## Function Index by Type

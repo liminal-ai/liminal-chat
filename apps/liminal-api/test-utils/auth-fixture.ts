@@ -49,12 +49,12 @@ export const test = base.extend<{
               ...options.headers,
               Authorization: `Bearer ${token}`,
             };
-            
+
             // Add Content-Type for data-sending methods if not already set
             if (['post', 'put', 'patch'].includes(prop as string) && !headers['Content-Type']) {
               headers['Content-Type'] = 'application/json';
             }
-            
+
             return (original as any).call(target, url, {
               ...options,
               headers,

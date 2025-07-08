@@ -25,7 +25,6 @@ const workos = new WorkOS(WORKOS_API_KEY);
 const jwksUrl = workos.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
 const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
-
 /**
  * Internal function to validate WorkOS JWT token
  */

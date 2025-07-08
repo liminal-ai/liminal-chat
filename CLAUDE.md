@@ -24,19 +24,20 @@ Multi-agent coordination, environment management, documentation. No code changes
 **Always announce mode transitions.**
 
 ## Key Directories
-- `apps/liminal-api/` - Convex backend
+- `apps/backend/` - Convex backend (all tiers)
 - `apps/web/` - Next.js frontend  
-- `apps/opencode/` - Edge workers (Cloudflare)
-- `agent-management/agent-scratchpad/claude/current/` - Working memory
+- `apps/cli/` - Command-line tools
+- `.agent-comms/` - Inter-agent communication
+- `docs/` - Project documentation
 
 ## Tier Awareness
 **Different tiers require different thinking:**
-- **Convex Edge**: Default functions, limited Node.js
+- **Convex Database**: Schema and queries
+- **Convex Edge**: HTTP endpoints, LLM streaming
 - **Convex Node**: 'use node' directive for heavy operations
-- **Vercel Edge**: LLM streaming endpoints
 - **Browser/SSR**: Next.js frontend
 
-**Package managers:** Root uses pnpm, apps use npm, opencode uses bun. Don't mix them.
+**Package managers:** Root uses pnpm, apps use npm. Don't mix them.
 
 ## Debug Protocol
 When stuck:
@@ -52,10 +53,15 @@ All from project root:
 pnpm --filter liminal-api dev
 pnpm --filter liminal-api lint
 pnpm --filter liminal-api typecheck
+pnpm --filter liminal-api test
 
 # Frontend  
 pnpm --filter web dev
 pnpm --filter web build
+
+# CLI
+pnpm --filter @liminal/cli dev
+pnpm --filter @liminal/cli build
 
 # Global
 pnpm lint
@@ -64,10 +70,8 @@ pnpm test
 ```
 
 ## Documentation
-- `docs/tsdocs/api-for-claude.md` - API reference
-- `docs/engineering-practices.md` - Coding standards
-- `docs/liminal-chat-prd.md` - Product vision
-- `development-log.md` - Current status
+- `docs/` - Project documentation
+- `apps/*/docs/` - Tier-specific docs
 - External: [Convex docs](https://docs.convex.dev), [Vercel AI SDK](https://ai-sdk.dev/docs)
 
 ## Context Anchor
