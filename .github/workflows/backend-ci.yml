@@ -154,6 +154,11 @@ jobs:
       - name: Integration Tests
         if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
         working-directory: apps/liminal-api
+        env:
+          SYSTEM_USER_EMAIL: ${{ secrets.SYSTEM_USER_EMAIL }}
+          SYSTEM_USER_PASSWORD: ${{ secrets.SYSTEM_USER_PASSWORD }}
+          WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+          WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
         run: |
           echo "Running integration tests..."
           pnpm test
