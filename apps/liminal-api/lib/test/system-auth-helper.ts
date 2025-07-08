@@ -2,9 +2,10 @@ import { SystemUserTokenManager } from '../auth/system-user-token-manager';
 import { jwtDecode } from 'jwt-decode';
 import { config } from 'dotenv';
 import * as path from 'path';
+import { findProjectRoot } from '../utils/project-root';
 
 // Load environment variables from project root
-const rootDir = path.resolve(__dirname, '../../../../../');
+const rootDir = findProjectRoot(__dirname);
 config({ path: path.join(rootDir, '.env') });
 
 interface SystemTokenClaims {

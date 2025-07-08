@@ -99,8 +99,6 @@ app.post('/api/chat-text', async (c) => {
 
     return c.json(result);
   } catch (error) {
-    console.error('Chat endpoint error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -166,8 +164,6 @@ Guidelines:
       },
     });
   } catch (error) {
-    console.error('Perplexity endpoint error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -209,8 +205,6 @@ app.get('/api/conversations', async (c) => {
 
     return c.json(result);
   } catch (error) {
-    console.error('List conversations error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -251,8 +245,6 @@ app.post('/api/conversations', async (c) => {
 
     return c.json({ id: conversationId }, 201);
   } catch (error) {
-    console.error('Create conversation error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -299,8 +291,6 @@ app.get('/api/conversations/:id', async (c) => {
       messages,
     });
   } catch (error) {
-    console.error('Get conversation error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -338,8 +328,6 @@ app.patch('/api/conversations/:id', async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error('Update conversation error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -373,8 +361,6 @@ app.delete('/api/conversations/:id', async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error('Archive conversation error:', error);
-
     // Handle authentication errors
     if (
       error instanceof Error &&
@@ -467,8 +453,6 @@ http.route({
       // Return data stream response with headers
       return result.toDataStreamResponse({ headers });
     } catch (error) {
-      console.error('Chat endpoint error:', error);
-
       // Handle authentication errors
       if (
         error instanceof Error &&
@@ -531,8 +515,6 @@ http.route({
       // Return data stream response with headers
       return result.toDataStreamResponse({ headers: getStreamingHeaders() });
     } catch (error) {
-      console.error('Completion endpoint error:', error);
-
       // Handle authentication errors
       if (
         error instanceof Error &&

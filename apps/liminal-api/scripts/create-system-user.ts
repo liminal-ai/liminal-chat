@@ -17,9 +17,10 @@ import { WorkOS } from '@workos-inc/node';
 import * as crypto from 'crypto';
 import { config } from 'dotenv';
 import * as path from 'path';
+import { findProjectRoot } from '../lib/utils/project-root';
 
 // Load environment variables from project root
-const rootDir = path.resolve(__dirname, '../../../');
+const rootDir = findProjectRoot(__dirname);
 config({ path: path.join(rootDir, '.env') });
 
 interface CreateSystemUserConfig {

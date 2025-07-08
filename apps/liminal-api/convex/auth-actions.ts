@@ -46,19 +46,25 @@ async function validateWorkOSTokenInternal(token: string): Promise<Authenticated
     // Verify JWT using WorkOS JWKS
     const { payload } = await jwtVerify(cleanToken, JWKS);
 
-    // Extract user information from JWT claims
+    // Extract user information from JWT claims with runtime validation
+    const id = typeof payload.sub === 'string' ? payload.sub : '';
+    const email = typeof payload['urn:myapp:email'] === 'string' ? payload['urn:myapp:email'] : '';
+
     return {
-      id: payload.sub || '',
-      email: (payload['urn:myapp:email'] as string) || '',
+      id,
+      email,
       customClaims: {
-        system_user: payload.system_user as string,
-        test_context: payload.test_context as string,
-        environment: payload.environment as string,
-        permissions: payload.permissions as string[],
+        system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
+        test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
+        environment: typeof payload.environment === 'string' ? payload.environment : undefined,
+        permissions:
+          Array.isArray(payload.permissions) &&
+          payload.permissions.every((p) => typeof p === 'string')
+            ? payload.permissions
+            : undefined,
       },
     };
   } catch (error) {
-    console.error('WorkOS token validation failed:', error);
     return null;
   }
 }
