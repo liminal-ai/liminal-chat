@@ -11,17 +11,9 @@ on:
 jobs:
   claude:
     if: |
-      github.event.sender.type != 'Bot' && 
-      !contains(github.event.sender.login, 'bot') &&
-      !contains(github.event.sender.login, '[bot]') &&
-      github.event.sender.login != 'coderabbitai' &&
-      github.event.sender.login != 'cursor' && 
-      github.event.sender.login != 'coderabbitai[bot]' &&
-      !contains(github.event.sender.login, 'coderabbit') && (
-        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-pr') && github.event.sender.login != 'coderabbitai' && !contains(github.event.sender.login, 'coderabbit')) ||
-        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-pr') && github.event.sender.login != 'coderabbitai' && !contains(github.event.sender.login, 'coderabbit')) ||
-        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude-pr') || contains(github.event.issue.title, '@claude-pr')) && !contains(github.event.sender.login, 'coderabbit'))
-      )
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude-pr')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-pr')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude-pr') || contains(github.event.issue.title, '@claude-pr')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
