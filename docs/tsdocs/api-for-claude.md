@@ -227,6 +227,50 @@ Returns: Error with webhook setup or debugging instructions
 **`ConfigurationError`** (class) - convex/lib/errors.ts:9  
 Configuration error with helpful instructions.  
 
+### lib/auth/
+
+#### middleware.ts
+
+**`requireAuth`** (function) - lib/auth/middleware.ts:17  
+Simple JWT authentication middleware for WorkOS tokens  
+
+**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:53  
+Authentication middleware for Convex HTTP actions (streaming endpoints)  
+
+Interfaces: `AuthenticatedUser`  
+
+#### system-user-token-manager.ts
+
+**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:169  
+Global singleton instance for integration testing.  
+
+**`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:26  
+Manages authentication tokens for a system user in WorkOS.  
+
+#### workos-auth.ts
+
+**`validateWorkOSToken`** (function) - lib/auth/workos-auth.ts:25  
+Validates a WorkOS JWT token and returns user information  
+
+**`extractBearerToken`** (function) - lib/auth/workos-auth.ts:61  
+Extract Bearer token from Authorization header  
+
+**`requireWorkOSAuth`** (function) - lib/auth/workos-auth.ts:71  
+Middleware function to validate WorkOS authentication  
+
+Interfaces: `WorkOSUser`  
+
+### lib/test/
+
+#### system-auth-helper.ts
+
+**`getSystemAuthHelper`** (function) - lib/test/system-auth-helper.ts:209  
+Gets or creates the global SystemAuthHelper instance.  
+Returns: Promise<SystemAuthHelper> Global auth helper  
+
+**`SystemAuthHelper`** (class) - lib/test/system-auth-helper.ts:27  
+Helper class for system user authentication in tests.  
+
 
 ## Function Index by Type
 

@@ -61,33 +61,22 @@ export function parseDataStream(text: string): string[] {
 }
 
 // Make a chat request with standard error handling
-// Get WorkOS M2M access token for API authentication using WorkOS SDK
-async function getM2MAccessToken(): Promise<string> {
-  const { WorkOS } = await import('@workos-inc/node');
-
-  const apiKey = process.env.WORKOS_API_KEY;
-  const clientId = process.env.WORKOS_M2M_CLIENT_ID;
-  const clientSecret = process.env.WORKOS_M2M_CLIENT_SECRET;
-
-  if (!apiKey || !clientId || !clientSecret) {
-    throw new Error(
-      'WORKOS_API_KEY, WORKOS_M2M_CLIENT_ID and WORKOS_M2M_CLIENT_SECRET must be set for authenticated tests',
-    );
-  }
-
-  const workos = new WorkOS(apiKey);
+// Get system user access token for API authentication
+async function getSystemUserAccessToken(): Promise<string> {
+  // Use require for CommonJS compatibility in tests
+  const { SystemUserTokenManager } = require('../lib/auth/system-user-token-manager');
 
   try {
-    // Use WorkOS SDK for client credentials flow
-    const response = await workos.userManagement.getAccessToken({
-      clientId,
-      clientSecret,
-      grantType: 'client_credentials',
-    });
-
-    return response.accessToken;
+    const tokenManager = SystemUserTokenManager.fromEnv();
+    return await tokenManager.getValidToken();
   } catch (error) {
-    throw new Error(`Failed to get M2M token: ${error}`);
+    throw new Error(
+      `Failed to get system user token: ${error}\n\n` +
+        'Make sure you have:\n' +
+        '1. Created a system user (run: npx tsx scripts/create-system-user.ts)\n' +
+        '2. Set environment variables: SYSTEM_USER_EMAIL, SYSTEM_USER_PASSWORD\n' +
+        '3. Configured JWT template in WorkOS dashboard',
+    );
   }
 }
 
@@ -97,15 +86,15 @@ function getAuthHeaders(): Record<string, string> {
   return {};
 }
 
-// Make an authenticated GET request
+// Make an authenticated GET request using system user tokens
 export async function makeAuthenticatedRequest(
   request: APIRequestContext,
   endpoint: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE' = 'GET',
   data?: any,
 ): Promise<{ response: any; body: any }> {
-  // Get M2M access token for authentication
-  const accessToken = await getM2MAccessToken();
+  // Get system user access token for authentication
+  const accessToken = await getSystemUserAccessToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

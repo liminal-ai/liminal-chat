@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../test-utils/auth-fixture';
 
 // Import test config properly
 const TEST_CONFIG = {
@@ -11,18 +11,8 @@ const TEST_PROMPTS = {
 };
 
 async function makeChatRequest(requestContext: any, endpoint: string, body: any) {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  // Add auth token if provided via environment variable
-  if (process.env.CLERK_TEST_TOKEN) {
-    headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-  }
-
   const response = await requestContext.post(`${TEST_CONFIG.BASE_URL}${endpoint}`, {
     data: body,
-    headers,
     timeout: TEST_CONFIG.TIMEOUT,
   });
 
@@ -33,10 +23,10 @@ async function makeChatRequest(requestContext: any, endpoint: string, body: any)
 }
 
 test.describe('Conversation Persistence Tests', () => {
-  test('1. Create conversation and persist messages', async ({ request }) => {
+  test('1. Create conversation and persist messages', async ({ authenticatedRequest }) => {
     // First chat without conversationId - should create new conversation
     const { response: firstResponse, body: firstBody } = await makeChatRequest(
-      request,
+      authenticatedRequest,
       '/api/chat-text',
       {
         prompt: 'Hello, this is a test message',
@@ -53,7 +43,7 @@ test.describe('Conversation Persistence Tests', () => {
 
     // Second chat with conversationId - should use existing conversation
     const { response: secondResponse, body: secondBody } = await makeChatRequest(
-      request,
+      authenticatedRequest,
       '/api/chat-text',
       {
         prompt: 'This is a follow-up message',
@@ -67,29 +57,15 @@ test.describe('Conversation Persistence Tests', () => {
     expect(secondBody.conversationId).toBe(conversationId);
 
     // Verify conversation exists and has messages
-    const headers: Record<string, string> = {};
-    if (process.env.CLERK_TEST_TOKEN) {
-      headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-    }
-
-    const conversationResponse = await request.get(
+    const conversationResponse = await authenticatedRequest.get(
       `${TEST_CONFIG.BASE_URL}/api/conversations/${conversationId}`,
-      { headers },
     );
 
-    // Note: This will fail if not authenticated
-    // In a real test, we'd need to set up authentication
-    // For now, we just verify the API structure is correct
     expect(conversationResponse.status()).toBe(200);
   });
 
-  test('2. List conversations endpoint', async ({ request }) => {
-    const headers: Record<string, string> = {};
-    if (process.env.CLERK_TEST_TOKEN) {
-      headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-    }
-
-    const response = await request.get(`${TEST_CONFIG.BASE_URL}/api/conversations`, { headers });
+  test('2. List conversations endpoint', async ({ authenticatedRequest }) => {
+    const response = await authenticatedRequest.get(`${TEST_CONFIG.BASE_URL}/api/conversations`);
 
     // Should return 200 even if empty (for authenticated users)
     expect(response.status()).toBe(200);
@@ -99,15 +75,8 @@ test.describe('Conversation Persistence Tests', () => {
     expect(body).toHaveProperty('isDone');
   });
 
-  test('3. Create conversation via API', async ({ request }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (process.env.CLERK_TEST_TOKEN) {
-      headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-    }
-
-    const response = await request.post(`${TEST_CONFIG.BASE_URL}/api/conversations`, {
+  test('3. Create conversation via API', async ({ authenticatedRequest }) => {
+    const response = await authenticatedRequest.post(`${TEST_CONFIG.BASE_URL}/api/conversations`, {
       data: {
         title: 'Test Conversation',
         type: 'standard',
@@ -116,36 +85,27 @@ test.describe('Conversation Persistence Tests', () => {
           model: 'google/gemini-2.5-flash',
         },
       },
-      headers,
     });
 
-    // Will fail without auth, but verifies API structure
-    expect([200, 201, 401, 403]).toContain(response.status());
+    // Should succeed with authentication
+    expect(response.status()).toBe(201);
+
+    const body = await response.json();
+    expect(body).toHaveProperty('id');
   });
 
-  test('4. Streaming chat preserves conversation', async ({ request }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (process.env.CLERK_TEST_TOKEN) {
-      headers['Authorization'] = process.env.CLERK_TEST_TOKEN;
-    }
-
-    const response = await request.post(`${TEST_CONFIG.BASE_URL}/api/chat`, {
+  test('4. Streaming chat preserves conversation', async ({ authenticatedRequest }) => {
+    const response = await authenticatedRequest.post(`${TEST_CONFIG.BASE_URL}/api/chat`, {
       data: {
         messages: [{ role: 'user', content: TEST_PROMPTS.simple }],
         provider: 'openrouter',
       },
-      headers,
     });
 
     expect(response.ok()).toBeTruthy();
 
     // Check for conversation ID header
     const conversationIdHeader = response.headers()['x-conversation-id'];
-    // May or may not have conversation ID depending on auth
-    if (conversationIdHeader) {
-      expect(conversationIdHeader).toBeTruthy();
-    }
+    expect(conversationIdHeader).toBeTruthy();
   });
 });

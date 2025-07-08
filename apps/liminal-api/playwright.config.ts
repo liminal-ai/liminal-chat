@@ -1,4 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import * as path from 'path';
+
+// Load environment variables from project root
+const rootDir = path.resolve(__dirname, '../../');
+config({ path: path.join(rootDir, '.env') });
 
 /**
  * Playwright configuration for Convex backend integration tests

@@ -91,6 +91,11 @@ Core testing principles:
 - **Current Status**: `development-log.md` - Daily development journal with history of dev
 - **Feature Planning**: `docs/planning/features/` - Feature stories and implementation plans
 
+### Agent Framework
+- **Agent CLI**: `apps/liminal-agent-cli/` - Local agent execution via Claude Code SDK
+- **Edwin Research Agent**: `apps/liminal-agent-cli/agents/edwin/` - Comprehensive research assistant
+- **Context7 Library IDs**: `apps/liminal-agent-cli/agents/edwin/context7-library-ids.json` - Tech stack references
+
 ### External Documentation
 - **Vercel AI SDK**: https://ai-sdk.dev/docs/introduction
 - **Vercel AI SDK Cookbook**: https://ai-sdk.dev/cookbook
