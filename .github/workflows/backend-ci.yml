@@ -110,7 +110,7 @@ jobs:
           # Run audit and capture output
           AUDIT_OUTPUT=$(pnpm audit --prod 2>&1 || true)
           echo "$AUDIT_OUTPUT"
-          
+
           # Check for high/critical vulnerabilities
           if echo "$AUDIT_OUTPUT" | grep -E "(high|critical)" > /dev/null; then
             echo "::error::High or critical vulnerabilities found!"
