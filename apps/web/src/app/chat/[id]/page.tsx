@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useAction } from 'convex/react';
-import { api } from '@liminal-api/convex/_generated/api';
-import { Id } from '@liminal-api/convex/_generated/dataModel';
+import { api } from '@db/api';
+import { Id } from '@db/types';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useState, use } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,17 +22,17 @@ function ChatContent({ conversationId }: { conversationId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   // Fetch conversation and messages
-  const conversation = useQuery(api.conversations.get, {
+  const conversation = useQuery(api.db.conversations.get, {
     conversationId: conversationId as Id<'conversations'>,
   });
-  const messagesResult = useQuery(api.messages.list, {
+  const messagesResult = useQuery(api.db.messages.list, {
     conversationId: conversationId as Id<'conversations'>,
     paginationOpts: { numItems: 50 },
   });
   const messages = messagesResult?.page || [];
 
   // Send message action
-  const sendMessage = useAction(api.chat.simpleChatAction);
+  const sendMessage = useAction(api.node.chat.simpleChatAction);
 
   const isLoading = conversation === undefined || messagesResult === undefined;
 

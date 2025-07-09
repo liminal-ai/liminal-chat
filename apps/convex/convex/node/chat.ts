@@ -1,10 +1,10 @@
 'use node';
 
-import { action } from './_generated/server';
+import { action } from '../_generated/server';
 import { v } from 'convex/values';
-import { aiService } from './ai/service';
-import { api } from './_generated/api';
-import { Id } from './_generated/dataModel';
+import { aiService } from '../edge/ai/service';
+import { api } from '../_generated/api';
+import { Id } from '../_generated/dataModel';
 // Remove auth import
 
 /**
@@ -70,7 +70,7 @@ export const simpleChatAction = action({
 
     // If no conversationId provided, create a new conversation
     if (!actualConversationId) {
-      actualConversationId = await ctx.runMutation(api.conversations.create, {
+      actualConversationId = await ctx.runMutation(api.db.conversations.create, {
         title: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
         type: 'standard',
         metadata: {
@@ -81,7 +81,7 @@ export const simpleChatAction = action({
     }
 
     // Fetch conversation history BEFORE saving current message to avoid duplicates
-    const messagesResult = await ctx.runQuery(api.messages.list, {
+    const messagesResult = await ctx.runQuery(api.db.messages.list, {
       conversationId: actualConversationId,
       paginationOpts: { numItems: 99 }, // Leave room for current message
     });
@@ -110,7 +110,7 @@ export const simpleChatAction = action({
 
     // Save user message to database (after building AI context to avoid duplicates)
     if (actualConversationId) {
-      await ctx.runMutation(api.messages.create, {
+      await ctx.runMutation(api.db.messages.create, {
         conversationId: actualConversationId,
         authorType: 'user',
         authorId: userId,
@@ -128,7 +128,7 @@ export const simpleChatAction = action({
 
     // Save assistant response if we have a conversation
     if (actualConversationId) {
-      await ctx.runMutation(api.messages.create, {
+      await ctx.runMutation(api.db.messages.create, {
         conversationId: actualConversationId,
         authorType: 'agent',
         authorId: provider,
@@ -221,7 +221,7 @@ export const streamingChatAction = action({
 
     // If no conversationId provided, create a new conversation
     if (!actualConversationId) {
-      actualConversationId = await ctx.runMutation(api.conversations.create, {
+      actualConversationId = await ctx.runMutation(api.db.conversations.create, {
         title: userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : ''),
         type: 'standard',
         metadata: {
@@ -233,7 +233,7 @@ export const streamingChatAction = action({
 
     // Save user message if we have a conversation
     if (actualConversationId) {
-      await ctx.runMutation(api.messages.create, {
+      await ctx.runMutation(api.db.messages.create, {
         conversationId: actualConversationId,
         authorType: 'user',
         authorId: userId,

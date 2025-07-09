@@ -1,14 +1,14 @@
 import { httpRouter } from 'convex/server';
-import { httpAction } from './_generated/server';
+import { httpAction } from '../_generated/server';
 import { Hono } from 'hono';
 import {
   HonoWithConvex,
   HttpRouterWithHono as _HttpRouterWithHono,
 } from 'convex-helpers/server/hono';
-import { ActionCtx } from './_generated/server';
-import { api } from './_generated/api';
+import { ActionCtx } from '../_generated/server';
+import { api } from '../_generated/api';
 // Svix import removed
-import { Id } from './_generated/dataModel';
+import { Id } from '../_generated/dataModel';
 // Env import removed
 
 // Create Hono app with Convex context
@@ -22,7 +22,7 @@ app.get('/health', async (c) => {
     let user = null;
 
     // Use optional auth for health check
-    user = await c.env.runAction(api['auth-actions'].optionalAuth, { authHeader });
+    user = await c.env.runAction(api.node.auth.optionalAuth, { authHeader });
 
     return c.json({
       status: 'healthy',
@@ -80,7 +80,7 @@ app.post('/api/chat-text', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const body = await c.req.json();
     const { prompt, model, conversationId } = body;
@@ -90,7 +90,7 @@ app.post('/api/chat-text', async (c) => {
     }
 
     // Call the action with conversation support
-    const result = await ctx.runAction(api.chat.simpleChatAction, {
+    const result = await ctx.runAction(api.node.chat.simpleChatAction, {
       prompt,
       model,
       provider: body.provider,
@@ -122,7 +122,7 @@ app.post('/api/perplexity', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const body = await c.req.json();
     const { query, model, systemPrompt } = body;
@@ -149,7 +149,7 @@ Guidelines:
     // Use best Perplexity model by default
     const selectedModel = model || 'llama-3.1-sonar-huge-128k-online';
 
-    const result = await ctx.runAction(api.chat.simpleChatAction, {
+    const result = await ctx.runAction(api.node.chat.simpleChatAction, {
       prompt: finalPrompt,
       model: selectedModel,
       provider: 'perplexity',
@@ -189,13 +189,13 @@ app.get('/api/conversations', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const archived = c.req.query('archived') === 'true';
     const cursor = c.req.query('cursor') || undefined;
     const limit = parseInt(c.req.query('limit') || '50');
 
-    const result = await ctx.runQuery(api.conversations.list, {
+    const result = await ctx.runQuery(api.db.conversations.list, {
       archived,
       paginationOpts: {
         numItems: limit,
@@ -228,7 +228,7 @@ app.post('/api/conversations', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const body: CreateConversationRequest = await c.req.json();
     const { title, type = 'standard', metadata } = body;
@@ -237,7 +237,7 @@ app.post('/api/conversations', async (c) => {
       return c.json({ error: 'Title is required' }, 400);
     }
 
-    const conversationId = await ctx.runMutation(api.conversations.create, {
+    const conversationId = await ctx.runMutation(api.db.conversations.create, {
       title,
       type,
       metadata,
@@ -268,12 +268,12 @@ app.get('/api/conversations/:id', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const conversationId = c.req.param('id') as Id<'conversations'>;
 
     // Get conversation details
-    const conversation = await ctx.runQuery(api.conversations.get, {
+    const conversation = await ctx.runQuery(api.db.conversations.get, {
       conversationId,
     });
 
@@ -282,7 +282,7 @@ app.get('/api/conversations/:id', async (c) => {
     }
 
     // Get messages
-    const messages = await ctx.runQuery(api.messages.getAll, {
+    const messages = await ctx.runQuery(api.db.messages.getAll, {
       conversationId,
     });
 
@@ -314,13 +314,13 @@ app.patch('/api/conversations/:id', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const conversationId = c.req.param('id') as Id<'conversations'>;
     const body: UpdateConversationRequest = await c.req.json();
     const { title, metadata } = body;
 
-    await ctx.runMutation(api.conversations.update, {
+    await ctx.runMutation(api.db.conversations.update, {
       conversationId,
       title,
       metadata,
@@ -351,11 +351,11 @@ app.delete('/api/conversations/:id', async (c) => {
   try {
     // Require authentication using Node.js action
     const authHeader = c.req.header('Authorization');
-    const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+    const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
     const conversationId = c.req.param('id') as Id<'conversations'>;
 
-    await ctx.runMutation(api.conversations.archive, {
+    await ctx.runMutation(api.db.conversations.archive, {
       conversationId,
     });
 
@@ -395,7 +395,7 @@ http.route({
     try {
       // Require authentication using Node.js action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { messages, model: requestedModel, provider = 'openrouter', conversationId } = body;
@@ -408,7 +408,7 @@ http.route({
       }
 
       // Handle conversation persistence
-      const chatContext = await ctx.runAction(api.chat.streamingChatAction, {
+      const chatContext = await ctx.runAction(api.node.chat.streamingChatAction, {
         messages,
         model: requestedModel,
         provider,
@@ -425,7 +425,7 @@ http.route({
         onFinish: async ({ text, usage, finishReason }) => {
           // Save the assistant response after streaming completes
           if (chatContext.conversationId) {
-            await ctx.runMutation(api.messages.create, {
+            await ctx.runMutation(api.db.messages.create, {
               conversationId: chatContext.conversationId,
               authorType: 'agent',
               authorId: provider,
@@ -491,7 +491,7 @@ http.route({
     try {
       // Require authentication using Node.js action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api['auth-actions'].requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { prompt, model: requestedModel, provider = 'openrouter' } = body;

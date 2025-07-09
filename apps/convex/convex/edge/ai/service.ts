@@ -3,7 +3,7 @@
 import { generateText as vercelGenerateText, streamText as vercelStreamText } from 'ai';
 import { ProviderName } from './providers';
 import { model, ModelParams } from './modelBuilder';
-import { createRateLimitError } from '../lib/errors';
+import { createRateLimitError } from '../../lib/errors';
 
 // Parameters for AI operations
 export interface GenerateTextParams {

@@ -1,6 +1,6 @@
-import { internalMutation } from './_generated/server';
+import { internalMutation } from '../_generated/server';
 import { v } from 'convex/values';
-import { validateEnvironment, logEnvironmentStatus } from './lib/env';
+import { validateEnvironment, logEnvironmentStatus } from '../lib/env';
 
 /**
  * Internal mutation to validate environment configuration at startup

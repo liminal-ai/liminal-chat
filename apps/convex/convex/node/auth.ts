@@ -1,40 +1,54 @@
 'use node';
 
-import { action } from './_generated/server';
+import { action } from '../_generated/server';
 import { v } from 'convex/values';
 import { WorkOS } from '@workos-inc/node';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { AuthenticatedUser } from '@liminal/shared-types';
 
-// Validate required environment variables
-const WORKOS_API_KEY = process.env.WORKOS_API_KEY;
-const WORKOS_CLIENT_ID = process.env.WORKOS_CLIENT_ID;
+// Lazy initialization of WorkOS
+let workosClient: WorkOS | null = null;
+let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
-if (!WORKOS_API_KEY) {
-  throw new Error('WORKOS_API_KEY environment variable is required');
+function initializeWorkOS() {
+  if (workosClient && jwks) {
+    return { workosClient, jwks };
+  }
+
+  const WORKOS_API_KEY = process.env.WORKOS_API_KEY;
+  const WORKOS_CLIENT_ID = process.env.WORKOS_CLIENT_ID;
+
+  if (!WORKOS_API_KEY) {
+    throw new Error('WORKOS_API_KEY environment variable is required');
+  }
+
+  if (!WORKOS_CLIENT_ID) {
+    throw new Error('WORKOS_CLIENT_ID environment variable is required');
+  }
+
+  // Initialize WorkOS client for JWKS URL
+  workosClient = new WorkOS(WORKOS_API_KEY);
+
+  // Create JWKS for WorkOS token verification
+  const jwksUrl = workosClient.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
+  jwks = createRemoteJWKSet(new URL(jwksUrl));
+
+  return { workosClient, jwks };
 }
-
-if (!WORKOS_CLIENT_ID) {
-  throw new Error('WORKOS_CLIENT_ID environment variable is required');
-}
-
-// Initialize WorkOS client for JWKS URL
-const workos = new WorkOS(WORKOS_API_KEY);
-
-// Create JWKS for WorkOS token verification
-const jwksUrl = workos.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
 /**
  * Internal function to validate WorkOS JWT token
  */
 async function validateWorkOSTokenInternal(token: string): Promise<AuthenticatedUser | null> {
   try {
+    // Initialize WorkOS if not already done
+    const { jwks } = initializeWorkOS();
+
     // Remove 'Bearer ' prefix if present
     const cleanToken = token.replace(/^Bearer\s+/i, '');
 
     // Verify JWT using WorkOS JWKS
-    const { payload } = await jwtVerify(cleanToken, JWKS);
+    const { payload } = await jwtVerify(cleanToken, jwks);
 
     // Extract user information from JWT claims with runtime validation
     const id = typeof payload.sub === 'string' ? payload.sub : '';

@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from 'convex/react';
-import { api } from '@liminal-api/convex/_generated/api';
-import { Id } from '@liminal-api/convex/_generated/dataModel';
+import { api } from '@db/api';
+import { Id } from '@db/types';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { useRouter } from 'next/navigation';
 
@@ -18,7 +18,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
   const router = useRouter();
 
   // Get message count for this conversation
-  const messageCount = useQuery(api.messages.count, {
+  const messageCount = useQuery(api.db.messages.count, {
     conversationId: conversation._id,
   });
 
@@ -57,8 +57,8 @@ function ConversationsContent() {
   const router = useRouter();
 
   // Convex useQuery throws errors on failure, returns undefined when loading
-  const totalCount = useQuery(api.conversations.count, {});
-  const conversationsResult = useQuery(api.conversations.list, {
+  const totalCount = useQuery(api.db.conversations.count, {});
+  const conversationsResult = useQuery(api.db.conversations.list, {
     paginationOpts: { numItems: 20 },
   });
 
