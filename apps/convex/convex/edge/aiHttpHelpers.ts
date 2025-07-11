@@ -1,7 +1,5 @@
-'use node';
-
-import { ProviderName } from './providers';
-import { model } from './modelBuilder';
+import { ProviderName } from './aiProviders';
+import { model } from './aiModelBuilder';
 
 // Helper to create model for HTTP endpoints
 export async function createModelForHttp(

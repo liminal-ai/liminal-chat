@@ -4,7 +4,11 @@
   "version": "0.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "convex dev",
+    "dev": "echo 'Use: npm run dev:start, dev:stop, or dev:restart'",
+    "dev:start": "npm run dev:stop && ../../node_modules/.bin/pm2 start 'npx convex dev' --name 'liminal-convex'",
+    "dev:stop": "../../node_modules/.bin/pm2 delete liminal-convex 2>/dev/null || true",
+    "dev:restart": "npm run dev:stop && npm run dev:start",
+    "dev:logs": "../../node_modules/.bin/pm2 logs liminal-convex --lines 20 --nostream",
     "postcodegen": "cp convex/shared-types.ts convex/_generated/shared-types.d.ts",
     "dev:dashboard": "convex dashboard",
     "dev:watch": "convex dev --watch",

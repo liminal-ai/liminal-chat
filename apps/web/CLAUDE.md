@@ -1,6 +1,6 @@
-# Frontend Agent - Next.js Specialist
+# Next.js Frontend Agent
 
-You are a senior engineer who gives a shit. Stay in apps/web/. Ask questions when stuck.
+Stay in apps/web/. Always use port 3000.
 
 ## Core Architecture
 ```
@@ -11,15 +11,18 @@ Convex Client (real-time subscriptions)
 React 19 + TypeScript + Tailwind
 ```
 
-## Operating Modes
+## Critical Port Rule
+**ALWAYS use port 3000** - Auth callback URLs are configured for localhost:3000. Using port 3001 breaks authentication.
 
-### Chat Mode (default)
-Analysis, recommendations, UI/UX discussions. No file edits.
-
-### Agent Mode
-Implementation work. Read → Build → Test → Verify. Show evidence of completion.
-
-**Always announce mode transitions.**
+Before starting dev server:
+```bash
+# Check if port 3000 is already in use
+lsof -ti:3000
+# If output shows PID, kill it first
+kill -9 <PID>
+# Then start on port 3000
+npm run dev -- --port 3000
+```
 
 ## Directory Structure
 ```
@@ -67,42 +70,64 @@ const send = useMutation(api.messages.send);
 // Optimistic updates handled by Convex
 ```
 
+Import from these path aliases:
+```typescript
+import { api } from '@db/api';           // Convex API
+import { Id } from '@db/types';          // Convex types
+import { useQuery } from 'convex/react'; // Convex hooks
+```
+
 ## Tech Stack
-- **Framework**: Next.js 15 with App Router
-- **UI Library**: React 19
-- **Styling**: Tailwind CSS
-- **Components**: shadcn/ui (Radix + Tailwind)
+- **Framework**: Next.js 15.3.4 with App Router
+- **UI Library**: React 18.3.1
+- **Styling**: Tailwind CSS 3.4.16
+- **Components**: shadcn/ui (Radix + Tailwind, "new-york" style)
 - **State**: Convex subscriptions + React state
 - **Auth**: WorkOS via middleware
 
-## Debug Protocol
-When stuck:
-1. Check browser console
-2. Verify Convex connection
-3. Check React DevTools
-4. Test component in isolation
-
-## Essential Commands
+## Commands
 ```bash
-npm run dev          # Start dev server (Turbopack)
-npm run build        # Production build
-npm run start        # Production server
-npm run lint         # ESLint checks
-npm run typecheck    # TypeScript validation
+npm run dev:start        # Stop any existing, start on 3000, verify working
+npm run dev:stop         # Kill process on port 3000
+npm run dev:restart      # Full stop and restart
+npm run dev:verify       # Check if server responds
+npm run build            # Build for production
+npm run typecheck        # TypeScript validation
+npm run lint             # ESLint checks
 ```
 
-## Communication Protocol
-- Check tasks: `/get-techlead-input`
-- Submit work: `/send-techlead-output`
-- Your inbox: `../../.agent-comms/web/inbox/`
-- Your outbox: `../../.agent-comms/web/outbox/`
+## Development Server
+```bash
+/start-nextjs               # Complete restart and verification
+npm run dev:start           # Start server (fire-and-forget)
+npm run dev:stop            # Kill process on port 3000
+npm run dev:restart         # Stop and restart
+npm run dev:logverify       # Wait 2s, show last 10 log lines
+npm run dev:curlverify      # Check if server responds
+npm run dev:logs            # Real-time output for debugging
+```
 
-## Context Anchor
-Start responses with: **[Mode: Chat/Agent] | Frontend: apps/web/**
+Always use port 3000 (auth callbacks require it).
 
-## Remember
-- Server components by default
-- Client components only for interactivity
-- Convex handles all data fetching
-- No API routes needed
-- Focus on exceptional UX
+## Common Patterns
+
+Page component:
+```typescript
+'use client';
+import { useQuery } from 'convex/react';
+import { api } from '@db/api';
+
+export default function MyPage() {
+  const data = useQuery(api.db.conversations.list, {});
+  // ...
+}
+```
+
+Server component:
+```typescript
+// No 'use client' - runs on server
+export default function ServerPage() {
+  // Server-side logic
+}
+```
+

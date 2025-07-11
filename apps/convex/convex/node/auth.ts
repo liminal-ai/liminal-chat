@@ -5,6 +5,12 @@ import { v } from 'convex/values';
 import { WorkOS } from '@workos-inc/node';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { AuthenticatedUser } from '@liminal/shared-types';
+import { webcrypto } from 'node:crypto';
+
+// Polyfill globalThis.crypto for Node.js 18
+if (!globalThis.crypto) {
+  globalThis.crypto = webcrypto as any;
+}
 
 // Lazy initialization of WorkOS
 let workosClient: WorkOS | null = null;
@@ -40,37 +46,33 @@ function initializeWorkOS() {
  * Internal function to validate WorkOS JWT token
  */
 async function validateWorkOSTokenInternal(token: string): Promise<AuthenticatedUser | null> {
-  try {
-    // Initialize WorkOS if not already done
-    const { jwks } = initializeWorkOS();
+  // Initialize WorkOS if not already done
+  const { jwks } = initializeWorkOS();
 
-    // Remove 'Bearer ' prefix if present
-    const cleanToken = token.replace(/^Bearer\s+/i, '');
+  // Remove 'Bearer ' prefix if present
+  const cleanToken = token.replace(/^Bearer\s+/i, '');
 
-    // Verify JWT using WorkOS JWKS
-    const { payload } = await jwtVerify(cleanToken, jwks);
+  // Verify JWT using WorkOS JWKS
+  const { payload } = await jwtVerify(cleanToken, jwks);
 
-    // Extract user information from JWT claims with runtime validation
-    const id = typeof payload.sub === 'string' ? payload.sub : '';
-    const email = typeof payload['urn:myapp:email'] === 'string' ? payload['urn:myapp:email'] : '';
+  // Extract user information from JWT claims with runtime validation
+  const id = typeof payload.sub === 'string' ? payload.sub : '';
+  const email = typeof payload['urn:myapp:email'] === 'string' ? payload['urn:myapp:email'] : '';
 
-    return {
-      id,
-      email,
-      customClaims: {
-        system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
-        test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
-        environment: typeof payload.environment === 'string' ? payload.environment : undefined,
-        permissions:
-          Array.isArray(payload.permissions) &&
-          payload.permissions.every((p) => typeof p === 'string')
-            ? payload.permissions
-            : undefined,
-      },
-    };
-  } catch (error) {
-    return null;
-  }
+  return {
+    id,
+    email,
+    customClaims: {
+      system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
+      test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
+      environment: typeof payload.environment === 'string' ? payload.environment : undefined,
+      permissions:
+        Array.isArray(payload.permissions) &&
+        payload.permissions.every((p) => typeof p === 'string')
+          ? payload.permissions
+          : undefined,
+    },
+  };
 }
 
 /**

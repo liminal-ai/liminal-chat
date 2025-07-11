@@ -2,7 +2,7 @@
 
 import { action } from '../_generated/server';
 import { v } from 'convex/values';
-import { aiService } from '../edge/ai/service';
+import { aiService } from '../edge/aiService';
 import { api } from '../_generated/api';
 import { Id } from '../_generated/dataModel';
 // Remove auth import

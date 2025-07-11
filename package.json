@@ -43,13 +43,15 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "node-fetch": "^3.3.2",
+    "pm2": "^6.0.8",
     "prettier": "^3.6.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "pnpm": {
     "overrides": {
-      "brace-expansion": ">=2.0.2"
+      "brace-expansion": ">=2.0.2",
+      "cookie": ">=0.7.0"
     }
   },
   "packageManager": "pnpm@8.15.1"
