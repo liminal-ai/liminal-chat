@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
-import { Id } from './_generated/dataModel';
+import { mutation, query } from '../_generated/server';
+import { Id } from '../_generated/dataModel';
 // Auth system removed
 
 // Message type validators based on type

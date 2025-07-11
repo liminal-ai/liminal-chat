@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@liminal-api/convex'],
+  transpilePackages: ['@liminal/convex'],
   experimental: {
     externalDir: true,
   },

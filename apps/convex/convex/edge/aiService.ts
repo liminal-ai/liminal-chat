@@ -1,8 +1,6 @@
-'use node';
-
 import { generateText as vercelGenerateText, streamText as vercelStreamText } from 'ai';
-import { ProviderName } from './providers';
-import { model, ModelParams } from './modelBuilder';
+import { ProviderName } from './aiProviders';
+import { model, ModelParams } from './aiModelBuilder';
 import { createRateLimitError } from '../lib/errors';
 
 // Parameters for AI operations

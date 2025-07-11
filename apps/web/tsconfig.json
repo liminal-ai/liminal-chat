@@ -20,7 +20,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@liminal-api/*": ["../liminal-api/*"]
+      "@db/types": ["../convex/convex/_generated/dataModel"],
+      "@db/shared": ["../convex/convex/_generated/shared-types"],
+      "@db/api": ["../convex/convex/_generated/api"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

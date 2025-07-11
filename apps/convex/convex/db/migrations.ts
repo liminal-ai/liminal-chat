@@ -2,8 +2,8 @@
  * Database migrations for schema changes
  */
 
-import { mutation } from './_generated/server';
-import { Doc } from './_generated/dataModel';
+import { mutation } from '../_generated/server';
+import { Doc } from '../_generated/dataModel';
 
 /**
  * Migration: Add updatedAt field to existing messages

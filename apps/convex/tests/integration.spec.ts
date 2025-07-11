@@ -5,12 +5,16 @@ import { makeChatRequest, parseDataStream } from '../test-utils/helpers';
 test.describe('Liminal API Integration Tests', () => {
   test('Health endpoint responds successfully', async ({ authenticatedRequest }) => {
     const response = await authenticatedRequest.get('/health');
-    expect(response.ok()).toBeTruthy();
+
+    expect(
+      response.status(),
+      `Expected 200 but got ${response.status()} ${response.statusText()}`,
+    ).toBe(200);
 
     const body = await response.json();
     expect(body).toHaveProperty('status', 'healthy');
-    expect(body).toHaveProperty('user');
-    expect(body.user).toHaveProperty('email');
+    expect(body).toHaveProperty('timestamp');
+    expect(body).toHaveProperty('service', 'liminal-api');
   });
 
   test('Basic chat returns valid response', async ({ authenticatedRequest }) => {

@@ -7,17 +7,17 @@
     "claude": "./scripts/claude-shell.sh",
     "research": "claude-code -p 'You are a research assistant with access to WebSearch, Context7, Firecrawl, and Perplexity via Convex. Help research technical questions thoroughly.'",
     "dev": "pnpm -r --parallel run dev",
-    "convex:dev": "pnpm -F liminal-api run dev",
-    "convex:dashboard": "pnpm -F liminal-api run dev:dashboard",
+    "convex:dev": "pnpm -F @liminal/convex run dev",
+    "convex:dashboard": "pnpm -F @liminal/convex run dev:dashboard",
     "build": "pnpm check:error-codes && pnpm -r run build",
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
     "check:error-codes": "node scripts/check-error-usage.js",
     "clean": "pnpm -r run clean && rm -rf node_modules",
-    "test:integration": "playwright test --config=apps/liminal-api/playwright.config.ts",
-    "test:integration:ui": "playwright test --ui --config=apps/liminal-api/playwright.config.ts",
-    "test:smoke": "pnpm --filter liminal-api test:smoke",
+    "test:integration": "playwright test --config=apps/convex/playwright.config.ts",
+    "test:integration:ui": "playwright test --ui --config=apps/convex/playwright.config.ts",
+    "test:smoke": "pnpm --filter @liminal/convex test:smoke",
     "precommit:review": "git status --porcelain | grep -E '^( M|\\?\\?)' | cut -c4-",
     "precommit:stage-all": "git add -A",
     "precommit:list-files": "git diff --cached --name-only",
@@ -43,13 +43,15 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "node-fetch": "^3.3.2",
+    "pm2": "^6.0.8",
     "prettier": "^3.6.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "pnpm": {
     "overrides": {
-      "brace-expansion": ">=2.0.2"
+      "brace-expansion": ">=2.0.2",
+      "cookie": ">=0.7.0"
     }
   },
   "packageManager": "pnpm@8.15.1"

@@ -2,7 +2,7 @@
  * Development data cleanup utilities
  */
 
-import { mutation } from './_generated/server';
+import { mutation } from '../_generated/server';
 
 /**
  * Clears all messages and conversations from the database.

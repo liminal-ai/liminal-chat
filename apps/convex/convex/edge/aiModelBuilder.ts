@@ -1,6 +1,4 @@
-'use node';
-
-import { ProviderName, getProviderConfig, getProviderApiKey } from './providers';
+import { ProviderName, getProviderConfig, getProviderApiKey } from './aiProviders';
 
 // Standard Vercel AI SDK parameters
 export interface ModelParams {
