@@ -66,6 +66,21 @@ interface CreateConversationRequest {
   };
 }
 
+// TypeScript types for agent endpoints
+interface CreateAgentRequest {
+  name: string;
+  systemPrompt: string;
+  provider: string;
+  model: string;
+  config?: {
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    reasoning?: boolean;
+    streamingSupported?: boolean;
+  };
+}
+
 interface UpdateConversationRequest {
   title?: string;
   metadata?: {
@@ -490,6 +505,130 @@ http.route({
   }),
 });
 
+// Create agent
+http.route({
+  path: '/api/agents',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Authentication required' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const body: CreateAgentRequest = await request.json();
+      const { name, systemPrompt, provider, model, config } = body;
+
+      if (!name) {
+        return new Response(JSON.stringify({ error: 'Agent name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!systemPrompt) {
+        return new Response(JSON.stringify({ error: 'System prompt is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!provider) {
+        return new Response(JSON.stringify({ error: 'Provider is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!model) {
+        return new Response(JSON.stringify({ error: 'Model is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        const agentId = await ctx.runMutation(api.db.agents.create, {
+          userId: user.id,
+          name,
+          systemPrompt,
+          provider,
+          model,
+          config,
+        });
+
+        // Get the created agent to return it
+        const agent = await ctx.runQuery(api.db.agents.get, {
+          agentId,
+          userId: user.id,
+        });
+
+        return new Response(
+          JSON.stringify({
+            id: agentId,
+            agent,
+          }),
+          {
+            status: 201,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        );
+      } catch (dbError) {
+        if (dbError instanceof Error) {
+          if (dbError.message.includes('Agent with this name already exists')) {
+            return new Response(
+              JSON.stringify({ error: 'Agent with this name already exists for this user' }),
+              {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          if (
+            dbError.message.includes('letters, numbers, and hyphens') ||
+            dbError.message.includes('Agent name cannot be empty')
+          ) {
+            return new Response(JSON.stringify({ error: dbError.message }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      // Handle authentication errors
+      if (
+        error instanceof Error &&
+        (error.message.includes('Authentication required') ||
+          error.message.includes('Invalid token'))
+      ) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        }),
+        {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+  }),
+});
+
 // Streaming chat endpoint
 http.route({
   path: '/api/chat',
@@ -641,5 +780,6 @@ http.route({
  * - GET /api/conversations/:id - Get conversation with messages
  * - PATCH /api/conversations/:id - Update conversation
  * - DELETE /api/conversations/:id - Archive conversation
+ * - POST /api/agents - Create agent
  */
 export default http;

@@ -1,5 +1,5 @@
 // Liminal Chat Convex Schema
-// Public API schema - no authentication
+// Mixed API schema - agents require authentication, conversations are public
 
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
@@ -7,6 +7,37 @@ import { v } from 'convex/values';
 export default defineSchema(
   {
     // Users table removed - no authentication system
+
+    // Agents table - stores AI agent configurations
+    agents: defineTable({
+      // Which user owns this agent (authenticated user ID from WorkOS)
+      userId: v.string(),
+      // Unique identifier like "alice" or "jarvis" (unique per user)
+      name: v.string(),
+      // The personality/behavior prompt
+      systemPrompt: v.string(),
+      // Provider like "openai" or "anthropic"
+      provider: v.string(),
+      // Model like "gpt-4" or "claude-3-sonnet"
+      model: v.string(),
+      // Configuration object with optional fields
+      config: v.optional(
+        v.object({
+          temperature: v.optional(v.number()),
+          maxTokens: v.optional(v.number()),
+          topP: v.optional(v.number()),
+          reasoning: v.optional(v.boolean()),
+          streamingSupported: v.optional(v.boolean()),
+        }),
+      ),
+      // Active status (defaults to true)
+      active: v.optional(v.boolean()),
+      // Timestamps
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index('by_user_and_name', ['userId', 'name'])
+      .index('by_user_and_active', ['userId', 'active']),
 
     // Conversations table - stores chat sessions
     conversations: defineTable({
