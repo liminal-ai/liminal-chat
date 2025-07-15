@@ -1,25 +1,56 @@
 # Liminal Chat
 
-Open-source AI chat platform with bring-your-own-key (BYOK) support and AI Roundtable conversations.
+An IDE for AI-augmented knowledge work. Build complex artifacts using specialized workspaces (Builders) with an AI assistant (Jarvis) that manages complexity through natural language interaction.
 
 ## Architecture
 
 ```
-CLI → Convex (Backend) + Vercel AI SDK (LLM Integration) → Multiple AI Providers
+User → Jarvis (AI Assistant) → Builders (Workspaces) → Flows (Workflows) → AI Agents
+         ↓                         ↓                       ↓
+    Natural Language        Persistent State         Multi-Agent Patterns
 ```
 
-## Current Status
+### Core Concepts
 
-### Working
-- Convex backend with Clerk authentication
-- 6 AI provider integrations (OpenAI, Anthropic, Google, Perplexity, Vercel, OpenRouter)
-- Streaming and non-streaming chat endpoints
-- Conversation and message persistence
-- 11/11 integration tests passing
+**Jarvis**: AI assistant that navigates the system, operating builders and orchestrating workflows based on natural language requests.
 
-### In Progress
-- Migrating from NestJS/ArangoDB to Convex + Vercel AI SDK
-- Frontend and CLI temporarily removed for rebuild
+**Builders**: Persistent workspaces for constructing specific artifacts (e.g., Character Builder, Chapter Builder). Each builder self-documents for AI navigation.
+
+**Flows**: Advanced workflows within builders:
+- **Roundtable**: User-directed multi-agent discussion (e.g., "@alice @bob review this")
+- **Parallel**: Simultaneous generation of variations
+- **Pipeline**: Sequential multi-stage processing
+
+## Self-Documenting Architecture
+
+Every component teaches Jarvis how to use it:
+
+```typescript
+// builders/character/workflows/roundtable.ts
+export const jarvisDocs = {
+  name: "Character Roundtable Review",
+  when_to_use: ["User asks to 'review' a character"],
+  example_invocations: ["Let's review Sarah's character"],
+  expected_outcomes: ["List of improvements"]
+};
+```
+
+## Progressive Complexity
+
+**New Users**: "Create a detective character for my story"
+- Jarvis handles everything through natural language
+
+**Growing Users**: See builders in action, start direct manipulation
+- Jarvis provides guidance and context
+
+**Power Users**: Configure multi-agent workflows directly  
+- Jarvis manages routine tasks and complexity
+
+## Key Innovation
+
+Traditional software hides complexity. Liminal Chat makes complexity navigable through AI.
+
+As the system grows more powerful, it becomes more usable - not less - because every new feature self-documents for Jarvis to orchestrate.
 
 ## Quick Start
 
@@ -37,24 +68,69 @@ pnpm test:integration
 pnpm lint
 ```
 
+## Implementation Stack
+
+- **Backend**: Convex (real-time sync, serverless functions)
+- **AI Integration**: Convex AI Agent component + Vercel AI SDK
+- **Frontend**: Next.js (web), Tauri (desktop - planned)
+- **Authentication**: WorkOS
+
 ## Project Structure
 
 ```
 liminal-chat/
 ├── apps/
-│   └── liminal-api/        # Convex backend
-├── docs/                   # Documentation
-├── scripts/               # Development scripts
-└── agent-management/      # AI agent docs
+│   ├── convex/                  # Backend
+│   │   ├── builders/           # Builder implementations
+│   │   │   ├── character/      # Character Builder
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── mutations.ts
+│   │   │   │   ├── queries.ts
+│   │   │   │   ├── actions.ts
+│   │   │   │   ├── jarvis.ts   # AI configuration
+│   │   │   │   └── workflows/
+│   │   │   └── chapter/        # Chapter Builder
+│   │   └── jarvis/             # Jarvis implementation
+│   └── web/                    # Next.js frontend
+├── docs/                       # Documentation
+│   ├── liminal-chat-prd.md    # Product requirements
+│   └── llm-agent-exploration/ # Design docs
+└── scripts/                    # Development tools
+```
+
+## Builder Pattern
+
+Each builder follows a consistent pattern:
+
+```typescript
+// convex/builders/character/jarvis.ts
+export const jarvisConfig = {
+  loadContext: query({
+    handler: async (ctx) => ({
+      summary: "Current builder state",
+      guidelines: "Builder-specific rules"
+    })
+  }),
+  
+  tools: {
+    createCharacter: createTool({...}),
+    reviewCharacter: createTool({...})
+  }
+};
 ```
 
 ## Environment Setup
 
-Set these in Convex cloud (not .env files):
 ```bash
+# Install dependencies
+pnpm install
+
+# Configure Convex environment
 npx convex env set OPENAI_API_KEY "your-key"
 npx convex env set ANTHROPIC_API_KEY "your-key"
-# ... other provider keys
-```
+npx convex env set WORKOS_CLIENT_ID "your-id"
+npx convex env set WORKOS_API_KEY "your-key"
 
-See `development-log.md` for detailed setup and progress.
+# Start development
+pnpm dev
+```

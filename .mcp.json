@@ -1,16 +1,3 @@
 {
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@context7/mcp-server"],
-      "env": {}
-    },
-    "firecrawl": {
-      "command": "npx",
-      "args": ["-y", "@firecrawl/mcp-server"],
-      "env": {
-        "FIRECRAWL_API_KEY": ""
-      }
-    }
-  }
+  "mcpServers": {}
 }

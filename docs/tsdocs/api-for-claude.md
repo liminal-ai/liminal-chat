@@ -28,163 +28,131 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 ## API Reference
 
-### convex/
-
-#### auth-actions.ts
-
-**`validateWorkOSToken`** (action) - convex/auth-actions.ts:66  
-Validates a WorkOS JWT token and returns user information  
-
-**`requireAuth`** (action) - convex/auth-actions.ts:79  
-Validates authorization header and returns authenticated user  
-
-**`optionalAuth`** (action) - convex/auth-actions.ts:108  
-Optional authentication - returns null if no auth header provided  
-
-#### chat.ts
-
-**`simpleChatAction`** (action) - convex/chat.ts:37  
-Non-streaming text generation action for simple chat completions.  
-Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
-Returns: Generated text response with metadata including conversationId  
-
-**`streamingChatAction`** (action) - convex/chat.ts:180  
-Streaming chat action that prepares conversation context.  
-Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
-Returns: Conversation context for streaming  
-Throws: Error if last message is not from user  
+### convex/db/
 
 #### cleanup.ts
 
-**`clearTestData`** (query) - convex/cleanup.ts:23  
+**`clearTestData`** (query) - convex/db/cleanup.ts:23  
 Clears all messages and conversations from the database.  
 Returns: usersPreserved - Always 0 since users table was removed  
 
-**`getDataCounts`** (query) - convex/cleanup.ts:70  
+**`getDataCounts`** (query) - convex/db/cleanup.ts:70  
 Returns current count of data records in the database.  
 Returns: messages - Current number of messages  
 
 #### conversations.ts
 
-**`create`** (mutation) - convex/conversations.ts:28  
+**`create`** (mutation) - convex/db/conversations.ts:28  
 Creates a new conversation in the public API.  
 Args: - The title of the conversation, - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard"), - Optional metadata including provider, model, and tags  
 Returns: The ID of the created conversation  
 
-**`list`** (query) - convex/conversations.ts:78  
+**`list`** (query) - convex/db/conversations.ts:78  
 Lists all conversations in the public API with pagination support.  
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
 Returns: Paginated conversation list with page array and isDone flag  
 
-**`get`** (query) - convex/conversations.ts:122  
+**`get`** (query) - convex/db/conversations.ts:122  
 Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
 Returns: The conversation object or null if not found  
 
-**`update`** (mutation) - convex/conversations.ts:161  
+**`update`** (mutation) - convex/db/conversations.ts:161  
 Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`archive`** (mutation) - convex/conversations.ts:218  
+**`archive`** (mutation) - convex/db/conversations.ts:218  
 Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`updateLastMessageAt`** (mutation) - convex/conversations.ts:259  
+**`updateLastMessageAt`** (mutation) - convex/db/conversations.ts:259  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/conversations.ts:295  
+**`count`** (query) - convex/db/conversations.ts:295  
 Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
 Returns: The count of conversations matching the filter  
 
 #### messages.ts
 
-**`create`** (mutation) - convex/messages.ts:54  
+**`create`** (mutation) - convex/db/messages.ts:54  
 Creates a new message in a conversation using the public API.  
 Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author ("anonymous" for users, provider name for agents), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
 Returns: The ID of the created message  
 Throws: Error if conversation not found  
 
-**`list`** (query) - convex/messages.ts:132  
+**`list`** (query) - convex/db/messages.ts:132  
 Lists messages in a conversation with pagination support.  
 Args: - The ID of the conversation, - Pagination options, - Number of items per page (default: 50), - Cursor for pagination  
 Returns: Empty result if conversation not found  
 
-**`getAll`** (query) - convex/messages.ts:197  
+**`getAll`** (query) - convex/db/messages.ts:197  
 Gets all messages for a conversation with cursor-based pagination.  
 Args: - The ID of the conversation, - Maximum messages to return (default: 100, max: 1000), - Message ID to start after (for pagination)  
 Returns: Empty result if conversation not found  
 
-**`createBatch`** (mutation) - convex/messages.ts:297  
+**`createBatch`** (mutation) - convex/db/messages.ts:297  
 Creates multiple messages at once in a conversation using the public API.  
 Args: - The ID of the conversation, - Array of message objects to create  
 Returns: Array of created message IDs  
 Throws: Error if conversation not found  
 
-**`count`** (query) - convex/messages.ts:389  
+**`count`** (query) - convex/db/messages.ts:389  
 Counts messages in a conversation, optionally filtered by type.  
 Args: - The ID of the conversation, - Optional filter by message type  
 Returns: 0 if conversation not found  
 
-**`getLatest`** (query) - convex/messages.ts:445  
+**`getLatest`** (query) - convex/db/messages.ts:445  
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
 Returns: Empty array if conversation not found  
 
 #### migrations.ts
 
-**`addUpdatedAtToMessages`** (query) - convex/migrations.ts:14  
+**`addUpdatedAtToMessages`** (query) - convex/db/migrations.ts:14  
 Migration: Add updatedAt field to existing messages  
 
-**`addUpdatedAtToConversations`** (query) - convex/migrations.ts:43  
+**`addUpdatedAtToConversations`** (query) - convex/db/migrations.ts:43  
 Migration: Add updatedAt field to existing conversations  
 
-#### startup.ts
+### convex/edge/
 
-**`validateStartup`** (internalMutation) - convex/startup.ts:9  
-Internal mutation to validate environment configuration at startup  
+#### aiHttpHelpers.ts
 
-**`checkEnvironmentHealth`** (internalMutation) - convex/startup.ts:49  
-Internal mutation to check environment health  
+**`createModelForHttp`** (function) - convex/edge/aiHttpHelpers.ts:5  
 
-### convex/ai/
+**`getStreamingHeaders`** (function) - convex/edge/aiHttpHelpers.ts:18  
 
-#### httpHelpers.ts
+#### aiModelBuilder.ts
 
-**`createModelForHttp`** (function) - convex/ai/httpHelpers.ts:7  
+**`model`** (function) - convex/edge/aiModelBuilder.ts:181  
 
-**`getStreamingHeaders`** (function) - convex/ai/httpHelpers.ts:20  
-
-#### modelBuilder.ts
-
-**`model`** (function) - convex/ai/modelBuilder.ts:183  
-
-**`ModelBuilder`** (class) - convex/ai/modelBuilder.ts:19  
+**`ModelBuilder`** (class) - convex/edge/aiModelBuilder.ts:17  
 
 Interfaces: `ModelParams`  
 
-#### providers.ts
+#### aiProviders.ts
 
-**`providerRegistry`** (function) - convex/ai/providers.ts:12  
+**`providerRegistry`** (function) - convex/edge/aiProviders.ts:12  
 
-**`getProviderConfig`** (function) - convex/ai/providers.ts:49  
+**`getProviderConfig`** (function) - convex/edge/aiProviders.ts:49  
 
-**`getProviderApiKey`** (function) - convex/ai/providers.ts:58  
+**`getProviderApiKey`** (function) - convex/edge/aiProviders.ts:58  
 
 Types: `ProviderName`  
 
 Interfaces: `ProviderConfig`  
 
-#### service.ts
+#### aiService.ts
 
-**`aiService`** (function) - convex/ai/service.ts:195  
+**`aiService`** (function) - convex/edge/aiService.ts:193  
 Singleton instance of AIService.  
 
-**`AIService`** (class) - convex/ai/service.ts:36  
+**`AIService`** (class) - convex/edge/aiService.ts:34  
 AI Service for centralized model operations.  
 
 Interfaces: `GenerateTextParams`  
@@ -237,6 +205,40 @@ Returns: Error with webhook setup or debugging instructions
 
 **`ConfigurationError`** (class) - convex/lib/errors.ts:9  
 Configuration error with helpful instructions.  
+
+### convex/node/
+
+#### auth.ts
+
+**`validateWorkOSToken`** (action) - convex/node/auth.ts:82  
+Validates a WorkOS JWT token and returns user information  
+
+**`requireAuth`** (action) - convex/node/auth.ts:95  
+Validates authorization header and returns authenticated user  
+
+**`optionalAuth`** (action) - convex/node/auth.ts:124  
+Optional authentication - returns null if no auth header provided  
+
+#### chat.ts
+
+**`simpleChatAction`** (action) - convex/node/chat.ts:37  
+Non-streaming text generation action for simple chat completions.  
+Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
+Returns: Generated text response with metadata including conversationId  
+
+**`streamingChatAction`** (action) - convex/node/chat.ts:180  
+Streaming chat action that prepares conversation context.  
+Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
+Returns: Conversation context for streaming  
+Throws: Error if last message is not from user  
+
+#### startup.ts
+
+**`validateStartup`** (internalMutation) - convex/node/startup.ts:9  
+Internal mutation to validate environment configuration at startup  
+
+**`checkEnvironmentHealth`** (internalMutation) - convex/node/startup.ts:49  
+Internal mutation to check environment health  
 
 ### lib/auth/
 
@@ -301,5 +303,5 @@ conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`
 messages.ts: `create`, `createBatch`  
 
 ### Convex Actions
-auth-actions.ts: `validateWorkOSToken`, `requireAuth`, `optionalAuth`  
+auth.ts: `validateWorkOSToken`, `requireAuth`, `optionalAuth`  
 chat.ts: `simpleChatAction`, `streamingChatAction`  
