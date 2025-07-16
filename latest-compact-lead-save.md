@@ -57,7 +57,7 @@ convex/
 ```typescript
 // Base node structure
 abstract class Node<TState> {
-  abstract async execute(state: TState): Promise<TState>;
+  abstract execute(state: TState): Promise<TState>;
 }
 
 // Flow with sequential execution
