@@ -40,6 +40,33 @@ Returns: usersPreserved - Always 0 since users table was removed
 Returns current count of data records in the database.  
 Returns: messages - Current number of messages  
 
+#### agents.ts
+
+**`create`** (mutation) - convex/db/agents.ts:32  
+Creates a new agent for the authenticated user.  
+Args: userId, name, systemPrompt, provider, model, config (optional)  
+Returns: The ID of the created agent  
+
+**`get`** (query) - convex/db/agents.ts:87  
+Gets a single agent by ID for the authenticated user.  
+Args: agentId, userId  
+Returns: The agent object or null if not found  
+
+**`list`** (query) - convex/db/agents.ts:111  
+Lists all agents for the authenticated user.  
+Args: userId  
+Returns: Array of agent objects  
+
+**`update`** (mutation) - convex/db/agents.ts:133  
+Updates an agent's configuration.  
+Args: agentId, userId, systemPrompt (optional), provider (optional), model (optional), config (optional), active (optional)  
+Returns: null  
+
+**`archive`** (mutation) - convex/db/agents.ts:194  
+Archives an agent (soft delete) by setting active to false.  
+Args: agentId, userId  
+Returns: null  
+
 #### conversations.ts
 
 **`create`** (mutation) - convex/db/conversations.ts:28  
