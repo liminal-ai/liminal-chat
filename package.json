@@ -6,7 +6,7 @@
   "scripts": {
     "claude": "./scripts/claude-shell.sh",
     "research": "claude-code -p 'You are a research assistant with access to WebSearch, Context7, Firecrawl, and Perplexity via Convex. Help research technical questions thoroughly.'",
-    "dev": "echo 'Starting both services...' && pnpm dev:start",
+    "dev": "echo 'Delegating to dev:start to start both services...' && pnpm dev:start",
     "dev:start": "pnpm convex:start && pnpm web:start",
     "dev:stop": "pnpm convex:stop && pnpm web:stop",
     "dev:restart": "pnpm dev:stop && pnpm dev:start",

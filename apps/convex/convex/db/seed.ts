@@ -89,12 +89,12 @@ Keep your responses thoughtful and precise, helping to refine ideas through care
     ];
 
     // Check which agents already exist to ensure idempotency
-    const existingAgents: any[] = await ctx.runQuery(api.db.agents.list, {
+    const existingAgents = await ctx.runQuery(api.db.agents.list, {
       userId,
     });
 
-    const existingNames = new Set(existingAgents.map((agent: any) => agent.name));
-    const existingAgentMap = new Map(existingAgents.map((agent: any) => [agent.name, agent._id]));
+    const existingNames = new Set(existingAgents.map((agent) => agent.name));
+    const existingAgentMap = new Map(existingAgents.map((agent) => [agent.name, agent._id]));
     const seedAgentIds: Id<'agents'>[] = [];
 
     // Create agents that don't exist, collect IDs of all seed agents
@@ -117,7 +117,7 @@ Keep your responses thoughtful and precise, helping to refine ideas through care
       } else {
         const existingId = existingAgentMap.get(config.name);
         if (existingId) {
-          seedAgentIds.push(existingId);
+          seedAgentIds.push(existingId as Id<'agents'>);
         }
       }
     }
@@ -132,7 +132,7 @@ Keep your responses thoughtful and precise, helping to refine ideas through care
  * @param args.userId - The user ID to query agents for
  * @returns Array of seed agents (alice, bob, carol) if they exist
  */
-export const getSeedAgents = action({
+export const getSeedAgents: ReturnType<typeof action> = action({
   args: {
     userId: v.string(),
   },
@@ -159,16 +159,16 @@ export const getSeedAgents = action({
       updatedAt: v.number(),
     }),
   ),
-  handler: async (ctx, args): Promise<any[]> => {
+  handler: async (ctx, args) => {
     const seedNames = ['alice', 'bob', 'carol'];
 
-    const agents: any[] = await ctx.runQuery(api.db.agents.list, {
+    const agents = await ctx.runQuery(api.db.agents.list, {
       userId: args.userId,
     });
 
     // Filter to only include seed agents and sort by name for consistency
     return agents
-      .filter((agent: any) => seedNames.includes(agent.name))
-      .sort((a: any, b: any) => a.name.localeCompare(b.name));
+      .filter((agent) => seedNames.includes(agent.name))
+      .sort((a, b) => a.name.localeCompare(b.name));
   },
 });
