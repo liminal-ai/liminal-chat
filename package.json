@@ -58,6 +58,7 @@
   "devDependencies": {
     "@playwright/test": "^1.53.1",
     "@types/node": "^24.0.10",
+    "concurrently": "^9.1.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "node-fetch": "^3.3.2",

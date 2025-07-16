@@ -146,6 +146,18 @@ Migration: Add updatedAt field to existing messages
 **`addUpdatedAtToConversations`** (query) - convex/db/migrations.ts:43  
 Migration: Add updatedAt field to existing conversations  
 
+#### seed.ts
+
+**`seedAgents`** (action) - convex/db/seed.ts:25  
+Seeds the database with 3 pre-configured agents (alice, bob, carol).  
+Args: userId  
+Returns: Array of created agent IDs (empty if agents already exist)  
+
+**`getSeedAgents`** (action) - convex/db/seed.ts:135  
+Gets all seed agents for a user, useful for verification.  
+Args: userId  
+Returns: Array of seed agents (alice, bob, carol) if they exist  
+
 ### convex/edge/
 
 #### aiHttpHelpers.ts
