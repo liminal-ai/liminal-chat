@@ -2,8 +2,8 @@
 Created this llm-agent-exploration folder in docs based on a very intersting youtube video laying out a simple composable/decomposable functional design to managing llm access, llm based workflows, workflow decisioning, and agents and agent management. while the design and framework is in python, it seems easily applicable to this architecture. The discovery of this came as a happy accident as during this time I was evaluating convex pre made components for agents, workflows, messages. 
 
 ## Research TODO's
-* check out this file to see what I was discussing on next steps of setting up my general framework for managing agents, llms, tools, workflows /Users/leemoore/code/liminal-chat/docs/llm-agent-exploration/o3-exploration.md
-* go to /Users/leemoore/code/liminal-chat/docs/llm-agent-exploration/video-transcript-huang.md to see the video I saw this morning that has me wondering about a path that starts with a pattern like this?
+* check out this file to see what I was discussing on next steps of setting up my general framework for managing agents, llms, tools, workflows `docs/llm-agent-exploration/o3-exploration.md`
+* go to `docs/llm-agent-exploration/video-transcript-huang.md` to see the video I saw this morning that has me wondering about a path that starts with a pattern like this?
 * more on pocketflow. flirecrawl these pocketflow documentation pages and place the output in docs/llm-agent-exploration/pocketflow-docs - you will have to create the pocketflow-docs directory. and make sure you are understanding this content
 * firecrawl the pocketflow github repo and create a llm-agent-exploration/pocketflow-github.md and fill with detailed notes on the github repo and details that we may want to consider as we plan our agent.
 * firecrawl convex components and research espeically components for AI Agents, Workpool, Workflow, Rag, persistent text streaming
