@@ -6,7 +6,7 @@ import { mutation, query } from '../_generated/server';
  * Agent names must be unique per user.
  *
  * @param args.userId - The authenticated user ID from WorkOS
- * @param args.name - Unique identifier like "alice" or "jarvis"
+ * @param args.name - Unique identifier like "alice" or "jarvis" (will be normalized to lowercase)
  * @param args.systemPrompt - The personality/behavior prompt
  * @param args.provider - Provider like "openai" or "anthropic"
  * @param args.model - Model like "gpt-4" or "claude-3-sonnet"

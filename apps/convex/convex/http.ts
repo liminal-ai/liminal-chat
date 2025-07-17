@@ -81,16 +81,33 @@ interface CreateAgentRequest {
   };
 }
 
-interface UpdateConversationRequest {
-  title?: string;
-  metadata?: {
-    provider?: string;
-    model?: string;
-    [key: string]: unknown;
-  };
-}
 
-// Clerk webhook removed
+/**
+ * Common error response handler for HTTP endpoints
+ */
+function createErrorResponse(error: unknown, defaultStatus = 500): Response {
+  // Handle authentication errors
+  if (
+    error instanceof Error &&
+    (error.message.includes('Authentication required') ||
+      error.message.includes('Invalid token'))
+  ) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return new Response(
+    JSON.stringify({
+      error: error instanceof Error ? error.message : String(error),
+    }),
+    {
+      status: defaultStatus,
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+}
 
 // Non-streaming text chat endpoint
 http.route({
@@ -124,27 +141,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -260,27 +257,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -316,27 +293,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -382,27 +339,7 @@ http.route({
         },
       );
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -433,27 +370,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -480,27 +397,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -545,27 +442,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -608,27 +485,7 @@ http.route({
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -732,27 +589,7 @@ http.route({
         throw dbError;
       }
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -808,27 +645,7 @@ http.route({
       // since we can't use onFinish callback in edge runtime
       return stream;
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -868,27 +685,7 @@ http.route({
 
       return result.toDataStreamResponse({ headers });
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
