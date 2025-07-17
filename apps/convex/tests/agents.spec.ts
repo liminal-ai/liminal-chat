@@ -20,11 +20,10 @@ test.describe('Agents API', () => {
       data: validAgentData,
     });
 
-    // Debug: log the actual response for debugging
+    // Check response status before parsing
     if (response.status() !== 201) {
       const body = await response.json();
-      console.log('Response status:', response.status());
-      console.log('Response body:', body);
+      throw new Error(`Agent creation failed: ${response.status()} - ${JSON.stringify(body)}`);
     }
 
     expect(response.status()).toBe(201);
@@ -157,9 +156,8 @@ test.describe('Agents API', () => {
 
       if (response.status() !== 400) {
         const body = await response.json();
-        console.log(
-          `Invalid name "${invalidName}" unexpectedly passed validation. Status: ${response.status()}, Body:`,
-          body,
+        throw new Error(
+          `Invalid name "${invalidName}" unexpectedly passed validation. Status: ${response.status()}, Body: ${JSON.stringify(body)}`,
         );
       }
 

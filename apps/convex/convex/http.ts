@@ -408,14 +408,6 @@ http.route({
     try {
       // Require authentication using Node.js action
       const authHeader = request.headers.get('Authorization') || undefined;
-
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: 'Authentication required' }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
       const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
       const body = await request.json();
@@ -453,14 +445,6 @@ http.route({
     try {
       // Require authentication using Node.js action
       const authHeader = request.headers.get('Authorization') || undefined;
-
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: 'Authentication required' }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
       const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
@@ -496,14 +480,6 @@ http.route({
     try {
       // Require authentication using Node.js action
       const authHeader = request.headers.get('Authorization') || undefined;
-
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: 'Authentication required' }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
       const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
 
       const body: CreateAgentRequest = await request.json();

@@ -6,7 +6,7 @@ import { mutation, query } from '../_generated/server';
  * Agent names must be unique per user.
  *
  * @param args.userId - The authenticated user ID from WorkOS
- * @param args.name - Unique identifier like "alice" or "jarvis" (will be normalized to lowercase)
+ * @param args.name - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage)
  * @param args.systemPrompt - The personality/behavior prompt
  * @param args.provider - Provider like "openai" or "anthropic"
  * @param args.model - Model like "gpt-4" or "claude-3-sonnet"
@@ -60,7 +60,8 @@ export const create = mutation({
       throw new Error('Agent name must contain only letters, numbers, and hyphens');
     }
 
-    // Normalize name
+    // Normalize name to lowercase for consistent storage and comparison
+    // This ensures "Alice", "alice", and "ALICE" are treated as the same agent name
     const normalizedName = args.name.toLowerCase().trim();
 
     // Check if agent with this name already exists for this user
