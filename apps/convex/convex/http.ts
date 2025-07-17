@@ -357,7 +357,7 @@ http.route({
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
       const conversationId = pathParts[pathParts.length - 1] as Id<'conversations'>;
-      const body: UpdateConversationRequest = await request.json();
+      const body = await request.json();
       const { title, metadata } = body;
 
       await ctx.runMutation(api.db.conversations.update, {
