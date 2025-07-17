@@ -46,11 +46,16 @@ test.describe('Agents API', () => {
       data: validAgentData,
     });
 
+    if (response.status() !== 401) {
+      const body = await response.json();
+      throw new Error(`Expected 401 but got ${response.status()}: ${JSON.stringify(body)}`);
+    }
+
     expect(response.status()).toBe(401);
 
     const body = await response.json();
     expect(body).toHaveProperty('error');
-    expect(body.error).toContain('Authentication required');
+    expect(body.error).toContain('authorization header');
   });
 
   test('Cannot create an agent with duplicate name for same user', async ({

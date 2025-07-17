@@ -85,12 +85,17 @@ interface CreateAgentRequest {
  * Common error response handler for HTTP endpoints
  */
 function createErrorResponse(error: unknown, defaultStatus = 500): Response {
-  // Handle authentication errors
-  if (
-    error instanceof Error &&
-    (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
-  ) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  // Handle authentication errors - check for various auth-related error messages
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const isAuthError =
+    errorMessage.includes('Authentication required') ||
+    errorMessage.includes('Invalid token') ||
+    errorMessage.includes('Invalid authorization header format') ||
+    errorMessage.includes('Missing authorization token') ||
+    errorMessage.includes('Invalid or expired token');
+
+  if (isAuthError) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
