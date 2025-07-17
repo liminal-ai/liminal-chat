@@ -81,7 +81,6 @@ interface CreateAgentRequest {
   };
 }
 
-
 /**
  * Common error response handler for HTTP endpoints
  */
@@ -89,8 +88,7 @@ function createErrorResponse(error: unknown, defaultStatus = 500): Response {
   // Handle authentication errors
   if (
     error instanceof Error &&
-    (error.message.includes('Authentication required') ||
-      error.message.includes('Invalid token'))
+    (error.message.includes('Authentication required') || error.message.includes('Invalid token'))
   ) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 401,
