@@ -1,5 +1,9 @@
 import { test, expect } from '../test-utils/auth-fixture';
 
+// Test constants
+const TIMING_BUFFER_MS = 1000; // Milliseconds buffer for timestamp validation
+const MAX_TOKENS_DEFAULT = 1000; // Default max tokens for agent testing
+
 test.describe('Agents API', () => {
   test('Can create an agent with valid data', async ({ authenticatedRequest }) => {
     const timestamp = Date.now();
@@ -10,7 +14,7 @@ test.describe('Agents API', () => {
       model: 'gpt-4',
       config: {
         temperature: 0.7,
-        maxTokens: 1000,
+        maxTokens: MAX_TOKENS_DEFAULT,
         topP: 0.9,
         streamingSupported: true,
       },
@@ -98,13 +102,13 @@ test.describe('Agents API', () => {
       model: 'gpt-4',
     };
 
-    const beforeCreate = Date.now() - 1000; // Add bigger buffer for timing
+    const beforeCreate = Date.now() - TIMING_BUFFER_MS; // Add bigger buffer for timing
 
     const response = await authenticatedRequest.post('/api/agents', {
       data: agentData,
     });
 
-    const afterCreate = Date.now() + 1000; // Add bigger buffer for timing
+    const afterCreate = Date.now() + TIMING_BUFFER_MS; // Add bigger buffer for timing
 
     expect(response.status()).toBe(201);
 

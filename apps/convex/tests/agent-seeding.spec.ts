@@ -1,5 +1,10 @@
 import { test, expect } from '../test-utils/auth-fixture';
 
+// Test constants
+const ALICE_MAX_TOKENS = 1000;
+const BOB_MAX_TOKENS = 1200;
+const CAROL_MAX_TOKENS = 800;
+
 test.describe('Agent Seeding', () => {
   test('Seed Agent Creation - creates exactly 3 agents and handles reruns', async ({
     authenticatedRequest,
@@ -106,7 +111,7 @@ test.describe('Agent Seeding', () => {
     expect(alice.provider).toBe('openai');
     expect(alice.model).toBe('gpt-4');
     expect(alice.config.temperature).toBe(0.7);
-    expect(alice.config.maxTokens).toBe(1000);
+    expect(alice.config.maxTokens).toBe(ALICE_MAX_TOKENS);
     expect(alice.systemPrompt).toContain('technical analyst');
     expect(alice.systemPrompt).toContain('methodical and evidence-based');
     expect(alice.active).toBe(true);
@@ -115,7 +120,7 @@ test.describe('Agent Seeding', () => {
     expect(bob.provider).toBe('anthropic');
     expect(bob.model).toBe('claude-3-sonnet');
     expect(bob.config.temperature).toBe(0.9);
-    expect(bob.config.maxTokens).toBe(1200);
+    expect(bob.config.maxTokens).toBe(BOB_MAX_TOKENS);
     expect(bob.systemPrompt).toContain('creative strategist');
     expect(bob.systemPrompt).toContain('innovative thinking');
     expect(bob.active).toBe(true);
@@ -124,7 +129,7 @@ test.describe('Agent Seeding', () => {
     expect(carol.provider).toBe('openai');
     expect(carol.model).toBe('gpt-4o');
     expect(carol.config.temperature).toBe(0.3);
-    expect(carol.config.maxTokens).toBe(800);
+    expect(carol.config.maxTokens).toBe(CAROL_MAX_TOKENS);
     expect(carol.systemPrompt).toContain('critical thinker');
     expect(carol.systemPrompt).toContain('thorough analysis');
     expect(carol.active).toBe(true);

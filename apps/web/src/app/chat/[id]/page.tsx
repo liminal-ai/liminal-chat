@@ -108,7 +108,11 @@ function ChatContent({ conversationId }: { conversationId: string }) {
                       {msg.authorType} ({msg.authorId}) •{' '}
                       {new Date(msg._creationTime).toLocaleString()}
                     </div>
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div className="whitespace-pre-wrap">
+                      {typeof msg.content === 'string'
+                        ? msg.content
+                        : JSON.stringify(msg.content, null, 2)}
+                    </div>
                   </div>
                 ))
               ) : (
