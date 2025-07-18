@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "index.ts",
   "scripts": {
-    "dev": "echo 'Use: npm run dev:start, dev:stop, or dev:restart'",
+    "dev": "echo 'Delegating to dev:start to start both services...' && pnpm dev:start",
     "dev:start": "npm run dev:stop && ../../node_modules/.bin/pm2 start 'npx convex dev' --name 'liminal-convex'",
     "dev:stop": "../../node_modules/.bin/pm2 delete liminal-convex 2>/dev/null || true",
     "dev:restart": "npm run dev:stop && npm run dev:start",

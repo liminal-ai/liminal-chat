@@ -96,7 +96,7 @@ export const simpleChatAction = action({
           : msg.authorType === 'system'
             ? ('system' as const)
             : ('assistant' as const),
-      content: msg.content,
+      content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
     }));
 
     // Add current user message to the conversation context

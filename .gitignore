@@ -129,3 +129,9 @@ opencode.json
 
 # Opencode source code
 apps/opencode/
+docs/llm-agent-exploration/pocketflow-docs/core-design/comprehensive-design-summary.md
+docs/llm-agent-exploration/pocketflow-docs/overview.md
+docs/llm-agent-exploration/pocketflow-docs/node.md
+docs/llm-agent-exploration/pocketflow-github.md
+docs/llm-agent-exploration/phase-1-impl.md
+agent-management/veloc-code-prompt.md

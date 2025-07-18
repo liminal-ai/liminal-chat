@@ -3,29 +3,119 @@ import { mutation, query } from '../_generated/server';
 import { Id } from '../_generated/dataModel';
 // Auth system removed
 
-// Message type validators based on type
-const _messageContentValidators = {
-  text: v.string(),
-  tool_call: v.object({
-    toolId: v.string(),
-    toolName: v.string(),
-    arguments: v.any(),
+// Message validators using discriminated union for type safety
+const createMessageValidator = v.union(
+  // Text message
+  v.object({
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.literal('text'),
+    content: v.string(),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
   }),
-  tool_output: v.object({
-    toolCallId: v.string(),
-    output: v.any(),
-    error: v.optional(v.string()),
+  // Tool call message
+  v.object({
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.literal('tool_call'),
+    content: v.object({
+      toolId: v.string(),
+      toolName: v.string(),
+      arguments: v.any(),
+    }),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
   }),
-  chain_of_thought: v.object({
-    reasoning: v.string(),
-    steps: v.array(v.string()),
+  // Tool output message
+  v.object({
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.literal('tool_output'),
+    content: v.object({
+      toolCallId: v.string(),
+      output: v.any(),
+      error: v.optional(v.string()),
+    }),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
   }),
-  error: v.object({
-    message: v.string(),
-    code: v.optional(v.string()),
-    details: v.optional(v.any()),
+  // Chain of thought message
+  v.object({
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.literal('chain_of_thought'),
+    content: v.object({
+      reasoning: v.string(),
+      steps: v.array(v.string()),
+    }),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
   }),
-};
+  // Error message
+  v.object({
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.literal('error'),
+    content: v.object({
+      message: v.string(),
+      code: v.optional(v.string()),
+      details: v.optional(v.any()),
+    }),
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
+  }),
+);
 
 /**
  * Creates a new message in a conversation using the public API.
@@ -52,30 +142,7 @@ const _messageContentValidators = {
  * ```
  */
 export const create = mutation({
-  args: {
-    conversationId: v.id('conversations'),
-    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
-    authorId: v.string(),
-    type: v.union(
-      v.literal('text'),
-      v.literal('tool_call'),
-      v.literal('tool_output'),
-      v.literal('chain_of_thought'),
-      v.literal('error'),
-    ),
-    content: v.any(), // Validated based on type
-    metadata: v.optional(
-      v.object({
-        model: v.optional(v.string()),
-        provider: v.optional(v.string()),
-        promptTokens: v.optional(v.number()),
-        completionTokens: v.optional(v.number()),
-        totalTokens: v.optional(v.number()),
-        finishReason: v.optional(v.string()),
-        visibility: v.optional(v.array(v.string())),
-      }),
-    ),
-  },
+  args: createMessageValidator,
   handler: async (ctx, args) => {
     // Public endpoint - no auth required
 
@@ -87,16 +154,12 @@ export const create = mutation({
 
     // Public endpoint - no validation required
 
-    // Create the message
+    // Create the message with proper timestamps
+    const now = Date.now();
     const messageId = await ctx.db.insert('messages', {
-      conversationId: args.conversationId,
-      authorType: args.authorType,
-      authorId: args.authorId,
-      type: args.type,
-      content: args.content,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      metadata: args.metadata,
+      ...args,
+      createdAt: now,
+      updatedAt: now,
     });
 
     // Update conversation's last message timestamp

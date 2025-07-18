@@ -4,14 +4,12 @@
 
 Liminal Chat is an Integrated Development Environment (IDE) for AI-augmented knowledge and creative work. Traditional IDEs provide developers with integrated tools for writing, testing, debugging, and deploying code. Liminal Chat extends this concept beyond programming to all knowledge work - providing integrated tools for researching, writing, analyzing, and refining any intellectual output with AI assistance.
 
-Just as a code IDE combines text editor, compiler, debugger, and version control into a unified workspace, Liminal Chat integrates multi-agent orchestration, parallel generation, pipeline processing, and artifact versioning into a cohesive environment. The platform is domain-agnostic but workflow-specific, allowing users to customize agent configurations and processing pipelines for their particular field - whether creative writing, business analysis, technical documentation, or research synthesis.
+The platform is built around specialized **Builders** - persistent workspaces where users construct specific types of artifacts (documents, research, plans) with the help of **Jarvis**, an AI assistant that makes the complex system accessible. Users can work through natural language with Jarvis or directly manipulate the builders as they become more familiar with the system.
 
-The platform introduces three core UI paradigms that fundamentally change how professionals collaborate with AI:
+The platform introduces three core workflows that change how professionals collaborate with AI:
 - **Roundtable discussions and review** with multiple specialized agents
 - **Parallel generation** for exploring variations simultaneously  
 - **Pipeline processing** for multi-stage refinement
-
-Every UI workflow has a corresponding CLI command, enabling users to prototype interactively then automate via scripts. For example, a roundtable discussion explored in the UI can be re-run with different parameters using `liminal roundtable --agents writer,editor --artifact draft.md`.
 
 ## 2. Problem Statement
 
@@ -19,33 +17,41 @@ Every UI workflow has a corresponding CLI command, enabling users to prototype i
 
 Current AI tools constrain users to sequential, single-agent interactions that fail to match the complexity of professional creative and technical work. This creates fundamental limitations:
 
-- **Limited Perspectives**: One model, one viewpoint, missing the richness of multi-angle analysis
+- **Limited Perspectives**: One model, one viewpoint, missing multi-angle analysis
 - **Sequential Processing**: Waiting for one response before exploring alternatives
 - **No Workflow Composition**: Unable to chain specialized agents for multi-stage refinement
 - **Poor Iteration Support**: Difficult to compare variations or synthesize best elements
 - **Context Fragmentation**: Each conversation isolated, no artifact persistence across sessions
 
-### 2.2 Missing IDE Capabilities for AI-Augmented Work
+### 2.2 The Complexity Barrier
 
-**Artifact Management Crisis**:
-- AI systems generate 10-50x more artifacts than human-only workflows
-- No tools exist to track artifact transience and lifecycle
-- Workspace pollution from unlimited draft generation
-- No intelligent decay or archival of unused content
-- Inability to distinguish working artifacts from abandoned explorations
+As AI systems become more powerful, they become harder to use effectively:
+- **Feature Discovery**: Users don't know what's possible
+- **Configuration Overhead**: Too many options and parameters
+- **Workflow Design**: Difficult to compose multi-step processes
+- **Context Management**: Hard to maintain state across sessions
+
+### 2.3 Missing IDE Capabilities for AI-Augmented Work
+
+**Artifact Management Challenges**:
+- AI systems generate significantly more artifacts than human-only workflows
+- No tools exist to track artifact lifecycle and relationships
+- Workspace pollution from extensive draft generation
+- No intelligent organization or archival of content
+- Inability to distinguish active work from abandoned explorations
 
 **Creative Professionals Need**:
 - Side-by-side comparison of multiple drafts
 - Iterative refinement with specialized editors
-- Synthesis tools for combining best elements
+- Synthesis tools for combining elements
 - Version control for creative artifacts
-- Automatic cleanup of unused generations
+- Organization of generated content
 
 **Technical Professionals Need**:
 - Multi-perspective code review and analysis
 - Parallel solution exploration
 - Automated pipeline processing
-- Reproducible workflows via CLI
+- Reproducible workflows
 - Artifact lineage tracking
 
 **Knowledge Workers Need**:
@@ -59,317 +65,369 @@ Current AI tools constrain users to sequential, single-agent interactions that f
 
 ### 3.1 Vision Statement
 
-Build the definitive Integrated Development Environment for AI-augmented intellectual work - extending the IDE concept from code development to all domains of knowledge creation. Just as Visual Studio Code revolutionized programming with integrated tools and extensions, Liminal Chat will revolutionize knowledge work with integrated AI orchestration, domain-specific workflows, and professional-grade artifact management.
+Build an Integrated Development Environment for AI-augmented intellectual work - extending the IDE concept from code development to all domains of knowledge creation. The system uses AI not just for content generation but for managing its own complexity through Jarvis, making advanced multi-agent workflows accessible to all users.
 
 ### 3.2 Core Objectives
 
-1. **Transform AI interaction** from single-chat to rich AI collaboration UI patterns
-2. **Enable parallel workflows** where 3-5 agents work simultaneously on variations
+1. **Transform AI interaction** from single-chat to multi-agent collaboration
+2. **Enable parallel workflows** where multiple agents work simultaneously
 3. **Build composable pipelines** for multi-stage refinement and processing
-4. **Implement artifact management with transience** - AI generates 10-50x more content than human workflows, requiring intelligent lifecycle management to prevent workspace pollution and maintain focus on active work
-5. **Provide IDE-level features**: version control, diff/merge, workspace management
-6. **Support dual modalities**: Rich GUI for exploration, CLI for automation
+4. **Implement intelligent artifact management** with lifecycle tracking
+5. **Provide progressive accessibility** through Jarvis assistant
+6. **Support multiple interaction modes** from natural language to direct manipulation
 
-## 4. Target Users & Market Positioning
+## 4. Jarvis: Your Builder Assistant
 
-### 4.1 Primary User Segments
+### 4.1 Core Concept
+
+Jarvis is the AI assistant that makes Liminal Chat's complexity manageable. Rather than requiring users to learn a new system, Jarvis enables immediate productivity through natural language while gradually revealing more powerful features.
+
+### 4.2 Interaction Layers
+
+**Layer 1: Natural Language Only**
+- Users tell Jarvis what they want to create
+- Jarvis handles all builder navigation and tool usage
+- Zero learning curve for new users
+
+**Layer 2: Guided Exploration**  
+- Users see Jarvis operating builders
+- Can start direct manipulation with Jarvis guidance
+- Jarvis explains features as they're discovered
+
+**Layer 3: Power Usage**
+- Users leverage advanced workflows directly
+- Jarvis handles routine tasks and configuration
+- Full control with AI assistance when needed
+
+### 4.3 Context Management
+
+Jarvis maintains hierarchical context:
+
+**User Context**: Preferences and patterns across all products
+**Product Context**: Workflow preferences within a product type  
+**Project Context**: Current project facts and decisions
+**Builder Context**: Active work and recent changes
+
+### 4.4 Intelligent Architecture
+
+Jarvis achieves its sophisticated assistance through a resilient, multi-strategy approach:
+- Multiple parallel retrieval strategies ensure relevant context
+- Self-organizing memory system adapts to user patterns
+- Graceful degradation when some strategies fail
+- Intelligence emerges from collective contribution rather than rigid rules
+
+This architecture enables Jarvis to handle complex, ambiguous requests while remaining responsive and helpful.
+
+### 4.5 Builder Navigation
+
+Jarvis helps users navigate between builders, understanding when to:
+- Switch the user to a different builder
+- Update content in the background while user continues working
+- Suggest relevant builders based on current task
+- Maintain context across builder transitions
+
+## 5. Core Architecture
+
+### 5.1 Conceptual Hierarchy
+
+**Liminal Chat Framework**
+The underlying system providing core primitives and patterns.
+
+**Templates** 
+Pre-configured product patterns:
+- Document Creation (books, scripts, documentation)
+- Research & Analysis (market research, academic papers)
+- Strategic Planning (business plans, project proposals)
+
+**Products**
+Specific applications built on the framework:
+- Creative Writing
+- Business Analysis  
+- Research Hub
+- Campaign Designer
+
+**Builders**
+Persistent workspaces within products:
+- Character Builder, World Builder (Creative Writing)
+- Data Builder, Insight Builder (Business Analysis)
+- Source Builder, Synthesis Builder (Research)
+
+**Flows**
+Workflows available within builders:
+- Edit Flow (direct manipulation with Jarvis help)
+- Roundtable Flow (multi-agent discussion/review)
+- Parallel Flow (simultaneous generation)
+- Pipeline Flow (sequential processing)
+
+### 5.2 The Builder Model
+
+Each Builder is a focused workspace for constructing specific artifact types. Builders provide:
+- Specialized tools for their domain
+- Persistent state across sessions
+- Integration with relevant flows
+- Contextual Jarvis assistance
+
+**Example: Character Builder**
+- Tools: Character profiles, relationship graphs, backstory generation
+- Flows: Roundtable review, parallel variations
+- Jarvis: Helps develop consistent, compelling characters
+
+### 5.3 The View System
+
+While working in one builder, users can see read-only views of other builders in sidebars:
+- Quick reference without context switching
+- Click to navigate or ask Jarvis to update
+- Real-time sync when changes occur
+- Maintains focus while providing context
+
+## 6. Target Users & Market Positioning
+
+### 6.1 Primary User Segments
 
 **Creative Professionals**
-- Writers developing novels, screenplays, or technical documentation
-- Musicians iterating on lyrics and compositional structures
-- Content creators requiring multiple perspectives and rapid iteration
+- Writers developing novels, screenplays, or documentation
+- Content creators requiring multiple perspectives
+- Designers exploring variations
 
 **Technical Professionals**
-- Software developers needing multi-perspective code review
-- System architects evaluating design trade-offs
-- Technical writers creating comprehensive documentation
+- Developers needing multi-perspective review
+- Architects evaluating design trade-offs
+- Technical writers creating documentation
 
 **Knowledge Workers**
-- Researchers synthesizing information from multiple domains
-- Business analysts creating strategic plans
-- Consultants developing client deliverables
+- Researchers synthesizing information
+- Analysts creating reports and plans
+- Consultants developing deliverables
 
-### 4.2 Two-Tier Product Strategy
+### 6.2 Product Tiers
 
-#### Web Application Tier
-- **Target**: Professional and corporate users needing structured AI assistance
-- **Use Cases**: 
-  - Research synthesis and analysis
-  - Business planning and strategy documentation
-  - Marketing content development
-  - Design exploration and iteration
-  - Corporate knowledge management
-  - Team-based document collaboration
-- **Access**: Browser-based, lower barrier to entry, IT-friendly deployment
-- **Pricing**: Subscription + token passthrough
-- **Corporate Features**: SSO support, team workspaces, usage analytics
+#### Web Application
+- **Target**: Professional and corporate users
+- **Access**: Browser-based, lower barrier to entry
+- **Features**: Core builders and flows, team collaboration
 
-#### Desktop Application Tier
-- **Target**: Power users requiring deep integration and complex workflows
-- **Use Cases**:
-  - Long-form creative writing projects
-  - AI-native software development
-  - Multi-media content creation (music, video storyboarding)
-  - Complex multi-stage pipelines
-- **Access**: Tauri-based native application
-- **Features**: Multi-window support, local file access, extended session management
-- **Pricing**: Premium subscription + token passthrough
+#### Desktop Application  
+- **Target**: Power users with complex workflows
+- **Access**: Native application with extended capabilities
+- **Features**: Multi-window support, local file access, advanced flows
 
-## 5. Core Features & Capabilities
+## 7. Core Features & Capabilities
 
-### 5.1 AI Roundtable - Multi-Agent Discussion and Review
+### 7.1 Roundtable Flow - Multi-Agent Discussion
 
-**Functionality**: Orchestrated discussion between 3-5 specialized AI agents for both general exploration and artifact-focused review/critique.
+**Functionality**: User-orchestrated discussion between multiple specialized agents for exploration and review.
 
-**Two Primary Modes**:
+**Modes**:
+- **Discussion Mode**: Open-ended exploration and brainstorming
+- **Review Mode**: Focused critique of specific artifacts
 
-1. **General Discussion Mode**: 
-   - Open-ended exploration of topics
-   - Brainstorming and ideation
-   - Multi-perspective problem solving
-   - Strategic planning discussions
+**Interaction Pattern**:
+The user directs every turn of the conversation:
+1. User addresses specific agents: "@alice @bob what do you think of this chapter?"
+2. Addressed agents respond in parallel
+3. User reviews responses
+4. User directs next interaction: "@charlie respond to @alice's point about pacing"
+5. Process continues with user maintaining full control
 
-2. **Artifact Review Mode**:
-   - Focused critique of specific artifacts
-   - Multi-agent code review
-   - Document analysis and feedback
-   - Design evaluation from different perspectives
+**Key Design Principles**:
+- No autonomous agent-to-agent communication
+- User decides who speaks and when
+- Each user prompt triggers a new workflow step
+- Prevents runaway conversations or infinite loops
+- Maintains clear interaction boundaries
 
 **Key Components**:
-- Agent roster with visual presence indicators
-- @mention-based routing system
-- Message attribution and threading
-- Artifact attachment and inline commenting
-- Split view for artifact + discussion
-- Lightweight routing model (GPT-4-mini or equivalent)
-- Export discussion to new artifact or append to existing
+- Agent roster with specialized roles
+- Message routing based on @mentions
+- Parallel agent execution
+- Threaded discussion interface
+- Individual response streams per agent
 
-**CLI Equivalent**: 
-```bash
-# General discussion
-liminal roundtable --agents architect,security,qa --prompt "Discuss microservices vs monolith"
+**Within Builders**:
+- Character Builder: Character consistency review
+- Chapter Builder: Prose quality discussion
+- Research Builder: Source evaluation roundtable
 
-# Artifact review
-liminal roundtable --agents editor,critic,factchecker --artifact draft.md --prompt "Review this article"
-```
+### 7.2 Parallel Flow - Simultaneous Generation
 
-**Implementation Requirements**:
-- Concurrent API calls to multiple models
-- Message queue management
-- Context window optimization per agent
-- Artifact state management during discussion
-- Inline annotation support
-- Rate limiting and error handling
-
-### 5.2 Parallel Generation - Simultaneous Drafting
-
-**Functionality**: Generate 2-5 variations of content simultaneously using different agents or configurations.
+**Functionality**: Generate multiple variations simultaneously using different approaches.
 
 **Key Components**:
-- Split-screen interface with synchronized scrolling
-- Real-time streaming from multiple endpoints
-- Tagging and selection tools
-- Synthesis workspace for combining elements
-- Version snapshots of generation sets
+- Split-screen interface for comparisons
+- Real-time generation from multiple agents
+- Selection and synthesis tools
+- Version tracking
 
-**CLI Equivalent**:
-```bash
-liminal parallel-gen --agents writer1,writer2,writer3 --prompt "Draft introduction" --output-dir ./drafts
-```
+**Within Builders**:
+- Chapter Builder: Multiple draft variations
+- Outline Builder: Different plot structures
+- Analysis Builder: Various analytical frameworks
 
-**Implementation Requirements**:
-- Parallel API stream handling
-- Diff visualization between versions
-- Selection state management
-- Synthesis agent for combining selections
+### 7.3 Pipeline Flow - Sequential Processing
 
-### 5.3 Pipeline Processing - Serial Refinement
-
-**Functionality**: Sequential processing through specialized agent stages with optional parallelism within stages.
+**Functionality**: Multi-stage refinement through specialized agents.
 
 **Key Components**:
-- Visual pipeline editor
-- Stage configuration (agent, prompt, parameters)
-- Forward/backward navigation
-- Conditional branching
-- Stage-level version control
+- Visual pipeline representation
+- Stage configuration
+- Progress tracking
+- Result comparison across stages
 
-**CLI Equivalent**:
-```bash
-liminal pipeline run editorial-flow --input draft.md --stages draft,edit,fact-check,polish
-```
+**Within Builders**:
+- Document Builder: Draft → Edit → Polish pipeline
+- Research Builder: Gather → Analyze → Synthesize pipeline
+- Code Builder: Generate → Review → Refactor pipeline
 
-**Implementation Requirements**:
-- Pipeline state machine
-- Inter-stage data transformation
-- Checkpoint and resume capability
-- Stage performance metrics
+### 7.4 Agent System
 
-### 5.4 Agent Configuration System
+**Agent Types**:
+- **Jarvis**: Meta-agent with builder awareness
+- **Specialized Agents**: Configured for specific tasks within flows
+- **User**: Treated as participant in multi-agent flows
 
-**Agent Definition Parameters**:
-- Unique identifier and handle
-- System prompt (persona definition)
-- Model selection and provider
-- Generation parameters (temperature, max_tokens)
-- Interaction style (verbose, minimal, confirmatory)
-- Tool permissions (future)
+**Configuration**:
+- Agents can be configured by users or Jarvis
+- Parameters include model, style, and specialization
+- Configuration complexity hidden until needed
 
-**Interaction Styles**:
-- **Guided Mode**: Proactive questions and suggestions
-- **Confirmatory Mode**: Explicit confirmation before actions
-- **Minimal Mode**: Direct responses without elaboration
+### 7.5 Artifact Management
 
-**CLI Configuration**:
-```bash
-liminal agent create --name "TechEditor" --model gpt-4 --style minimal --temp 0.3
-```
-
-### 5.5 Artifact Management with Transience
-
-**Transience Lifecycle**:
-- **Live**: Actively edited or referenced artifacts
-- **Touched**: User-edited or included in synthesis
-- **Untouched**: Pure AI generations not yet reviewed
-- **Archived**: Auto-moved after configurable decay period
-- **Purged**: Removed after extended inactivity
-
-**Version Control Features**:
-- Automatic versioning on each edit
-- Parent-child relationship tracking
-- Branch and merge capabilities
-- Metadata preservation (agent, timestamp, parameters)
-- Heat map of artifact activity
-
-**Intelligent Decay Policies**:
-- Untouched AI drafts: 14-day default before archival
-- Touched artifacts: 60-day retention
-- User-edited content: Never auto-purged
-- Configurable policies per workspace
-- Bulk operations for cleanup
+**Lifecycle States**:
+- **Active**: Currently being edited or referenced
+- **Recent**: Accessed within configured timeframe
+- **Archived**: Moved to storage after inactivity
+- **Linked**: Part of artifact relationship graph
 
 **Organization**:
-- Hierarchical folder structure
+- Hierarchical structure within builders
 - Tag-based categorization
-- Full-text search across versions
-- Filter by transience state
-- Activity-based sorting
+- Full-text search
+- Relationship visualization
 
-**Advanced Graph Features**:
-- **Relationship Tracking**: Automatic detection of artifact dependencies and references
-- **Scope Resolution**: Dynamic context boundaries for agent operations
-- **Lineage Visualization**: Interactive graphs showing artifact evolution and relationships
-- **Smart Cleanup**: Intelligent identification of orphaned or redundant artifacts
-- **Cross-Team Discovery**: Controlled sharing and discovery of artifacts across teams
+**Features**:
+- Automatic versioning
+- Parent-child tracking
+- Synthesis relationships
+- Cross-builder references
 
-**CLI Operations**:
-```bash
-# Basic artifact management
-liminal artifact list --state live --team myteam
-liminal artifact show artifact-id --include-relationships
-liminal artifact decay-status --workspace current
+## 8. Technical Architecture
 
-# Advanced operations
-liminal artifact archive --older-than 30d --state untouched
-liminal artifact restore artifact-id --include-children
-liminal artifact graph --artifact-id abc123 --depth 3
-liminal artifact cleanup --dry-run --team myteam
+### 8.1 Core Technologies
 
-# Relationship management
-liminal artifact link parent-id child-id --type synthesis
-liminal artifact unlink relationship-id
-liminal artifact scope --artifact-id abc123 --include-related
-```
+**Frontend**:
+- Next.js for web application
+- Tauri for desktop application
+- React-based UI components
+- Real-time synchronization
 
-## 6. Technical Architecture
+**Backend**:
+- Convex for real-time data sync
+- Serverless architecture
+- Multi-model LLM integration
+- Stream processing for parallel flows
 
-### 6.1 Platform Components
+**Data Layer**:
+- Document-based storage for artifacts
+- Graph relationships for artifact connections
+- User and project segregation
+- Efficient versioning system
 
-**Desktop Application**
-- Native OS integration capabilities
-- Multi-window management support
-- Local file system access
-- Extended session handling
-- Rich UI canvas for complex workflows
+### 8.2 Builder Implementation
 
-**Web Application**
-- Responsive, modern UI components
-- Real-time collaboration features
-- Progressive enhancement
-- Cloud-based architecture
+Each builder is implemented as:
+- Dedicated data schemas
+- Specialized UI components
+- Integrated flow configurations
+- Jarvis tool definitions
 
-**Backend Services**
-- Agent orchestration engine
-- Artifact storage and versioning
-- User authentication and authorization
-- Usage tracking and billing
-- High-performance streaming
+Builders are modular and can be:
+- Shared across similar products
+- Customized per product needs
+- Extended with new flows
+- Enhanced with domain tools
 
-**CLI Tool**
-- Direct API access
-- Batch processing capabilities
-- Local workflow automation
-- Shell script integration
+### 8.3 Integration Points
 
-### 6.2 Data Architecture
+**LLM Providers**:
+- Multiple provider support
+- Model selection per agent
+- Stream handling for real-time display
+- Cost tracking and limits
 
-**Dual Persistence Strategy**:
-1. **General Application Data**: NestJS with file system (development) or PostgreSQL (production)
-   - User accounts, authentication, team management
-   - Agent configurations and prompt templates
-   - System settings and preferences
+**External Services**:
+- Authentication providers
+- File storage systems
+- Export formats
+- API access for automation
 
-2. **Artifact Graph Database**: ArangoDB for specialized artifact management
-   - Artifact nodes with metadata and content
-   - Relationship edges (parent-child, synthesis, references)
-   - Transience state tracking and decay policies
-   - Team-level sharding for performance isolation
+## 9. User Experience Design
 
-**Storage Implementation**:
-- **Content Versioning**: Content-addressable storage with deduplication
-- **Metadata Management**: Rich metadata with full audit trails
-- **Search Integration**: Typesense for full-text search across artifacts
-- **Export Capabilities**: JSON, Markdown, ZIP formats with relationship preservation
+### 9.1 Progressive Disclosure
 
-**Agent State Management**:
-- **Session Persistence**: Context preservation across interactions
-- **Configuration Storage**: Agent definitions with versioning
-- **Cross-Session Continuity**: Conversation history and context restoration
-- **State Export/Import**: Portable agent configurations and conversation data
+The interface reveals complexity gradually:
+1. Start with Jarvis chat interface
+2. Show builders as Jarvis uses them
+3. Enable direct manipulation when ready
+4. Reveal advanced flows through usage
 
-### 6.3 Integration Requirements
+### 9.2 Navigation Patterns
 
-**LLM Provider Integration**:
-- Support for multiple LLM providers
-- Provider abstraction layer
-- Token cost transparency
-- Local model support capability
+**Primary Navigation**:
+- Builder tabs or sidebar
+- Jarvis command bar
+- Quick switcher (keyboard shortcut)
 
-**External Service Integration**:
-- Version control system compatibility
-- Cloud storage integration
-- Third-party authentication support
-- Payment processing capability
+**Context Preservation**:
+- Maintain state when switching builders
+- Resume where user left off
+- Jarvis remembers context across sessions
 
-## 7. User Experience Design
+### 9.3 Responsive Design
 
-### 7.1 UI Principles
+**Adaptive Layouts**:
+- Single builder on mobile/tablet
+- Multiple builders on desktop
+- Collapsible sidebars for focus
+- Keyboard-first navigation
 
-- **Clarity over cleverness**: Function-forward interface design
-- **Keyboard-first**: Full keyboard navigation and shortcuts
-- **Progressive disclosure**: Advanced features accessible but not intrusive
-- **State visibility**: Always clear what agents are doing
-- **Interruptibility**: Any operation can be paused or cancelled
+## 10. Implementation Approach
 
-### 7.2 CLI Design Principles
+### 10.1 Development Phases
 
-- **Composability**: Commands work in pipes and scripts
-- **Predictability**: Consistent parameter patterns
-- **Discoverability**: Comprehensive help and examples
-- **Machine-readable output**: JSON option for all commands
+**Phase 1: Foundation**
+- Core builder infrastructure
+- Jarvis integration
+- Basic edit flow
+- Single product prototype
 
+**Phase 2: Advanced Flows**
+- Parallel generation
+- Roundtable implementation
+- Pipeline processing
+- Multi-builder views
 
+**Phase 3: Scale**
+- Multiple products
+- Template system
+- Team features
+- Advanced artifact management
 
+### 10.2 Success Metrics
 
+**User Engagement**:
+- Time spent in builders
+- Artifacts created and retained
+- Flow usage patterns
+- Jarvis interaction frequency
 
-```
+**Product Quality**:
+- User retention rates
+- Feature discovery metrics
+- Task completion rates
+- Error/confusion reduction
+
+**Business Metrics**:
+- Subscription conversion
+- Token usage patterns
+- Product expansion rate
+- User satisfaction scores
