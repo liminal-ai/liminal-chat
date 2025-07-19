@@ -1,62 +1,62 @@
-# Clerk Authentication Setup for Liminal Chat
+# WorkOS Authentication Setup for Liminal Chat
 
-This document describes the Clerk authentication setup for the Liminal Chat Convex backend.
+This document describes the WorkOS authentication setup for the Liminal Chat Convex backend.
 
 ## Overview
 
-The authentication is configured to use Clerk (https://clerk.com) with the following setup:
+The authentication is configured to use WorkOS (https://workos.com) with the following setup:
 
-- **Clerk Domain**: deep-shrew-9.clerk.accounts.dev
-- **Authentication Provider**: Clerk with OAuth providers configured
-- **Integration**: Direct JWT validation through Convex's built-in auth
+- **WorkOS Client**: Configured with SSO/OIDC
+- **Authentication Provider**: WorkOS with OAuth providers configured
+- **Integration**: Direct JWT validation using WorkOS JWKS endpoint
 
 ## Environment Variables
 
 ## Database Schema
 
-The `users` table stores authenticated user information:
+User information is stored in the agents table with WorkOS user IDs:
 
 ```typescript
-users: {
-  tokenIdentifier: string   // Clerk's JWT token identifier
-  email: string            // User's email
-  name?: string           // Optional display name
-  imageUrl?: string       // Optional profile image
-  createdAt: number       // Timestamp
-  updatedAt: number       // Timestamp
+agents: {
+  userId: string          // WorkOS user ID from JWT
+  // ... other agent fields
 }
+
+// Note: No dedicated users table - WorkOS manages user data
 ```
 
 ## Available Functions
 
-### Authentication Functions (`convex/users.ts`)
+### Authentication Functions (`convex/node/auth.ts`)
 
-1. **`getCurrentUser`** - Query to get the current authenticated user
-2. **`syncUser`** - Mutation to create/update user profile from Clerk data
-3. **`testAuth`** - Query to verify authentication is working
+1. **`requireAuth`** - Action to validate WorkOS JWT and return user info
+2. **`optionalAuth`** - Action for optional authentication
+3. **`validateWorkOSToken`** - Internal function to verify WorkOS tokens
 
 ### HTTP Endpoints (`convex/http.ts`)
 
-1. **`/health`** - Health check endpoint
-2. **`/clerk-webhook`** - Webhook endpoint for Clerk events
+1. **`/health`** - Health check endpoint (requires authentication)
+2. **`/api/chat`** - Chat endpoints (require authentication)
+3. **`/api/agents`** - Agent management endpoints (require authentication)
 
-### Test Function (`convex/test.ts`)
+### Test Functions
 
-1. **`ping`** - Simple query to test Convex connectivity
+Authentication testing is handled through the HTTP endpoints and Playwright tests.
 
 ## Usage
 
 To use authentication in your Convex functions:
 
 ```typescript
-const identity = await ctx.auth.getUserIdentity();
-if (!identity) {
-  throw new Error('Unauthenticated');
-}
+// In HTTP actions
+const authHeader = request.headers.get('Authorization') || undefined;
+const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+// User object contains: { id, email, customClaims }
 ```
 
 ## Next Steps
 
-1. Configure Clerk webhook in the Clerk dashboard to point to your Convex HTTP endpoint
-2. Implement frontend authentication flow using Clerk React components
-3. Call `syncUser` mutation after successful authentication to sync user data
+1. Configure WorkOS SSO/OIDC settings in the WorkOS dashboard
+2. Implement frontend authentication flow using WorkOS SDK
+3. Ensure proper JWT handling in your frontend application

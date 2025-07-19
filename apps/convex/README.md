@@ -1,13 +1,13 @@
 # Liminal API - Convex Backend
 
-This is the Convex backend for Liminal Chat, providing real-time data synchronization, authentication with Clerk, and HTTP endpoints for integration with Vercel AI SDK.
+This is the Convex backend for Liminal Chat, providing real-time data synchronization, authentication with WorkOS, and HTTP endpoints for integration with Vercel AI SDK.
 
 **CI/CD Status**: Phase 1 complete with staging deployment configured.
 
 ## Architecture Overview
 
 - **Database**: Convex real-time database with TypeScript schema validation
-- **Authentication**: Clerk integration for user management
+- **Authentication**: WorkOS integration for user management
 - **HTTP Actions**: Node.js runtime endpoints for AI SDK integration
 - **Real-time**: WebSocket-based real-time updates
 
@@ -15,7 +15,7 @@ This is the Convex backend for Liminal Chat, providing real-time data synchroniz
 
 - Node.js 18+ (for Node.js runtime in HTTP actions)
 - npm or pnpm
-- Clerk account for authentication
+- WorkOS account for authentication
 - Convex account
 
 ## Getting Started
@@ -48,14 +48,14 @@ This will:
 
 Your Convex deployment URL will be displayed, e.g., `https://modest-squirrel-498.convex.cloud`
 
-### 3. Set Up Clerk Authentication
+### 3. Set Up WorkOS Authentication
 
-1. Create a Clerk application at [clerk.com](https://clerk.com)
-2. In Clerk Dashboard, go to **JWT Templates**
-3. Create a new template named `convex` with:
-   - Algorithm: RS256
-   - Claims: Default Clerk claims
-4. Copy your Clerk issuer URL (found in JWT Templates)
+1. Create a WorkOS application at [workos.com](https://workos.com)
+2. In WorkOS Dashboard, configure your application
+3. Set up SSO/OIDC configuration with:
+   - Redirect URIs for your application
+   - Required scopes and claims
+4. Copy your WorkOS Client ID and API Key
 
 ### 4. Configure Convex Authentication
 
@@ -63,7 +63,8 @@ Your Convex deployment URL will be displayed, e.g., `https://modest-squirrel-498
 2. Add the following:
 
    ```
-   CLERK_ISSUER_URL=https://your-clerk-domain.clerk.accounts.dev
+   WORKOS_CLIENT_ID=client_your_workos_client_id
+   WORKOS_API_KEY=sk_live_your_workos_api_key
    ```
 
 3. Deploy the auth configuration:
@@ -79,8 +80,8 @@ Create a `.env.local` file in the liminal-api directory:
 # Convex deployment URL
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 
-# Clerk public key (from Clerk dashboard)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+# WorkOS public key (from WorkOS dashboard)
+NEXT_PUBLIC_WORKOS_CLIENT_ID=client_your_workos_client_id
 
 # Optional: for local development
 CONVEX_DEPLOYMENT=development
@@ -147,10 +148,10 @@ Expected response:
 
 ### 2. Test Authentication
 
-With a valid Clerk JWT token:
+With a valid WorkOS JWT token:
 
 ```bash
-curl -H "Authorization: Bearer YOUR_CLERK_JWT" https://your-deployment.convex.cloud/test
+curl -H "Authorization: Bearer YOUR_WORKOS_JWT" https://your-deployment.convex.cloud/test
 ```
 
 The response should show `authenticated: true` with user details.
@@ -176,14 +177,14 @@ npx convex run users:getUserCount
 
 - `GET /health` - Health check with database connectivity test
 - `GET /test` - Comprehensive test endpoint with Node.js runtime verification
-- `POST /clerk-webhook` - Clerk webhook for user synchronization
+- `POST /workos-webhook` - WorkOS webhook for user synchronization (if implemented)
 
 ### Convex Functions
 
 #### users.ts
 
 - `getCurrentUser` - Get authenticated user profile
-- `syncUser` - Create/update user from Clerk data
+- `syncUser` - Create/update user from WorkOS data
 - `testAuth` - Test authentication status
 - `getUserCount` - Get total number of users
 - `getSampleUser` - Get sanitized sample user data
@@ -194,7 +195,7 @@ The HTTP actions are designed to work with Vercel AI SDK:
 
 1. **Node.js Runtime**: The `"use node"` directive enables full Node.js APIs
 2. **Environment Variables**: Access to process.env for configuration
-3. **Authentication**: Integrated with Clerk for user context
+3. **Authentication**: Integrated with WorkOS for user context
 4. **Database Access**: Direct queries to Convex database
 
 Example integration:
@@ -243,8 +244,8 @@ const response = await fetch(`${process.env.CONVEX_URL}/test`);
 
 ### Authentication Issues
 
-- Verify Clerk issuer URL is correctly set in Convex
-- Check that JWT template in Clerk is named "convex"
+- Verify WorkOS Client ID and API Key are correctly set in Convex
+- Check that WorkOS SSO/OIDC is properly configured
 - Ensure Authorization header is properly formatted
 
 ### Database Queries Failing
@@ -255,7 +256,7 @@ const response = await fetch(`${process.env.CONVEX_URL}/test`);
 
 ## Next Steps
 
-- Set up Clerk webhooks for automatic user synchronization
+- Set up WorkOS webhooks for automatic user synchronization (if needed)
 - Configure production environment variables
 - Integrate with your frontend application
 - Add custom HTTP actions for AI model interactions
