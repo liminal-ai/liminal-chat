@@ -55,7 +55,7 @@ This script will:
 
 ```json
 {
-  "system_user": "{{ user.metadata.purpose == 'integration_testing' }}",
+  "system_user": "{{ user.metadata.purpose }}",
   "test_context": "{{ user.metadata.environment }}",
   "permissions": ["api_access", "test_operations"],
   "environment": "{{ user.metadata.environment }}"

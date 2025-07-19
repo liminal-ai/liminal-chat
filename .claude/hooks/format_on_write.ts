@@ -52,7 +52,7 @@ function runPrettier(filePath: string): { success: boolean; error?: string } {
   }
 }
 
-function main() {
+function main(): void {
   try {
     // Read hook payload from stdin
     let input = '';
@@ -124,6 +124,6 @@ function main() {
   }
 }
 
-if (require.main === module) {
+if (process.argv[1] === __filename) {
   main();
 }
