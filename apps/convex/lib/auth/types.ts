@@ -1,5 +1,5 @@
 /**
- * Authentication types shared across the liminal-chat application
+ * Authentication types for the Convex backend
  */
 
 export interface AuthenticatedUser {

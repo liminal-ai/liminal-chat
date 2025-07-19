@@ -1,6 +1,6 @@
 // Authentication middleware for WorkOS JWT validation
 import { validateWorkOSToken, extractBearerToken } from './workos-auth';
-import { AuthenticatedUser } from '@liminal/shared-types';
+import { AuthenticatedUser } from './types';
 
 /**
  * Secure JWT authentication middleware for WorkOS tokens

@@ -4,7 +4,7 @@ import { action } from '../_generated/server';
 import { v } from 'convex/values';
 import { WorkOS } from '@workos-inc/node';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
-import { AuthenticatedUser } from '@liminal/shared-types';
+import { AuthenticatedUser } from '../../lib/auth/types';
 import { webcrypto } from 'node:crypto';
 
 // Polyfill globalThis.crypto for Node.js 18
