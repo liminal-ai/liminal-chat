@@ -30,6 +30,24 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 ### convex/db/
 
+#### agents.ts
+
+**`create`** (query) - convex/db/agents.ts:32  
+Creates a new agent for the authenticated user.  
+Args: - The authenticated user ID from WorkOS, - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage), - The personality/behavior prompt, - Provider like "openai" or "anthropic", - Model like "gpt-4" or "claude-3-sonnet", - Optional configuration object  
+Returns: The ID of the created agent  
+Throws: Error if agent name already exists for this user  
+
+**`get`** (query) - convex/db/agents.ts:107  
+Gets an agent by ID for the authenticated user.  
+Args: - The ID of the agent to retrieve, - The authenticated user ID  
+Returns: The agent object or null if not found/not owned by user  
+
+**`list`** (query) - convex/db/agents.ts:162  
+Lists all agents for the authenticated user with optional filtering.  
+Args: - The authenticated user ID, - Filter by active status (optional)  
+Returns: Array of agents owned by the user  
+
 #### cleanup.ts
 
 **`clearTestData`** (query) - convex/db/cleanup.ts:23  
@@ -39,33 +57,6 @@ Returns: usersPreserved - Always 0 since users table was removed
 **`getDataCounts`** (query) - convex/db/cleanup.ts:70  
 Returns current count of data records in the database.  
 Returns: messages - Current number of messages  
-
-#### agents.ts
-
-**`create`** (mutation) - convex/db/agents.ts:32  
-Creates a new agent for the authenticated user.  
-Args: userId, name, systemPrompt, provider, model, config (optional)  
-Returns: The ID of the created agent  
-
-**`get`** (query) - convex/db/agents.ts:87  
-Gets a single agent by ID for the authenticated user.  
-Args: agentId, userId  
-Returns: The agent object or null if not found  
-
-**`list`** (query) - convex/db/agents.ts:111  
-Lists all agents for the authenticated user.  
-Args: userId  
-Returns: Array of agent objects  
-
-**`update`** (mutation) - convex/db/agents.ts:133  
-Updates an agent's configuration.  
-Args: agentId, userId, systemPrompt (optional), provider (optional), model (optional), config (optional), active (optional)  
-Returns: null  
-
-**`archive`** (mutation) - convex/db/agents.ts:194  
-Archives an agent (soft delete) by setting active to false.  
-Args: agentId, userId  
-Returns: null  
 
 #### conversations.ts
 
@@ -106,34 +97,34 @@ Returns: The count of conversations matching the filter
 
 #### messages.ts
 
-**`create`** (mutation) - convex/db/messages.ts:54  
+**`create`** (mutation) - convex/db/messages.ts:30  
 Creates a new message in a conversation using the public API.  
 Args: - The ID of the conversation, - Type of author: "user", "agent", or "system", - ID of the author ("anonymous" for users, provider name for agents), - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error", - Message content (structure depends on type), - Optional metadata like model, tokens, etc.  
 Returns: The ID of the created message  
 Throws: Error if conversation not found  
 
-**`list`** (query) - convex/db/messages.ts:132  
+**`list`** (query) - convex/db/messages.ts:104  
 Lists messages in a conversation with pagination support.  
 Args: - The ID of the conversation, - Pagination options, - Number of items per page (default: 50), - Cursor for pagination  
 Returns: Empty result if conversation not found  
 
-**`getAll`** (query) - convex/db/messages.ts:197  
+**`getAll`** (query) - convex/db/messages.ts:169  
 Gets all messages for a conversation with cursor-based pagination.  
 Args: - The ID of the conversation, - Maximum messages to return (default: 100, max: 1000), - Message ID to start after (for pagination)  
 Returns: Empty result if conversation not found  
 
-**`createBatch`** (mutation) - convex/db/messages.ts:297  
+**`createBatch`** (mutation) - convex/db/messages.ts:269  
 Creates multiple messages at once in a conversation using the public API.  
 Args: - The ID of the conversation, - Array of message objects to create  
 Returns: Array of created message IDs  
 Throws: Error if conversation not found  
 
-**`count`** (query) - convex/db/messages.ts:389  
+**`count`** (query) - convex/db/messages.ts:361  
 Counts messages in a conversation, optionally filtered by type.  
 Args: - The ID of the conversation, - Optional filter by message type  
 Returns: 0 if conversation not found  
 
-**`getLatest`** (query) - convex/db/messages.ts:445  
+**`getLatest`** (query) - convex/db/messages.ts:417  
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
 Returns: Empty array if conversation not found  
@@ -145,18 +136,6 @@ Migration: Add updatedAt field to existing messages
 
 **`addUpdatedAtToConversations`** (query) - convex/db/migrations.ts:43  
 Migration: Add updatedAt field to existing conversations  
-
-#### seed.ts
-
-**`seedAgents`** (action) - convex/db/seed.ts:25  
-Seeds the database with 3 pre-configured agents (alice, bob, carol).  
-Args: userId  
-Returns: Array of created agent IDs (empty if agents already exist)  
-
-**`getSeedAgents`** (action) - convex/db/seed.ts:135  
-Gets all seed agents for a user, useful for verification.  
-Args: userId  
-Returns: Array of seed agents (alice, bob, carol) if they exist  
 
 ### convex/edge/
 
@@ -332,6 +311,7 @@ Finds the project root by looking for package.json with "liminal-chat" name
 ## Function Index by Type
 
 ### Convex Queries
+agents.ts: `create`, `get`, `list`  
 cleanup.ts: `clearTestData`, `getDataCounts`  
 conversations.ts: `list`, `get`, `count`  
 messages.ts: `list`, `getAll`, `count`, `getLatest`  
