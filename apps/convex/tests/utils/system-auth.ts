@@ -2,7 +2,7 @@ import { WorkOS } from '@workos-inc/node';
 import { jwtDecode } from 'jwt-decode';
 import { config } from 'dotenv';
 import * as path from 'path';
-import { findProjectRoot } from '../lib/utils/project-root';
+import { findProjectRoot } from '../../lib/utils/project-root';
 
 // Load environment variables from project root
 const rootDir = findProjectRoot(__dirname);

@@ -67,7 +67,7 @@ This script will:
 The test framework will automatically use the SystemAuth utility for authenticated requests:
 
 ```typescript
-import { getSystemAuth } from '../test-utils/system-auth';
+import { getSystemAuth } from '../tests/utils/system-auth';
 
 // In your test files
 const auth = await getSystemAuth();
@@ -79,7 +79,7 @@ const response = await auth.get('/api/your-endpoint');
 ### Basic Authentication
 
 ```typescript
-import { getSystemAuth } from '../test-utils/system-auth';
+import { getSystemAuth } from '../tests/utils/system-auth';
 
 test('authenticated endpoint access', async () => {
   const auth = await getSystemAuth();

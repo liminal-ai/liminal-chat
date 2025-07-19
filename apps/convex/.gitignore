@@ -44,8 +44,8 @@ TODOs.md
 # Testing
 coverage/
 .nyc_output/
-test-results/
-playwright-report/
+tests/results/
+tests/reports/
 playwright/.cache/
 
 # TypeScript

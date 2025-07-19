@@ -405,78 +405,6 @@ http.route({
   }),
 });
 
-// Seed agents (for testing and setup)
-http.route({
-  path: '/api/agents/seed',
-  method: 'POST',
-  handler: httpAction(async (ctx, request) => {
-    try {
-      // Require authentication using Node.js action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
-
-      const body = await request.json();
-      const { userId } = body;
-
-      // Verify the requesting user matches the userId (for security)
-      if (userId && userId !== user.id) {
-        return new Response(JSON.stringify({ error: 'Can only seed agents for your own user' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      const actualUserId = userId || user.id;
-
-      const agentIds = await ctx.runAction(api.db.seed.seedAgents, {
-        userId: actualUserId,
-      });
-
-      return new Response(JSON.stringify(agentIds), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    } catch (error) {
-      return createErrorResponse(error);
-    }
-  }),
-});
-
-// Get seed agents (for testing and verification)
-http.route({
-  path: '/api/agents/seed',
-  method: 'GET',
-  handler: httpAction(async (ctx, request) => {
-    try {
-      // Require authentication using Node.js action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
-
-      const url = new URL(request.url);
-      const userId = url.searchParams.get('userId') || user.id;
-
-      // Verify the requesting user matches the userId (for security)
-      if (userId !== user.id) {
-        return new Response(JSON.stringify({ error: 'Can only access your own agents' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      const seedAgents = await ctx.runAction(api.db.seed.getSeedAgents, {
-        userId,
-      });
-
-      return new Response(JSON.stringify(seedAgents), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    } catch (error) {
-      return createErrorResponse(error);
-    }
-  }),
-});
-
 // Create agent
 http.route({
   path: '/api/agents',
@@ -685,7 +613,5 @@ http.route({
  * - PATCH /api/conversations/:id - Update conversation
  * - DELETE /api/conversations/:id - Archive conversation
  * - POST /api/agents - Create agent
- * - POST /api/agents/seed - Seed agents for testing
- * - GET /api/agents/seed - Get seed agents
  */
 export default http;
