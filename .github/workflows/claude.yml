@@ -44,7 +44,7 @@ jobs:
           model: ${{ contains(github.event.comment.body, '/opus') && 'claude-opus-4-20250514' || 'claude-3-5-sonnet-20241022' }}
 
           # Customize the trigger phrase to use /claude
-          trigger_phrase: "/claude"
+          trigger_phrase: '/claude'
 
           # Verification requirements to prevent lazy reviews
           custom_instructions: |
