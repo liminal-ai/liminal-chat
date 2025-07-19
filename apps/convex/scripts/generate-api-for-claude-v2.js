@@ -283,7 +283,7 @@ function formatFunction(fn, filePath) {
 
 // Generate the markdown
 function generateMarkdown() {
-  const baseDir = path.join(__dirname);
+  const baseDir = path.join(__dirname, '..');
   const outputPath = path.join(__dirname, '../../docs/tsdocs/api-for-claude.md');
 
   // Find all TypeScript files
