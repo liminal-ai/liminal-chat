@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { systemUserTokenManager } from '../lib/auth/system-user-token-manager';
+import { systemUserTokenManager } from '../test-utils/system-auth';
 import { Buffer } from 'buffer';
 
 interface JWTHeader {
