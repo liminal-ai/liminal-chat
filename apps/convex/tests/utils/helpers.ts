@@ -60,6 +60,11 @@ export function parseDataStream(text: string): string[] {
   return chunks;
 }
 
+// Get an invalid JWT token for testing 401 scenarios
+export function getInvalidToken(): string {
+  return 'invalid.jwt.token';
+}
+
 // Make a chat request with standard error handling
 // Get system user access token for API authentication
 async function getSystemUserAccessToken(): Promise<string> {

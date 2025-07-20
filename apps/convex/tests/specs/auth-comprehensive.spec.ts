@@ -23,9 +23,23 @@ test.describe('Comprehensive Authentication Tests', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('POST /api/chat-stream - no token returns 401', async ({ request }) => {
-    const response = await request.post('/api/chat-stream', {
+  test('POST /api/chat - no token returns 401', async ({ request }) => {
+    const response = await request.post('/api/chat', {
+      data: { messages: [{ role: 'user', content: 'Hello' }] },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('POST /api/completion - no token returns 401', async ({ request }) => {
+    const response = await request.post('/api/completion', {
       data: { prompt: 'Hello' },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('POST /api/perplexity - no token returns 401', async ({ request }) => {
+    const response = await request.post('/api/perplexity', {
+      data: { query: 'test query' },
     });
     expect(response.status()).toBe(401);
   });
@@ -67,10 +81,26 @@ test.describe('Comprehensive Authentication Tests', () => {
     expect(response.status()).toBe(401);
   });
 
-  test('POST /api/chat-stream - invalid token returns 401', async ({ request }) => {
-    const response = await request.post('/api/chat-stream', {
+  test('POST /api/chat - invalid token returns 401', async ({ request }) => {
+    const response = await request.post('/api/chat', {
+      headers: { Authorization: `Bearer ${getInvalidToken()}` },
+      data: { messages: [{ role: 'user', content: 'Hello' }] },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('POST /api/completion - invalid token returns 401', async ({ request }) => {
+    const response = await request.post('/api/completion', {
       headers: { Authorization: `Bearer ${getInvalidToken()}` },
       data: { prompt: 'Hello' },
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('POST /api/perplexity - invalid token returns 401', async ({ request }) => {
+    const response = await request.post('/api/perplexity', {
+      headers: { Authorization: `Bearer ${getInvalidToken()}` },
+      data: { query: 'test query' },
     });
     expect(response.status()).toBe(401);
   });

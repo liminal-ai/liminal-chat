@@ -28,29 +28,7 @@ http.route({
       );
     } catch (error) {
       // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          status: 'unhealthy',
-          timestamp: new Date().toISOString(),
-          service: 'liminal-api',
-          error: 'Service unavailable',
-        }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
@@ -207,28 +185,7 @@ Guidelines:
         },
       );
     } catch (error) {
-      // Handle authentication errors
-      if (
-        error instanceof Error &&
-        (error.message.includes('Authentication required') ||
-          error.message.includes('Invalid token'))
-      ) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : String(error),
-          provider: 'perplexity',
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return createErrorResponse(error);
     }
   }),
 });
