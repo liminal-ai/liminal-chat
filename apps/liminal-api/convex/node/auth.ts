@@ -166,6 +166,97 @@ if (!globalThis.crypto) {
   globalThis.crypto = webcrypto as any;
 }
 
+// Enhanced error types for better debugging
+interface AuthErrorContext {
+  operation: string;
+  timestamp: number;
+  tokenLength?: number;
+  hasClientId: boolean;
+  hasApiKey: boolean;
+  retryCount?: number;
+  originalError?: string;
+}
+
+/**
+ * Retry utility with exponential backoff for transient failures
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  operation: string = 'unknown',
+): Promise<T> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry on final attempt
+      if (attempt === maxRetries - 1) {
+        break;
+      }
+
+      // Check if error is retryable
+      const isRetryable = isRetryableError(error as Error);
+      if (!isRetryable) {
+        break;
+      }
+
+      // Exponential backoff: 1s, 2s, 4s
+      const delayMs = Math.pow(2, attempt) * 1000;
+      console.warn(
+        `Auth operation '${operation}' failed (attempt ${attempt + 1}/${maxRetries}), retrying in ${delayMs}ms:`,
+        (error as Error).message,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw lastError;
+}
+
+/**
+ * Determines if an error should be retried
+ */
+function isRetryableError(error: Error): boolean {
+  const message = error.message.toLowerCase();
+  const name = error.name.toLowerCase();
+
+  // Network-related errors that are likely transient
+  const retryablePatterns = [
+    'fetch failed',
+    'network',
+    'timeout',
+    'econnreset',
+    'enotfound',
+    'service unavailable',
+    'internal server error',
+    'bad gateway',
+    'gateway timeout',
+  ];
+
+  // JWT verification errors that are NOT retryable
+  const nonRetryablePatterns = [
+    'jws',
+    'invalid signature',
+    'malformed',
+    'expired',
+    'invalid authorization header',
+    'missing authorization token',
+  ];
+
+  // Check for non-retryable patterns first
+  if (nonRetryablePatterns.some((pattern) => message.includes(pattern) || name.includes(pattern))) {
+    return false;
+  }
+
+  // Check for retryable patterns
+  return retryablePatterns.some((pattern) => message.includes(pattern) || name.includes(pattern));
+}
+
 // Lazy initialization of WorkOS
 let workosClient: WorkOS | null = null;
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
@@ -178,29 +269,71 @@ function initializeWorkOS() {
   const WORKOS_API_KEY = process.env.WORKOS_API_KEY;
   const WORKOS_CLIENT_ID = process.env.WORKOS_CLIENT_ID;
 
+  // Enhanced environment variable validation with context
+  const envVars = Object.keys(process.env).filter((k) => k.includes('WORKOS'));
+  const hasApiKey = !!WORKOS_API_KEY;
+  const hasClientId = !!WORKOS_CLIENT_ID;
+
   if (!WORKOS_API_KEY) {
+    const context: AuthErrorContext = {
+      operation: 'environment_validation',
+      timestamp: Date.now(),
+      hasClientId,
+      hasApiKey: false,
+      originalError: `WORKOS_API_KEY missing. Available WorkOS env vars: ${envVars.join(', ') || 'none'}`,
+    };
+    console.error('Environment validation failed:', context);
     throw new Error('WORKOS_API_KEY environment variable is required');
   }
 
   if (!WORKOS_CLIENT_ID) {
+    const context: AuthErrorContext = {
+      operation: 'environment_validation',
+      timestamp: Date.now(),
+      hasClientId: false,
+      hasApiKey,
+      originalError: `WORKOS_CLIENT_ID missing. Available WorkOS env vars: ${envVars.join(', ') || 'none'}`,
+    };
+    console.error('Environment validation failed:', context);
     throw new Error('WORKOS_CLIENT_ID environment variable is required');
   }
 
-  // Initialize WorkOS client for JWKS URL
-  workosClient = new WorkOS(WORKOS_API_KEY);
+  try {
+    // Initialize WorkOS client for JWKS URL
+    workosClient = new WorkOS(WORKOS_API_KEY);
 
-  // Create JWKS for WorkOS token verification
-  const jwksUrl = workosClient.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
-  jwks = createRemoteJWKSet(new URL(jwksUrl));
+    // Create JWKS for WorkOS token verification with retry support
+    const jwksUrl = workosClient.userManagement.getJwksUrl(WORKOS_CLIENT_ID);
+    jwks = createRemoteJWKSet(new URL(jwksUrl));
 
-  return { workosClient, jwks };
+    console.log('WorkOS initialized successfully', {
+      jwksUrl,
+      hasApiKey: true,
+      hasClientId: true,
+      timestamp: new Date().toISOString(),
+    });
+
+    return { workosClient, jwks };
+  } catch (error) {
+    const context: AuthErrorContext = {
+      operation: 'workos_initialization',
+      timestamp: Date.now(),
+      hasClientId,
+      hasApiKey,
+      originalError: (error as Error).message,
+    };
+    console.error('WorkOS initialization failed:', context);
+    throw new Error(`Failed to initialize WorkOS: ${(error as Error).message}`);
+  }
 }
 
 /**
- * Internal function to validate WorkOS JWT token
- * Handles JWT verification using WorkOS JWKS endpoint
+ * Internal function to validate WorkOS JWT token with retry logic
+ * Handles JWT verification using WorkOS JWKS endpoint with enhanced error handling
  */
 async function validateWorkOSTokenInternal(token: string): Promise<AuthenticatedUser | null> {
+  const startTime = Date.now();
+
   try {
     // Initialize WorkOS if not already done
     const { jwks } = initializeWorkOS();
@@ -208,12 +341,34 @@ async function validateWorkOSTokenInternal(token: string): Promise<Authenticated
     // Remove 'Bearer ' prefix if present
     const cleanToken = token.replace(/^Bearer\s+/i, '');
 
-    // Verify JWT using WorkOS JWKS
-    const { payload } = await jwtVerify(cleanToken, jwks);
+    if (!cleanToken) {
+      const context: AuthErrorContext = {
+        operation: 'token_extraction',
+        timestamp: Date.now(),
+        tokenLength: token.length,
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        hasApiKey: !!process.env.WORKOS_API_KEY,
+        originalError: 'Empty token after removing Bearer prefix',
+      };
+      console.error('Token extraction failed:', context);
+      throw new Error('Missing authorization token');
+    }
+
+    // Verify JWT using WorkOS JWKS with retry logic
+    const { payload } = await withRetry(() => jwtVerify(cleanToken, jwks), 3, 'jwt_verification');
 
     // Extract user information from JWT claims with runtime validation
     const id = typeof payload.sub === 'string' ? payload.sub : '';
     const email = typeof payload['urn:myapp:email'] === 'string' ? payload['urn:myapp:email'] : '';
+
+    // Log successful authentication (but not the token details)
+    console.log('WorkOS JWT validation successful', {
+      userId: id,
+      userEmail: email ? `${email.substring(0, 3)}***@${email.split('@')[1]}` : 'none',
+      hasSystemUser: !!payload.system_user,
+      validationTime: Date.now() - startTime,
+      tokenLength: cleanToken.length,
+    });
 
     return {
       id,
@@ -230,9 +385,58 @@ async function validateWorkOSTokenInternal(token: string): Promise<Authenticated
       },
     };
   } catch (error) {
-    console.error('WorkOS JWT validation failed:', error);
+    const context: AuthErrorContext = {
+      operation: 'jwt_validation',
+      timestamp: Date.now(),
+      tokenLength: token.length,
+      hasClientId: !!process.env.WORKOS_CLIENT_ID,
+      hasApiKey: !!process.env.WORKOS_API_KEY,
+      originalError: (error as Error).message,
+    };
+
+    // Enhanced error logging with categorization
+    const isRetryable = isRetryableError(error as Error);
+    const errorType = categorizeAuthError(error as Error);
+
+    console.error('WorkOS JWT validation failed:', {
+      error: (error as Error).message,
+      errorType,
+      isRetryable,
+      context,
+      validationTime: Date.now() - startTime,
+    });
+
     return null;
   }
+}
+
+/**
+ * Categorizes authentication errors for better debugging
+ */
+function categorizeAuthError(error: Error): string {
+  const message = error.message.toLowerCase();
+  const name = error.name.toLowerCase();
+
+  if (name.includes('jws') || message.includes('signature')) {
+    return 'INVALID_SIGNATURE';
+  }
+  if (message.includes('expired')) {
+    return 'TOKEN_EXPIRED';
+  }
+  if (message.includes('malformed') || message.includes('invalid')) {
+    return 'MALFORMED_TOKEN';
+  }
+  if (message.includes('network') || message.includes('fetch failed')) {
+    return 'NETWORK_ERROR';
+  }
+  if (message.includes('timeout')) {
+    return 'TIMEOUT_ERROR';
+  }
+  if (message.includes('not found') || message.includes('enotfound')) {
+    return 'DNS_ERROR';
+  }
+
+  return 'UNKNOWN_ERROR';
 }
 
 /**
@@ -259,7 +463,7 @@ export const validateWorkOSToken = action({
     }),
     v.null(),
   ),
-  handler: async (ctx, args): Promise<AuthenticatedUser | null> => {
+  handler: async (_ctx, args): Promise<AuthenticatedUser | null> => {
     return await validateWorkOSTokenInternal(args.token);
   },
 });
@@ -288,21 +492,64 @@ export const requireAuth = action({
       permissions: v.optional(v.array(v.string())),
     }),
   }),
-  handler: async (ctx, args): Promise<AuthenticatedUser> => {
-    if (!args.authHeader || !args.authHeader.startsWith('Bearer ')) {
-      throw new Error('Invalid authorization header format');
+  handler: async (_ctx, args): Promise<AuthenticatedUser> => {
+    const hasAuthHeader = !!args.authHeader;
+    const startsWithBearer = args.authHeader?.startsWith('Bearer ') || false;
+
+    // Enhanced authorization header validation with context
+    if (!hasAuthHeader) {
+      const context: AuthErrorContext = {
+        operation: 'header_validation',
+        timestamp: Date.now(),
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        hasApiKey: !!process.env.WORKOS_API_KEY,
+        originalError: 'No Authorization header provided',
+      };
+      console.error('Auth validation failed:', context);
+      throw new Error('Missing authorization header. Expected format: "Bearer <token>"');
     }
 
-    // Extract token from header
-    const token = args.authHeader.replace(/^Bearer\s+/i, '');
+    if (!startsWithBearer) {
+      const context: AuthErrorContext = {
+        operation: 'header_validation',
+        timestamp: Date.now(),
+        tokenLength: args.authHeader?.length || 0,
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        hasApiKey: !!process.env.WORKOS_API_KEY,
+        originalError: `Invalid header format: "${args.authHeader?.substring(0, 20)}...". Expected: "Bearer <token>"`,
+      };
+      console.error('Auth validation failed:', context);
+      throw new Error('Invalid authorization header format. Expected: "Bearer <token>"');
+    }
+
+    // Extract token from header (we've already validated authHeader exists above)
+    const token = args.authHeader!.replace(/^Bearer\s+/i, '');
     if (!token) {
-      throw new Error('Missing authorization token');
+      const context: AuthErrorContext = {
+        operation: 'token_extraction',
+        timestamp: Date.now(),
+        tokenLength: 0,
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        hasApiKey: !!process.env.WORKOS_API_KEY,
+        originalError: 'Empty token after removing Bearer prefix',
+      };
+      console.error('Auth validation failed:', context);
+      throw new Error('Missing authorization token in Bearer header');
     }
 
-    // Validate token using WorkOS
+    // Validate token using WorkOS with enhanced error handling
     const user = await validateWorkOSTokenInternal(token);
     if (!user) {
-      throw new Error('Invalid or expired token');
+      const context: AuthErrorContext = {
+        operation: 'token_validation',
+        timestamp: Date.now(),
+        tokenLength: token.length,
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        hasApiKey: !!process.env.WORKOS_API_KEY,
+        originalError: 'Token validation returned null (invalid or expired)',
+      };
+      console.error('Auth validation failed:', context);
+      throw new Error('Invalid or expired authorization token');
     }
 
     return user;
@@ -335,18 +582,31 @@ export const optionalAuth = action({
     }),
     v.null(),
   ),
-  handler: async (ctx, args): Promise<AuthenticatedUser | null> => {
+  handler: async (_ctx, args): Promise<AuthenticatedUser | null> => {
+    // Return null for missing or invalid header format (no error throwing)
     if (!args.authHeader || !args.authHeader.startsWith('Bearer ')) {
+      if (args.authHeader) {
+        // Log invalid format for debugging, but don't throw
+        console.warn('Optional auth: Invalid header format', {
+          headerLength: args.authHeader.length,
+          headerPrefix: args.authHeader.substring(0, 10),
+          timestamp: new Date().toISOString(),
+        });
+      }
       return null;
     }
 
     // Extract token from header
     const token = args.authHeader.replace(/^Bearer\s+/i, '');
     if (!token) {
+      console.warn('Optional auth: Empty token after Bearer prefix removal', {
+        originalHeader: args.authHeader.substring(0, 20),
+        timestamp: new Date().toISOString(),
+      });
       return null;
     }
 
-    // Validate token using WorkOS
+    // Validate token using WorkOS (with enhanced error handling and retry logic)
     return await validateWorkOSTokenInternal(token);
   },
 });

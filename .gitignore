@@ -50,6 +50,7 @@ coverage/
 
 # AI Agent temporary files
 agent-management/agent-scratchpad/
+.scratchpad/
 
 # Agent runtime data
 data/agents/

@@ -228,18 +228,18 @@ Configuration error with helpful instructions.
 
 #### auth.ts
 
-**`validateWorkOSToken`** (action) - convex/node/auth.ts:245  
+**`validateWorkOSToken`** (action) - convex/node/auth.ts:461  
 Validates a WorkOS JWT token and returns user information  
 Args: - JWT token string  
 Returns: AuthenticatedUser | null  
 
-**`requireAuth`** (action) - convex/node/auth.ts:277  
+**`requireAuth`** (action) - convex/node/auth.ts:493  
 Validates authorization header and returns authenticated user  
 Args: - Authorization header (optional)  
 Returns: AuthenticatedUser  
 Throws: Error if authentication fails  
 
-**`optionalAuth`** (action) - convex/node/auth.ts:321  
+**`optionalAuth`** (action) - convex/node/auth.ts:580  
 Optional authentication - returns null if no auth header provided  
 Args: - Authorization header (optional)  
 Returns: AuthenticatedUser | null  

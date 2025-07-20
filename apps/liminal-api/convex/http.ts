@@ -70,7 +70,11 @@ function createErrorResponse(error: unknown, defaultStatus = 500): Response {
     errorMessage.includes('Invalid token') ||
     errorMessage.includes('Invalid authorization header format') ||
     errorMessage.includes('Missing authorization token') ||
-    errorMessage.includes('Invalid or expired token');
+    errorMessage.includes('Missing Authorization header') ||
+    errorMessage.includes('Missing authorization header') ||
+    errorMessage.includes('Missing authorization token in Bearer header') ||
+    errorMessage.includes('Invalid or expired token') ||
+    errorMessage.includes('Invalid or expired authorization token');
 
   if (isAuthError) {
     return new Response(JSON.stringify({ error: errorMessage }), {
