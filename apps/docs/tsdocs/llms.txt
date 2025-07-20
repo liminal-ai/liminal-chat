@@ -1,0 +1,74 @@
+# llms.txt - Liminal Chat API Documentation
+
+project_name: Liminal Chat API
+version: 0.0.0
+description: Convex backend for Liminal Chat - real-time data sync, authentication with Clerk, and HTTP endpoints for Vercel AI SDK integration
+base_url: https://your-deployment.convex.cloud
+docs_url: https://github.com/leegmoore/liminal-chat/tree/main/apps/liminal-api
+
+## API Endpoints
+
+- /health
+- /test
+- /clerk-webhook
+- /api/chat-text
+- /api/chat-stream
+
+## Authentication
+
+method: Clerk JWT
+details: Pass JWT token in Authorization header: Bearer YOUR_CLERK_JWT
+
+## Convex Functions
+
+### Users
+- getCurrentUser
+- syncUser
+- testAuth
+- getUserCount
+- getSampleUser
+- initializeDevUser
+
+### Conversations
+- create
+- list
+- get
+- update
+- archive
+- count
+
+### Messages
+- create
+- createBatch
+- list
+- getAll
+- count
+- getLatest
+
+### Chat
+- simpleChatAction
+- streamingChatAction
+
+## Environment Variables
+
+### Required for Production
+- CLERK_ISSUER_URL
+- CLERK_WEBHOOK_SECRET
+- OPENAI_API_KEY
+- ANTHROPIC_API_KEY
+- GOOGLE_GENERATIVE_AI_API_KEY
+- PERPLEXITY_API_KEY
+- OPENROUTER_API_KEY
+- VERCEL_API_KEY
+
+### Development Environment
+- DEV_AUTH_DEFAULT
+- DEV_USER_ID
+- DEV_USER_EMAIL
+- DEV_USER_NAME
+Development authentication bypass for local testing
+
+## Support
+
+contact: support@liminal.chat
+url: https://github.com/leegmoore/liminal-chat/issues

@@ -12,7 +12,7 @@ config({ path: path.join(rootDir, '.env') });
  * Focused on wide coverage with minimal maintenance burden
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/specs',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

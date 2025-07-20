@@ -1,4 +1,4 @@
-import { test, expect } from '../test-utils/auth-fixture';
+import { test, expect } from '../utils/auth-fixture';
 
 // Import test config properly
 const TEST_CONFIG = {

@@ -1,4 +1,4 @@
-import { test, expect } from '../test-utils/auth-fixture';
+import { test, expect } from '../utils/auth-fixture';
 
 // Test constants
 const TIMING_BUFFER_MS = 1000; // Milliseconds buffer for timestamp validation

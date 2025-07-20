@@ -1,6 +1,6 @@
-import { test, expect } from '../test-utils/auth-fixture';
-import { TEST_PROMPTS, TEST_TIMEOUTS, RESPONSE_VALIDATORS } from '../test-utils/config';
-import { makeChatRequest, parseDataStream } from '../test-utils/helpers';
+import { test, expect } from '../utils/auth-fixture';
+import { TEST_PROMPTS, TEST_TIMEOUTS, RESPONSE_VALIDATORS } from '../utils/config';
+import { makeChatRequest, parseDataStream } from '../utils/helpers';
 
 test.describe('Liminal API Integration Tests', () => {
   test('Health endpoint responds successfully', async ({ authenticatedRequest }) => {

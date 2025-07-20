@@ -30,7 +30,7 @@
     "test:smoke": "playwright test smoke-test.spec.ts",
     "test:ui": "playwright test --ui",
     "docs": "typedoc --out ../../docs/tsdocs/api convex",
-    "docs:llm": "node generate-llms-custom.js && node generate-api-for-claude-v2.js"
+    "docs:llm": "node scripts/generate-llms-custom.js && node scripts/generate-api-for-claude-v2.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
@@ -54,7 +54,6 @@
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "eslint": "^8.49.0",
-    "llms-generator": "^1.0.5",
     "npm-run-all": "^4.1.5",
     "typedoc": "^0.28.7",
     "typescript": "^5.3.3"
