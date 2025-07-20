@@ -4,12 +4,12 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'apps/convex/**'
+      - 'apps/liminal-api/**'
       - '.github/workflows/backend-ci.yml'
   push:
     branches: [main]
     paths:
-      - 'apps/convex/**'
+      - 'apps/liminal-api/**'
       - '.github/workflows/backend-ci.yml'
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
         run: pnpm --filter @liminal/shared-types build
 
       - name: Generate Convex types
-        working-directory: apps/convex
+        working-directory: apps/liminal-api
         run: npx convex codegen
 
       # Format Check (Fail Fast)
@@ -156,7 +156,7 @@ jobs:
       # Integration Tests (Stop on failures)
       - name: Integration Tests
         if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
-        working-directory: apps/convex
+        working-directory: apps/liminal-api
         env:
           SYSTEM_USER_EMAIL: ${{ secrets.SYSTEM_USER_EMAIL }}
           SYSTEM_USER_PASSWORD: ${{ secrets.SYSTEM_USER_PASSWORD }}

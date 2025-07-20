@@ -43,7 +43,7 @@ importers:
         specifier: ^5.3.3
         version: 5.8.3
 
-  apps/convex:
+  apps/liminal-api:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: ^1.2.12
@@ -103,9 +103,6 @@ importers:
       eslint:
         specifier: ^8.49.0
         version: 8.57.1
-      llms-generator:
-        specifier: ^1.0.5
-        version: 1.0.5
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -5048,10 +5045,6 @@ packages:
     resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
     dependencies:
       uc.micro: 2.1.0
-    dev: true
-
-  /llms-generator@1.0.5:
-    resolution: {integrity: sha512-mo+irdZnFwmMO6n8X457rRgjb2tiq1F4VpoLW6uB8nyw4Cax6mob8kZ6W2LoKQ+wWqJKCrsq18mlkghctrBRjg==}
     dev: true
 
   /load-json-file@4.0.0:
