@@ -34,39 +34,31 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@beta
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY_2 }}
 
           # This is an optional setting that allows Claude to read CI results on PRs
           additional_permissions: |
             actions: read
-
-          # Model selection: Sonnet by default, Opus if /opus is mentioned
-          model: ${{ contains(github.event.comment.body, '/opus') && 'claude-opus-4-20250514' || 'claude-3-5-sonnet-20241022' }}
-
-          # Customize the trigger phrase to use /claude
-          trigger_phrase: '/claude'
-
-          # Verification requirements to prevent lazy reviews
-          custom_instructions: |
-            VERIFICATION REQUIREMENTS:
-            1. Before claiming broken imports/references, run Grep to verify they exist
-            2. Before referencing external documentation issues, read the actual docs
-            3. Only use "Critical" for runtime failures or security vulnerabilities
-            4. For style suggestions, provide specific improved code examples
-            5. If you can't verify a claim with available tools, don't make the claim
-
+          
+          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
+          # model: "claude-opus-4-20250514"
+          
+          # Optional: Customize the trigger phrase (default: @claude)
+          # trigger_phrase: "/claude"
+          
           # Optional: Trigger when specific user is assigned to an issue
           # assignee_trigger: "claude-bot"
-
+          
           # Optional: Allow Claude to run specific commands
           # allowed_tools: "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-
+          
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           # custom_instructions: |
           #   Follow our coding standards
           #   Ensure all new code has tests
           #   Use TypeScript for new files
-
+          
           # Optional: Custom environment variables for Claude
           # claude_env: |
           #   NODE_ENV: test
+
