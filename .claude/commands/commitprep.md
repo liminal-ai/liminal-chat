@@ -52,10 +52,10 @@ Type Check (Stop on errors)
    - Stop if type errors found
 
 Documentation Generation (Auto-update)
-   - Command: `pnpm --filter @liminal/convex docs:llm`
+   - Command: `pnpm --filter @liminal/api docs:llm`
      - Regenerates llms.txt and api-for-claude.md via generate-llms-custom.js and generate-api-for-claude-v2.js
      - Ensures documentation reflects latest code changes
-   - Command: `git add apps/convex/docs/api/* apps/convex/llms-config.json`
+   - Command: `git add apps/liminal-api/docs/api/* apps/liminal-api/llms-config.json`
      - Stage the updated documentation files from Convex package
    - Continue even if generation has warnings
 

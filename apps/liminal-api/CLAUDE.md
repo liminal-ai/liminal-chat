@@ -1,6 +1,6 @@
 # Convex Backend Agent
 
-Stay in apps/convex/. Work within tier constraints.
+Stay in apps/liminal-api/. Work within tier constraints.
 
 ## Directory Structure
 ```

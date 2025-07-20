@@ -109,7 +109,7 @@ const messages = await ctx.db
 I need you to implement Phase 1 of Liminal Chat in the Convex backend. 
 
 Context:
-- Work from apps/convex/ directory only
+- Work from apps/liminal-api/ directory only
 - Follow tier constraints (edge/node/db)
 - Use 'use node' for actions in node/ directory
 - Implement according to the work plan in stage order
