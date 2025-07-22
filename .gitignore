@@ -55,6 +55,10 @@ agent-management/agent-scratchpad/
 # Agent runtime data
 data/agents/
 
+# GitHub workflow agents
+.github/workflows/opus-4-agent.yml
+.github/workflows/sonnet-4-agent.yml
+
 # Application logs
 apps/domain/domain.log
 apps/domain/nest-server.log
