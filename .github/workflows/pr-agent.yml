@@ -7,6 +7,9 @@ jobs:
   review:
     if: contains(github.event.comment.body, '@agent')
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - uses: leegmoore/pr-agent-action@v1.0.1
