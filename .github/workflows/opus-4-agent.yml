@@ -52,7 +52,7 @@ jobs:
           # Optional: Add custom instructions for Claude to customize its behavior for your project
           custom_instructions: |
             🧠 **Claude Opus 4** responding:
-            
+
             Follow our coding standards
             Ensure all new code has tests
             Use TypeScript for new files
