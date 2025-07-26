@@ -182,7 +182,23 @@ export const update = mutation({
     }
 
     // Build updates object with only provided fields
-    const updates: any = {
+    interface AgentUpdates {
+      updatedAt: number;
+      name?: string;
+      systemPrompt?: string;
+      provider?: string;
+      model?: string;
+      config?: {
+        temperature?: number;
+        maxTokens?: number;
+        topP?: number;
+        reasoning?: boolean;
+        streamingSupported?: boolean;
+      };
+      active?: boolean;
+    }
+
+    const updates: AgentUpdates = {
       updatedAt: Date.now(),
     };
 

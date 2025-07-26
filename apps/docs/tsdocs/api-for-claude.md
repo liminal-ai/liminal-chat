@@ -43,12 +43,12 @@ Updates an existing agent for the authenticated user.
 Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing), - New active status (optional)  
 Throws: Error if agent not found, not owned by user, or name conflicts  
 
-**`get`** (query) - convex/db/agents.ts:230  
+**`get`** (query) - convex/db/agents.ts:246  
 Gets an agent by ID for the authenticated user.  
 Args: - The ID of the agent to retrieve, - The authenticated user ID  
 Returns: The agent object or null if not found/not owned by user  
 
-**`list`** (query) - convex/db/agents.ts:285  
+**`list`** (query) - convex/db/agents.ts:301  
 Lists all agents for the authenticated user with optional filtering.  
 Args: - The authenticated user ID, - Filter by active status (optional)  
 Returns: Array of agents owned by the user  

@@ -355,15 +355,9 @@ test.describe('Agents API', () => {
       expect(body.error).toContain('letters, numbers, and hyphens');
     });
 
-    test('Cannot update agent owned by different user', async ({
-      authenticatedRequest,
-      request,
-    }) => {
-      // Test that we get 404 when trying to update an agent we don't own
-      // This effectively tests the same logic as non-existent agent
-      // Since we can't easily create agents for different users in this test setup,
-      // we'll verify the error handling by checking that our mutation properly
-      // validates ownership and returns the expected error message
+    test('Can update own agent with valid ownership', async ({ authenticatedRequest, request }) => {
+      // Test that authenticated users can successfully update their own agents
+      // This verifies the ownership validation logic works correctly for valid ownership
 
       // Create an agent normally
       const timestamp = Date.now();
@@ -388,9 +382,7 @@ test.describe('Agents API', () => {
       });
       expect(updateResp.status()).toBe(200);
 
-      // The actual test we want is that non-existent agents return 404
-      // Since ID validation is strict, we'll accept that the logic is tested
-      // through the ownership validation path in our mutation
+      // This confirms that ownership validation allows legitimate updates
     });
 
     test('Cannot update agent without authentication', async ({ request }) => {
