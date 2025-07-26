@@ -1,4 +1,3 @@
-Move to root dir
 
 Stage all changes
    - Command: `pnpm precommit:stage-all`

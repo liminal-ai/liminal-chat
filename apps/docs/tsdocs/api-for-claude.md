@@ -38,12 +38,17 @@ Args: - The authenticated user ID from WorkOS, - Unique identifier like "alice" 
 Returns: The ID of the created agent  
 Throws: Error if agent name already exists for this user  
 
-**`get`** (query) - convex/db/agents.ts:107  
+**`update`** (query) - convex/db/agents.ts:120  
+Updates an existing agent for the authenticated user.  
+Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing), - New active status (optional)  
+Throws: Error if agent not found, not owned by user, or name conflicts  
+
+**`get`** (query) - convex/db/agents.ts:230  
 Gets an agent by ID for the authenticated user.  
 Args: - The ID of the agent to retrieve, - The authenticated user ID  
 Returns: The agent object or null if not found/not owned by user  
 
-**`list`** (query) - convex/db/agents.ts:162  
+**`list`** (query) - convex/db/agents.ts:285  
 Lists all agents for the authenticated user with optional filtering.  
 Args: - The authenticated user ID, - Filter by active status (optional)  
 Returns: Array of agents owned by the user  
@@ -228,18 +233,18 @@ Configuration error with helpful instructions.
 
 #### auth.ts
 
-**`validateWorkOSToken`** (action) - convex/node/auth.ts:461  
+**`validateWorkOSToken`** (action) - convex/node/auth.ts:449  
 Validates a WorkOS JWT token and returns user information  
 Args: - JWT token string  
 Returns: AuthenticatedUser | null  
 
-**`requireAuth`** (action) - convex/node/auth.ts:493  
+**`requireAuth`** (action) - convex/node/auth.ts:481  
 Validates authorization header and returns authenticated user  
 Args: - Authorization header (optional)  
 Returns: AuthenticatedUser  
 Throws: Error if authentication fails  
 
-**`optionalAuth`** (action) - convex/node/auth.ts:580  
+**`optionalAuth`** (action) - convex/node/auth.ts:568  
 Optional authentication - returns null if no auth header provided  
 Args: - Authorization header (optional)  
 Returns: AuthenticatedUser | null  
@@ -278,7 +283,7 @@ Finds the project root by looking for package.json with "liminal-chat" name
 ## Function Index by Type
 
 ### Convex Queries
-agents.ts: `create`, `get`, `list`  
+agents.ts: `create`, `update`, `get`, `list`  
 cleanup.ts: `clearTestData`, `getDataCounts`  
 conversations.ts: `list`, `get`, `count`  
 messages.ts: `list`, `getAll`, `count`, `getLatest`  
