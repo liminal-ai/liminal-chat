@@ -1,4 +1,8 @@
-Move to root dir
+Think hard through all stages of this commitprep process
+
+pwd to see what directory you are in
+
+If not in project root, cd into project root
 
 Stage all changes
    - Command: `pnpm precommit:stage-all`

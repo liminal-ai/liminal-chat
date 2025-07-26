@@ -462,6 +462,122 @@ http.route({
   }),
 });
 
+// Get agent by ID
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const agent = await ctx.runQuery(api.db.agents.get, {
+        agentId,
+        userId: user.id,
+      });
+
+      if (!agent) {
+        return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify(agent), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Update agent
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'PATCH',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { name, systemPrompt, provider, model, config, active } = body;
+
+      try {
+        await ctx.runMutation(api.db.agents.update, {
+          agentId,
+          userId: user.id,
+          name,
+          systemPrompt,
+          provider,
+          model,
+          config,
+          active,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (dbError) {
+        if (dbError instanceof Error) {
+          if (dbError.message.includes('not found or access denied')) {
+            return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+          if (dbError.message.includes('Agent with this name already exists')) {
+            return new Response(
+              JSON.stringify({ error: 'Agent with this name already exists for this user' }),
+              {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          if (
+            dbError.message.includes('letters, numbers, and hyphens') ||
+            dbError.message.includes('Agent name cannot be empty')
+          ) {
+            return new Response(JSON.stringify({ error: dbError.message }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
 // Streaming chat endpoint
 http.route({
   path: '/api/chat',
@@ -574,5 +690,7 @@ http.route({
  * - PATCH /api/conversations/:id - Update conversation
  * - DELETE /api/conversations/:id - Archive conversation
  * - POST /api/agents - Create agent
+ * - GET /api/agents/{agentId} - Get agent by ID
+ * - PATCH /api/agents/{agentId} - Update agent
  */
 export default http;

@@ -90,6 +90,145 @@ export const create = mutation({
 });
 
 /**
+ * Updates an existing agent for the authenticated user.
+ * Only provided fields will be updated - partial updates are supported.
+ * Agent names must be unique per user and will be normalized to lowercase.
+ *
+ * @param args.agentId - The ID of the agent to update
+ * @param args.userId - The authenticated user ID from WorkOS
+ * @param args.name - New unique identifier (optional, will be normalized)
+ * @param args.systemPrompt - New personality/behavior prompt (optional)
+ * @param args.provider - New provider like "openai" or "anthropic" (optional)
+ * @param args.model - New model like "gpt-4" or "claude-3-sonnet" (optional)
+ * @param args.config - New configuration object (optional, replaces existing)
+ * @param args.active - New active status (optional)
+ * @throws Error if agent not found, not owned by user, or name conflicts
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.db.agents.update, {
+ *   agentId: "j123...",
+ *   userId: "user_123",
+ *   systemPrompt: "You are a more helpful assistant.",
+ *   config: {
+ *     temperature: 0.8,
+ *     maxTokens: 2000
+ *   }
+ * });
+ * ```
+ */
+export const update = mutation({
+  args: {
+    agentId: v.id('agents'),
+    userId: v.string(),
+    name: v.optional(v.string()),
+    systemPrompt: v.optional(v.string()),
+    provider: v.optional(v.string()),
+    model: v.optional(v.string()),
+    config: v.optional(
+      v.object({
+        temperature: v.optional(v.number()),
+        maxTokens: v.optional(v.number()),
+        topP: v.optional(v.number()),
+        reasoning: v.optional(v.boolean()),
+        streamingSupported: v.optional(v.boolean()),
+      }),
+    ),
+    active: v.optional(v.boolean()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Get agent and validate ownership
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    if (agent.userId !== args.userId) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    // Handle name update if provided
+    let normalizedName: string | undefined = undefined;
+    if (args.name !== undefined) {
+      // Check for empty name
+      if (!args.name || args.name.trim().length === 0) {
+        throw new Error('Agent name cannot be empty');
+      }
+
+      // Validate name format before normalization
+      const originalNameRegex = /^[a-zA-Z0-9-]+$/;
+      if (!originalNameRegex.test(args.name.trim())) {
+        throw new Error('Agent name must contain only letters, numbers, and hyphens');
+      }
+
+      // Normalize name to lowercase
+      const newNormalizedName = args.name.toLowerCase().trim();
+      normalizedName = newNormalizedName;
+
+      // Check for name conflicts with OTHER agents (not current agent)
+      if (newNormalizedName !== agent.name) {
+        const existingAgent = await ctx.db
+          .query('agents')
+          .withIndex('by_user_and_name', (q) =>
+            q.eq('userId', args.userId).eq('name', newNormalizedName),
+          )
+          .unique();
+
+        if (existingAgent && existingAgent._id !== args.agentId) {
+          throw new Error('Agent with this name already exists for this user');
+        }
+      }
+    }
+
+    // Build updates object with only provided fields
+    interface AgentUpdates {
+      updatedAt: number;
+      name?: string;
+      systemPrompt?: string;
+      provider?: string;
+      model?: string;
+      config?: {
+        temperature?: number;
+        maxTokens?: number;
+        topP?: number;
+        reasoning?: boolean;
+        streamingSupported?: boolean;
+      };
+      active?: boolean;
+    }
+
+    const updates: AgentUpdates = {
+      updatedAt: Date.now(),
+    };
+
+    if (normalizedName !== undefined) {
+      updates.name = normalizedName;
+    }
+    if (args.systemPrompt !== undefined) {
+      updates.systemPrompt = args.systemPrompt;
+    }
+    if (args.provider !== undefined) {
+      updates.provider = args.provider;
+    }
+    if (args.model !== undefined) {
+      updates.model = args.model;
+    }
+    if (args.config !== undefined) {
+      updates.config = args.config;
+    }
+    if (args.active !== undefined) {
+      updates.active = args.active;
+    }
+
+    // Apply updates
+    await ctx.db.patch(args.agentId, updates);
+
+    return null;
+  },
+});
+
+/**
  * Gets an agent by ID for the authenticated user.
  *
  * @param args.agentId - The ID of the agent to retrieve
