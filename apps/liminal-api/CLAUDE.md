@@ -30,6 +30,11 @@ convex/
 └── schema.ts # Database schema
 ```
 
+## Tier Rules
+- **edge/**: Default Convex runtime (V8 isolate). No 'use node'.
+- **node/**: Node.js runtime. MUST have 'use node' at top of file.
+- **db/**: Pure database operations. No HTTP, no 'use node'.
+
 
 
 <dev-commands>
@@ -78,6 +83,17 @@ npm run logs:prod        # Tail production logs (explicit)
 - **PM2 Dev Server**: Always running (`npm run dev:start`)
 - **Dashboard Testing**: Preferred for mutations/queries (`npm run dev:dashboard`)
 - **Direct CLI**: Rarely needed - use dashboard instead
+
+### Direct CLI Commands (when needed)
+```bash
+npx convex logs          # View Convex function logs without dashboard
+npx convex run <function> # Execute function from terminal
+npx convex env set KEY value # Set environment variables
+```
+
+### Debugging Logs
+- Check logs with `npm run dev:logs` if deployment issues arise
+- Use `npx convex logs` to see function execution logs and errors
 </dev-commands>
 
 <quick-reference>
@@ -126,10 +142,28 @@ export const myAction = action({
 - **Function not found** → Check api vs internal imports
 - **Schema changes** → Ensure dev server running
 - **Type errors** → Restart TypeScript server
+
+### Common Gotchas
+- **"Cannot use ctx.db in action"** → Use ctx.runQuery/runMutation instead
+- **"Function not found"** → Check import (api vs internal) and file path
+- **Schema changes not working** → Ensure `npx convex dev` is running
+- **Type errors after schema change** → Restart TypeScript server
+
+### Quick Testing
+- Dashboard function runner: Test mutations/queries directly
+- Check generated types: `convex/_generated/dataModel.d.ts`
+- HTTP endpoints: Use curl or Postman with Convex URL
 </quick-reference>
 
 <development-workflow>
 ## Development Workflow
+
+### Server Must Be Running
+**User Responsibility**: Keep `npm run dev:start` running
+- Auto-deploys on every file save
+- Generates TypeScript types
+- Validates schema changes
+- Check logs with `npm run dev:logs` if issues arise
 
 ### Development Flow
 1. **Write** → Save → Check deployment status
@@ -137,6 +171,12 @@ export const myAction = action({
 3. **Deploy succeeds** → Suggest dashboard test
 4. **User tests** → Dashboard Function Runner/Data Browser
 5. **Share results** → Agent fixes issues
+
+### Common Workflow Issues
+- **"Function not found"** → Dev server might be down
+- **Types not updating** → Check if dev server is running
+- **Schema validation fails** → Dashboard shows exact issue
+- **Deploy hangs** → User should check `npm run dev:logs`
 
 ### Key Points
 - Dev server must stay running (`npm run dev:start`)
