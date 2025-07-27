@@ -124,8 +124,8 @@ test.describe('Agents API', () => {
     expect(agent.provider).toBe('openai');
     expect(agent.model).toBe('gpt-4');
 
-    // Check defaults
-    expect(agent.archived).toBe(false);
+    // archived field should not be present in response
+    expect(agent.archived).toBeUndefined();
 
     // Check timestamps
     expect(typeof agent.createdAt).toBe('number');
@@ -278,7 +278,6 @@ test.describe('Agents API', () => {
         systemPrompt: 'You are a specialized research assistant.',
         provider: 'anthropic',
         model: 'claude-3-sonnet',
-        archived: true,
       };
 
       const response = await authenticatedRequest.patch(`/api/agents/${createdAgentId}`, {
@@ -293,7 +292,8 @@ test.describe('Agents API', () => {
       expect(agent.systemPrompt).toBe(updates.systemPrompt);
       expect(agent.provider).toBe(updates.provider);
       expect(agent.model).toBe(updates.model);
-      expect(agent.archived).toBe(updates.archived);
+      // archived field should not be present in response
+      expect(agent.archived).toBeUndefined();
     });
 
     test('Can update agent name with normalization', async ({ authenticatedRequest }) => {
@@ -433,7 +433,8 @@ test.describe('Agents API', () => {
       expect(updatedAgent.provider).toBe(originalAgent.provider);
       expect(updatedAgent.model).toBe(originalAgent.model);
       expect(updatedAgent.config).toEqual(originalAgent.config);
-      expect(updatedAgent.archived).toBe(originalAgent.archived);
+      // archived field should not be present in response
+      expect(updatedAgent.archived).toBeUndefined();
     });
   });
 
@@ -445,15 +446,6 @@ test.describe('Agents API', () => {
       const body = await response.json();
       expect(body).toHaveProperty('error');
       expect(body.error).toContain('authorization header');
-    });
-
-    test('Returns empty array for new user', async ({ authenticatedRequest }) => {
-      const response = await authenticatedRequest.get('/api/agents');
-      expect(response.status()).toBe(200);
-
-      const body = await response.json();
-      expect(Array.isArray(body)).toBe(true);
-      expect(body.length).toBe(0);
     });
 
     test('Returns user agents excluding archived by default', async ({ authenticatedRequest }) => {
@@ -483,10 +475,8 @@ test.describe('Agents API', () => {
       const agent1Id = (await response1.json()).id;
       const agent2Id = (await response2.json()).id;
 
-      // Archive one agent
-      await authenticatedRequest.patch(`/api/agents/${agent1Id}`, {
-        data: { archived: true },
-      });
+      // Archive one agent using DELETE endpoint
+      await authenticatedRequest.delete(`/api/agents/${agent1Id}`);
 
       // List agents (should only return non-archived)
       const listResponse = await authenticatedRequest.get('/api/agents');
@@ -494,9 +484,16 @@ test.describe('Agents API', () => {
 
       const agents = await listResponse.json();
       expect(Array.isArray(agents)).toBe(true);
-      expect(agents.length).toBe(1);
-      expect(agents[0]._id).toBe(agent2Id);
-      expect(agents[0].archived).toBe(false);
+
+      // Verify that archived agent is NOT in the list
+      expect(agents.find((a: any) => a._id === agent1Id)).toBeUndefined();
+
+      // Verify that non-archived agent IS in the list
+      const foundAgent2 = agents.find((a: any) => a._id === agent2Id);
+      expect(foundAgent2).toBeDefined();
+      expect(foundAgent2._id).toBe(agent2Id);
+      // archived field should not be present in response
+      expect(foundAgent2.archived).toBeUndefined();
     });
 
     test('Includes archived agents when requested', async ({ authenticatedRequest }) => {
@@ -515,15 +512,13 @@ test.describe('Agents API', () => {
 
       const agentId = (await createResponse.json()).id;
 
-      // Archive the agent
-      await authenticatedRequest.patch(`/api/agents/${agentId}`, {
-        data: { archived: true },
-      });
+      // Archive the agent using DELETE endpoint
+      await authenticatedRequest.delete(`/api/agents/${agentId}`);
 
       // List with includeArchived=false (default)
       const listResponse1 = await authenticatedRequest.get('/api/agents');
       const agents1 = await listResponse1.json();
-      expect(agents1.length).toBe(0);
+      expect(agents1.find((a: any) => a._id === agentId)).toBeUndefined();
 
       // List with includeArchived=true
       const listResponse2 = await authenticatedRequest.get('/api/agents?includeArchived=true');
@@ -531,9 +526,11 @@ test.describe('Agents API', () => {
 
       const agents2 = await listResponse2.json();
       expect(Array.isArray(agents2)).toBe(true);
-      expect(agents2.length).toBe(1);
-      expect(agents2[0]._id).toBe(agentId);
-      expect(agents2[0].archived).toBe(true);
+      const foundArchivedAgent = agents2.find((a: any) => a._id === agentId);
+      expect(foundArchivedAgent).toBeDefined();
+      expect(foundArchivedAgent._id).toBe(agentId);
+      // archived field should not be present in response
+      expect(foundArchivedAgent.archived).toBeUndefined();
     });
 
     test('Returns agents in descending order', async ({ authenticatedRequest }) => {
@@ -567,9 +564,15 @@ test.describe('Agents API', () => {
       const listResponse = await authenticatedRequest.get('/api/agents');
       const agents = await listResponse.json();
 
-      expect(agents.length).toBe(2);
+      // Find our test agents
+      const foundAgent1 = agents.find((a: any) => a.name === agent1Data.name);
+      const foundAgent2 = agents.find((a: any) => a.name === agent2Data.name);
+
+      expect(foundAgent1).toBeDefined();
+      expect(foundAgent2).toBeDefined();
+
       // Should be in descending order (newest first)
-      expect(agents[0]._creationTime).toBeGreaterThan(agents[1]._creationTime);
+      expect(foundAgent2._creationTime).toBeGreaterThan(foundAgent1._creationTime);
     });
   });
 

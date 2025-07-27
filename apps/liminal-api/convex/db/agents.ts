@@ -101,7 +101,6 @@ export const create = mutation({
  * @param args.provider - New provider like "openai" or "anthropic" (optional)
  * @param args.model - New model like "gpt-4" or "claude-3-sonnet" (optional)
  * @param args.config - New configuration object (optional, replaces existing)
- * @param args.archived - New archived status (optional)
  * @throws Error if agent not found, not owned by user, or name conflicts
  *
  * @example
@@ -134,17 +133,12 @@ export const update = mutation({
         streamingSupported: v.optional(v.boolean()),
       }),
     ),
-    archived: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent) {
-      throw new Error('Agent not found or access denied');
-    }
-
-    if (agent.userId !== args.userId) {
+    if (!agent || agent.userId !== args.userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 
@@ -195,7 +189,6 @@ export const update = mutation({
         reasoning?: boolean;
         streamingSupported?: boolean;
       };
-      archived?: boolean;
     }
 
     const updates: AgentUpdates = {
@@ -216,9 +209,6 @@ export const update = mutation({
     }
     if (args.config !== undefined) {
       updates.config = args.config;
-    }
-    if (args.archived !== undefined) {
-      updates.archived = args.archived;
     }
 
     // Apply updates
@@ -266,7 +256,6 @@ export const get = query({
           streamingSupported: v.optional(v.boolean()),
         }),
       ),
-      archived: v.optional(v.boolean()),
       createdAt: v.number(),
       updatedAt: v.number(),
     }),
@@ -279,7 +268,9 @@ export const get = query({
       return null;
     }
 
-    return agent;
+    // Return agent without the archived field
+    const { archived: _archived, ...agentWithoutInternalFields } = agent;
+    return agentWithoutInternalFields;
   },
 });
 
@@ -321,27 +312,33 @@ export const list = query({
           streamingSupported: v.optional(v.boolean()),
         }),
       ),
-      archived: v.optional(v.boolean()),
       createdAt: v.number(),
       updatedAt: v.number(),
     }),
   ),
   handler: async (ctx, args) => {
+    let agents;
     if (args.includeArchived) {
       // Return all agents regardless of archived status
-      return await ctx.db
+      agents = await ctx.db
         .query('agents')
         .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId))
         .order('desc')
         .collect();
     } else {
       // Default behavior: return only non-archived agents
-      return await ctx.db
+      agents = await ctx.db
         .query('agents')
         .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId).eq('archived', false))
         .order('desc')
         .collect();
     }
+
+    // Return agents without the archived field
+    return agents.map((agent) => {
+      const { archived: _archived, ...agentWithoutInternalFields } = agent;
+      return agentWithoutInternalFields;
+    });
   },
 });
 
@@ -371,11 +368,7 @@ export const archive = mutation({
   handler: async (ctx, args) => {
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent) {
-      throw new Error('Agent not found or access denied');
-    }
-
-    if (agent.userId !== args.userId) {
+    if (!agent || agent.userId !== args.userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 

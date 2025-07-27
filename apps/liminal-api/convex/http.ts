@@ -462,6 +462,34 @@ http.route({
   }),
 });
 
+// List agents
+http.route({
+  path: '/api/agents',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const url = new URL(request.url);
+      const includeArchived = url.searchParams.get('includeArchived') === 'true';
+
+      const agents = await ctx.runQuery(api.db.agents.list, {
+        userId: user.id,
+        includeArchived,
+      });
+
+      return new Response(JSON.stringify(agents), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
 // Get agent by ID
 http.route({
   pathPrefix: '/api/agents/',
@@ -525,7 +553,7 @@ http.route({
       }
 
       const body = await request.json();
-      const { name, systemPrompt, provider, model, config, archived } = body;
+      const { name, systemPrompt, provider, model, config } = body;
 
       try {
         await ctx.runMutation(api.db.agents.update, {
@@ -536,7 +564,6 @@ http.route({
           provider,
           model,
           config,
-          archived,
         });
 
         return new Response(JSON.stringify({ success: true }), {
@@ -545,7 +572,11 @@ http.route({
         });
       } catch (dbError) {
         if (dbError instanceof Error) {
-          if (dbError.message.includes('not found or access denied')) {
+          if (
+            dbError.message.includes('not found or access denied') ||
+            dbError.message.includes('ArgumentValidationError') ||
+            dbError.message.includes('does not match validator')
+          ) {
             return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
               status: 404,
               headers: { 'Content-Type': 'application/json' },
@@ -572,34 +603,6 @@ http.route({
         }
         throw dbError;
       }
-    } catch (error) {
-      return createErrorResponse(error);
-    }
-  }),
-});
-
-// List agents
-http.route({
-  path: '/api/agents',
-  method: 'GET',
-  handler: httpAction(async (ctx, request) => {
-    try {
-      // Require authentication using Node.js action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
-
-      const url = new URL(request.url);
-      const includeArchived = url.searchParams.get('includeArchived') === 'true';
-
-      const agents = await ctx.runQuery(api.db.agents.list, {
-        userId: user.id,
-        includeArchived,
-      });
-
-      return new Response(JSON.stringify(agents), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
     } catch (error) {
       return createErrorResponse(error);
     }
@@ -637,11 +640,17 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (dbError) {
-        if (dbError instanceof Error && dbError.message.includes('not found or access denied')) {
-          return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          });
+        if (dbError instanceof Error) {
+          if (
+            dbError.message.includes('not found or access denied') ||
+            dbError.message.includes('ArgumentValidationError') ||
+            dbError.message.includes('does not match validator')
+          ) {
+            return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
         }
         throw dbError;
       }

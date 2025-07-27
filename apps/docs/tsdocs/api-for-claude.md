@@ -38,22 +38,22 @@ Args: - The authenticated user ID from WorkOS, - Unique identifier like "alice" 
 Returns: The ID of the created agent  
 Throws: Error if agent name already exists for this user  
 
-**`update`** (query) - convex/db/agents.ts:120  
+**`update`** (query) - convex/db/agents.ts:119  
 Updates an existing agent for the authenticated user.  
-Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing), - New archived status (optional)  
+Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing)  
 Throws: Error if agent not found, not owned by user, or name conflicts  
 
-**`get`** (query) - convex/db/agents.ts:246  
+**`get`** (query) - convex/db/agents.ts:236  
 Gets an agent by ID for the authenticated user.  
 Args: - The ID of the agent to retrieve, - The authenticated user ID  
 Returns: The agent object or null if not found/not owned by user  
 
-**`list`** (query) - convex/db/agents.ts:301  
+**`list`** (query) - convex/db/agents.ts:292  
 Lists all agents for the authenticated user with optional filtering.  
 Args: - The authenticated user ID, - Include archived agents in results (optional, defaults to false)  
 Returns: Array of agents owned by the user  
 
-**`archive`** (mutation) - convex/db/agents.ts:365  
+**`archive`** (mutation) - convex/db/agents.ts:362  
 Archives (soft deletes) an agent for the authenticated user.  
 Args: - The ID of the agent to archive, - The authenticated user ID from WorkOS  
 Returns: null on success  
