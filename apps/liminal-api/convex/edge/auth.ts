@@ -75,17 +75,15 @@ function isRetryableError(error: Error): boolean {
 }
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3) {
-  let attempt = 0;
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  for (let attempt = 0; attempt < retries; attempt++) {
     try {
       return await fn();
     } catch (e) {
-      attempt++;
-      if (attempt >= retries || !isRetryableError(e as Error)) throw e;
-      await new Promise((r) => setTimeout(r, 2 ** attempt * 1000));
+      if (attempt === retries - 1 || !isRetryableError(e as Error)) throw e;
+      await new Promise((r) => setTimeout(r, 2 ** (attempt + 1) * 1000));
     }
   }
+  throw new Error('Retry limit exceeded');
 }
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
@@ -130,12 +128,14 @@ async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
       id,
       email,
       customClaims: {
-        system_user: payload.system_user as string | undefined,
-        test_context: payload.test_context as string | undefined,
-        environment: payload.environment as string | undefined,
-        permissions: Array.isArray(payload.permissions)
-          ? (payload.permissions as string[])
-          : undefined,
+        system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
+        test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
+        environment: typeof payload.environment === 'string' ? payload.environment : undefined,
+        permissions:
+          Array.isArray(payload.permissions) &&
+          payload.permissions.every((p) => typeof p === 'string')
+            ? payload.permissions
+            : undefined,
       },
     };
   } catch (error) {

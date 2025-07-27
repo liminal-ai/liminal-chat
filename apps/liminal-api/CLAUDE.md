@@ -63,6 +63,12 @@ npm run lint             # ESLint checks with warnings
 npm run lint:fix         # Auto-fix ESLint issues
 ```
 
+**Important**: Always run Prettier before lint to avoid formatting errors:
+```bash
+npx prettier --write path/to/file.ts  # Format specific file
+npx prettier --write convex/**/*.ts   # Format all Convex files
+```
+
 ### Environment & Deployment
 ```bash
 npm run env:pull         # List all environment variables
