@@ -30,14 +30,14 @@ export default defineSchema(
           streamingSupported: v.optional(v.boolean()),
         }),
       ),
-      // Active status (defaults to true)
-      active: v.optional(v.boolean()),
+      // Archived status (defaults to false - not archived)
+      archived: v.optional(v.boolean()),
       // Timestamps
       createdAt: v.number(),
       updatedAt: v.number(),
     })
       .index('by_user_and_name', ['userId', 'name'])
-      .index('by_user_and_active', ['userId', 'active']),
+      .index('by_user_and_archived', ['userId', 'archived']),
 
     // Conversations table - stores chat sessions
     conversations: defineTable({

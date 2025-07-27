@@ -40,7 +40,7 @@ Throws: Error if agent name already exists for this user
 
 **`update`** (query) - convex/db/agents.ts:120  
 Updates an existing agent for the authenticated user.  
-Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing), - New active status (optional)  
+Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing), - New archived status (optional)  
 Throws: Error if agent not found, not owned by user, or name conflicts  
 
 **`get`** (query) - convex/db/agents.ts:246  
@@ -50,8 +50,14 @@ Returns: The agent object or null if not found/not owned by user
 
 **`list`** (query) - convex/db/agents.ts:301  
 Lists all agents for the authenticated user with optional filtering.  
-Args: - The authenticated user ID, - Filter by active status (optional)  
+Args: - The authenticated user ID, - Include archived agents in results (optional, defaults to false)  
 Returns: Array of agents owned by the user  
+
+**`archive`** (mutation) - convex/db/agents.ts:365  
+Archives (soft deletes) an agent for the authenticated user.  
+Args: - The ID of the agent to archive, - The authenticated user ID from WorkOS  
+Returns: null on success  
+Throws: Error if agent not found or not owned by user  
 
 #### cleanup.ts
 
@@ -290,6 +296,7 @@ messages.ts: `list`, `getAll`, `count`, `getLatest`
 migrations.ts: `addUpdatedAtToMessages`, `addUpdatedAtToConversations`  
 
 ### Convex Mutations
+agents.ts: `archive`  
 conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`  
 messages.ts: `create`, `createBatch`  
 

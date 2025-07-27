@@ -525,7 +525,7 @@ http.route({
       }
 
       const body = await request.json();
-      const { name, systemPrompt, provider, model, config, active } = body;
+      const { name, systemPrompt, provider, model, config, archived } = body;
 
       try {
         await ctx.runMutation(api.db.agents.update, {
@@ -536,7 +536,7 @@ http.route({
           provider,
           model,
           config,
-          active,
+          archived,
         });
 
         return new Response(JSON.stringify({ success: true }), {
@@ -569,6 +569,79 @@ http.route({
               headers: { 'Content-Type': 'application/json' },
             });
           }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// List agents
+http.route({
+  path: '/api/agents',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const url = new URL(request.url);
+      const includeArchived = url.searchParams.get('includeArchived') === 'true';
+
+      const agents = await ctx.runQuery(api.db.agents.list, {
+        userId: user.id,
+        includeArchived,
+      });
+
+      return new Response(JSON.stringify(agents), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Archive agent (soft delete)
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'DELETE',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      // Require authentication using Node.js action
+      const authHeader = request.headers.get('Authorization') || undefined;
+      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        await ctx.runMutation(api.db.agents.archive, {
+          agentId,
+          userId: user.id,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (dbError) {
+        if (dbError instanceof Error && dbError.message.includes('not found or access denied')) {
+          return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
         throw dbError;
       }
@@ -690,7 +763,9 @@ http.route({
  * - PATCH /api/conversations/:id - Update conversation
  * - DELETE /api/conversations/:id - Archive conversation
  * - POST /api/agents - Create agent
+ * - GET /api/agents - List user's agents
  * - GET /api/agents/{agentId} - Get agent by ID
  * - PATCH /api/agents/{agentId} - Update agent
+ * - DELETE /api/agents/{agentId} - Archive agent
  */
 export default http;

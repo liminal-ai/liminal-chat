@@ -82,7 +82,7 @@ export const create = mutation({
       provider: args.provider,
       model: args.model,
       config: args.config,
-      active: true,
+      archived: false,
       createdAt: now,
       updatedAt: now,
     });
@@ -101,7 +101,7 @@ export const create = mutation({
  * @param args.provider - New provider like "openai" or "anthropic" (optional)
  * @param args.model - New model like "gpt-4" or "claude-3-sonnet" (optional)
  * @param args.config - New configuration object (optional, replaces existing)
- * @param args.active - New active status (optional)
+ * @param args.archived - New archived status (optional)
  * @throws Error if agent not found, not owned by user, or name conflicts
  *
  * @example
@@ -134,7 +134,7 @@ export const update = mutation({
         streamingSupported: v.optional(v.boolean()),
       }),
     ),
-    active: v.optional(v.boolean()),
+    archived: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -195,7 +195,7 @@ export const update = mutation({
         reasoning?: boolean;
         streamingSupported?: boolean;
       };
-      active?: boolean;
+      archived?: boolean;
     }
 
     const updates: AgentUpdates = {
@@ -217,8 +217,8 @@ export const update = mutation({
     if (args.config !== undefined) {
       updates.config = args.config;
     }
-    if (args.active !== undefined) {
-      updates.active = args.active;
+    if (args.archived !== undefined) {
+      updates.archived = args.archived;
     }
 
     // Apply updates
@@ -266,7 +266,7 @@ export const get = query({
           streamingSupported: v.optional(v.boolean()),
         }),
       ),
-      active: v.optional(v.boolean()),
+      archived: v.optional(v.boolean()),
       createdAt: v.number(),
       updatedAt: v.number(),
     }),
@@ -275,7 +275,7 @@ export const get = query({
   handler: async (ctx, args) => {
     const agent = await ctx.db.get(args.agentId);
 
-    if (!agent || agent.userId !== args.userId) {
+    if (!agent || agent.userId !== args.userId || agent.archived) {
       return null;
     }
 
@@ -287,21 +287,21 @@ export const get = query({
  * Lists all agents for the authenticated user with optional filtering.
  *
  * @param args.userId - The authenticated user ID
- * @param args.active - Filter by active status (optional)
+ * @param args.includeArchived - Include archived agents in results (optional, defaults to false)
  * @returns Array of agents owned by the user
  *
  * @example
  * ```typescript
  * const activeAgents = await ctx.runQuery(api.db.agents.list, {
  *   userId: "user_123",
- *   active: true
+ *   includeArchived: false
  * });
  * ```
  */
 export const list = query({
   args: {
     userId: v.string(),
-    active: v.optional(v.boolean()),
+    includeArchived: v.optional(v.boolean()),
   },
   returns: v.array(
     v.object({
@@ -321,28 +321,70 @@ export const list = query({
           streamingSupported: v.optional(v.boolean()),
         }),
       ),
-      active: v.optional(v.boolean()),
+      archived: v.optional(v.boolean()),
       createdAt: v.number(),
       updatedAt: v.number(),
     }),
   ),
   handler: async (ctx, args) => {
-    if (args.active !== undefined) {
-      // Use the full index when active filter is specified
+    if (args.includeArchived) {
+      // Return all agents regardless of archived status
       return await ctx.db
         .query('agents')
-        .withIndex('by_user_and_active', (q) =>
-          q.eq('userId', args.userId).eq('active', args.active),
-        )
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId))
         .order('desc')
         .collect();
     } else {
-      // When no active filter, just query by userId
+      // Default behavior: return only non-archived agents
       return await ctx.db
         .query('agents')
-        .withIndex('by_user_and_active', (q) => q.eq('userId', args.userId))
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId).eq('archived', false))
         .order('desc')
         .collect();
     }
+  },
+});
+
+/**
+ * Archives (soft deletes) an agent for the authenticated user.
+ * Archived agents become invisible in all queries and endpoints.
+ *
+ * @param args.agentId - The ID of the agent to archive
+ * @param args.userId - The authenticated user ID from WorkOS
+ * @returns null on success
+ * @throws Error if agent not found or not owned by user
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.db.agents.archive, {
+ *   agentId: "j123...",
+ *   userId: "user_123"
+ * });
+ * ```
+ */
+export const archive = mutation({
+  args: {
+    agentId: v.id('agents'),
+    userId: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Get agent and validate ownership
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    if (agent.userId !== args.userId) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    // Archive the agent
+    await ctx.db.patch(args.agentId, {
+      archived: true,
+      updatedAt: Date.now(),
+    });
+
+    return null;
   },
 });
