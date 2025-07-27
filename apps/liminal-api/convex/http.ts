@@ -12,9 +12,9 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       return new Response(
         JSON.stringify({
@@ -100,9 +100,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { prompt, model, conversationId, provider } = body;
@@ -137,9 +137,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { query, model, systemPrompt } = body;
@@ -200,9 +200,9 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const archived = url.searchParams.get('archived') === 'true';
@@ -232,9 +232,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body: CreateConversationRequest = await request.json();
       const { title, type = 'standard', metadata } = body;
@@ -268,9 +268,9 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -314,9 +314,9 @@ http.route({
   method: 'PATCH',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -345,9 +345,9 @@ http.route({
   method: 'DELETE',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -372,9 +372,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body: CreateAgentRequest = await request.json();
       const { name, systemPrompt, provider, model, config } = body;
@@ -468,9 +468,9 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const includeArchived = url.searchParams.get('includeArchived') === 'true';
@@ -496,9 +496,9 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -538,9 +538,9 @@ http.route({
   method: 'PATCH',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -615,9 +615,9 @@ http.route({
   method: 'DELETE',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -666,9 +666,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { messages, model: requestedModel, provider = 'openrouter', conversationId } = body;
@@ -722,9 +722,9 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using Node.js action
+      // Require authentication using edge runtime action
       const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.node.auth.requireAuth, { authHeader });
+      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
 
       const body = await request.json();
       const { prompt, model: requestedModel, provider = 'openrouter' } = body;

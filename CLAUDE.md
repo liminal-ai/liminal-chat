@@ -50,6 +50,33 @@ Apply this protocol when:
 
 This reinforcement happens **every response** to maintain consistent persona and approach.
 
+## Implementation Planning Protocol
+
+**When creating implementation plans, define problems and goals, not solutions.**
+
+Bad planning:
+```typescript
+// ❌ Don't provide explicit code implementations
+export function withAuth(handler: Handler) {
+  return httpAction(async (ctx, request) => {
+    // ... prescriptive implementation details
+  });
+}
+```
+
+Good planning:
+```markdown
+✅ Create an auth wrapper that:
+- Eliminates auth header duplication
+- Preserves existing error handling
+- Passes typed user to handlers
+
+Key decisions: Where should it live? Handle body parsing?
+Risks: Watch for streaming endpoint compatibility
+```
+
+**Why:** Prescriptive plans create tunnel vision. Goal-oriented plans encourage discovery of existing patterns, better solutions, and appropriate error handling. The implementing agent should be an engineer understanding context, not a typist following instructions.
+
 ## Remember
 - Read before editing
 - Test before claiming completion  

@@ -186,6 +186,14 @@ AI Service for centralized model operations.
 
 Interfaces: `GenerateTextParams`  
 
+#### auth.ts
+
+**`requireAuth`** (action) - convex/edge/auth.ts:154  
+
+**`optionalAuth`** (action) - convex/edge/auth.ts:185  
+
+Interfaces: `AuthenticatedUser`  
+
 ### convex/lib/
 
 #### env.ts
@@ -237,26 +245,6 @@ Configuration error with helpful instructions.
 
 ### convex/node/
 
-#### auth.ts
-
-**`validateWorkOSToken`** (action) - convex/node/auth.ts:449  
-Validates a WorkOS JWT token and returns user information  
-Args: - JWT token string  
-Returns: AuthenticatedUser | null  
-
-**`requireAuth`** (action) - convex/node/auth.ts:481  
-Validates authorization header and returns authenticated user  
-Args: - Authorization header (optional)  
-Returns: AuthenticatedUser  
-Throws: Error if authentication fails  
-
-**`optionalAuth`** (action) - convex/node/auth.ts:568  
-Optional authentication - returns null if no auth header provided  
-Args: - Authorization header (optional)  
-Returns: AuthenticatedUser | null  
-
-Interfaces: `AuthenticatedUser`  
-
 #### chat.ts
 
 **`simpleChatAction`** (action) - convex/node/chat.ts:37  
@@ -301,5 +289,5 @@ conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`
 messages.ts: `create`, `createBatch`  
 
 ### Convex Actions
-auth.ts: `validateWorkOSToken`, `requireAuth`, `optionalAuth`  
+auth.ts: `requireAuth`, `optionalAuth`  
 chat.ts: `simpleChatAction`, `streamingChatAction`  
