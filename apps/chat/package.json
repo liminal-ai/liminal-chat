@@ -1,0 +1,35 @@
+{
+  "name": "@liminal/chat",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo '⚠️  Use: npm run dev:start, dev:stop, dev:restart, or dev:logs'",
+    "dev:start": "npm run dev:stop && pm2 start 'npx vite' --name 'liminal-chat'",
+    "dev:stop": "pm2 delete liminal-chat 2>/dev/null || true",
+    "dev:restart": "npm run dev:stop && npm run dev:start",
+    "dev:logs": "pm2 logs liminal-chat --lines 20",
+    "dev:pause-and-verify-vite-started": "sleep 3 && curl -f http://localhost:5173 >/dev/null 2>&1 && echo '✅ Vite server responding on http://localhost:5173' || echo '❌ Vite server not responding on port 5173'",
+    "dev:show-recent-logs": "pm2 logs liminal-chat --lines 10 --nostream",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives"
+  },
+  "dependencies": {
+    "@liminal/api": "workspace:*",
+    "convex": "^1.25.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.3.4"
+  }
+}
