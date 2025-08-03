@@ -24,12 +24,6 @@ Security: Critical Security (Stop on fail)
      - Runs trufflehog on staged files with .trufflehog-exclude file
      - Uses .trufflehog.yaml for custom detectors (Clerk, OpenRouter, Perplexity, Vercel v0)
 
-   - Command: `pnpm precommit:env-files`
-     - Checks for environment files (.env.*)
-   - Command: `pnpm precommit:api-keys`
-   - Additional pattern-based scan for API keys in ALL files
-   - Stop and report if any issues found
-
 Code Standards Pass (Show violations)
    - Manual review against docs/engineering-practices.md
    - Check for outdated or missing docstrings (TSDoc/JSDoc)
