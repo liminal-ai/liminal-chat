@@ -470,6 +470,168 @@ server.post('/consult/o3-pro', async (request, reply) => {
   }
 });
 
+// GPT-4.1 consultation endpoint
+server.post('/consult/gpt/4.1', async (request, reply) => {
+  const clientIp = request.ip;
+  if (clientIp !== '127.0.0.1' && clientIp !== '::1') {
+    reply.code(403);
+    return { error: 'Forbidden: This endpoint is only accessible from localhost' };
+  }
+
+  const { prompt } = request.body as { prompt: string };
+
+  if (!prompt || prompt.trim() === '') {
+    reply.code(400);
+    return { error: 'Prompt is required' };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    reply.code(500);
+    return { error: 'OPENAI_API_KEY not configured' };
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-2025-04-14',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2000,
+        temperature: 0.2,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return {
+      response: data.choices[0]?.message?.content || 'No response from GPT-4.1',
+      model: 'gpt-4.1',
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    server.log.error('GPT-4.1 consultation failed:', errorMessage);
+    reply.code(500);
+    return { error: 'GPT-4.1 consultation failed', details: errorMessage };
+  }
+});
+
+// GPT-4.1-mini consultation endpoint
+server.post('/consult/gpt/4.1-mini', async (request, reply) => {
+  const clientIp = request.ip;
+  if (clientIp !== '127.0.0.1' && clientIp !== '::1') {
+    reply.code(403);
+    return { error: 'Forbidden: This endpoint is only accessible from localhost' };
+  }
+
+  const { prompt } = request.body as { prompt: string };
+
+  if (!prompt || prompt.trim() === '') {
+    reply.code(400);
+    return { error: 'Prompt is required' };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    reply.code(500);
+    return { error: 'OPENAI_API_KEY not configured' };
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-mini-2025-04-14',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1500,
+        temperature: 0.2,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return {
+      response: data.choices[0]?.message?.content || 'No response from GPT-4.1-mini',
+      model: 'gpt-4.1-mini',
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    server.log.error('GPT-4.1-mini consultation failed:', errorMessage);
+    reply.code(500);
+    return { error: 'GPT-4.1-mini consultation failed', details: errorMessage };
+  }
+});
+
+// GPT-4.1-nano consultation endpoint
+server.post('/consult/gpt/4.1-nano', async (request, reply) => {
+  const clientIp = request.ip;
+  if (clientIp !== '127.0.0.1' && clientIp !== '::1') {
+    reply.code(403);
+    return { error: 'Forbidden: This endpoint is only accessible from localhost' };
+  }
+
+  const { prompt } = request.body as { prompt: string };
+
+  if (!prompt || prompt.trim() === '') {
+    reply.code(400);
+    return { error: 'Prompt is required' };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    reply.code(500);
+    return { error: 'OPENAI_API_KEY not configured' };
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4.1-nano-2025-04-14',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1000,
+        temperature: 0.2,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return {
+      response: data.choices[0]?.message?.content || 'No response from GPT-4.1-nano',
+      model: 'gpt-4.1-nano',
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    server.log.error('GPT-4.1-nano consultation failed:', errorMessage);
+    reply.code(500);
+    return { error: 'GPT-4.1-nano consultation failed', details: errorMessage };
+  }
+});
+
 // Get o3-pro response status/result by ID
 server.get('/o3-pro/response/:id', async (request, reply) => {
   const clientIp = request.ip;
