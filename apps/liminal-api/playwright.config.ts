@@ -7,6 +7,23 @@ import { findProjectRoot } from './lib/utils/project-root';
 const rootDir = findProjectRoot(__dirname);
 config({ path: path.join(rootDir, '.env') });
 
+// Check if local dev service is running before tests
+async function checkLocalDevService() {
+  try {
+    const response = await fetch('http://127.0.0.1:8081/health');
+    if (!response.ok) {
+      throw new Error(`Health check failed: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('❌ Local dev service is not running!');
+    console.error('Please run: cd apps/local-dev-service && npm run dev:start');
+    process.exit(1);
+  }
+}
+
+// Run the check
+checkLocalDevService();
+
 /**
  * Playwright configuration for Convex backend integration tests
  * Focused on wide coverage with minimal maintenance burden

@@ -188,9 +188,9 @@ Interfaces: `GenerateTextParams`
 
 #### auth.ts
 
-**`requireAuth`** (action) - convex/edge/auth.ts:154  
+**`requireAuth`** (action) - convex/edge/auth.ts:178  
 
-**`optionalAuth`** (action) - convex/edge/auth.ts:185  
+**`optionalAuth`** (action) - convex/edge/auth.ts:209  
 
 Interfaces: `AuthenticatedUser`  
 

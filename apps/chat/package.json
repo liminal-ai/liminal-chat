@@ -8,7 +8,7 @@
     "dev:start": "npm run dev:stop && pm2 start 'npx vite' --name 'liminal-chat'",
     "dev:stop": "pm2 delete liminal-chat 2>/dev/null || true",
     "dev:restart": "npm run dev:stop && npm run dev:start",
-    "dev:logs": "pm2 logs liminal-chat --lines 20",
+    "dev:logs": "pm2 logs liminal-chat --lines 20 --nostream",
     "dev:pause-and-verify-vite-started": "sleep 3 && curl -f http://localhost:5173 >/dev/null 2>&1 && echo '✅ Vite server responding on http://localhost:5173' || echo '❌ Vite server not responding on port 5173'",
     "dev:show-recent-logs": "pm2 logs liminal-chat --lines 10 --nostream",
     "build": "tsc && vite build",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@liminal/api": "workspace:*",
     "convex": "^1.25.2",
+    "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"

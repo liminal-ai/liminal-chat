@@ -1,19 +1,19 @@
 import { test as base, APIRequestContext } from '@playwright/test';
-import { SystemAuth } from './system-auth';
+import { LocalDevAuth } from './local-dev-auth';
 
 // Cache auth instance per worker process to avoid repeated initialization
-let cachedAuth: SystemAuth | null = null;
+let cachedAuth: LocalDevAuth | null = null;
 
-async function getOrCreateAuth(): Promise<SystemAuth> {
+async function getOrCreateAuth(): Promise<LocalDevAuth> {
   // Initialize auth instance if not exists
   if (!cachedAuth) {
-    console.log('🔄 Initializing WorkOS system user authentication...');
-    cachedAuth = await SystemAuth.createForTesting();
+    console.log('🔄 Initializing local dev service authentication...');
+    cachedAuth = await LocalDevAuth.createForTesting();
 
     const tokenInfo = cachedAuth.getTokenInfo();
     if (tokenInfo.expiresAt) {
       console.log(
-        '✅ Auth initialized, token cached until:',
+        '✅ Auth initialized via local dev service, token cached until:',
         new Date(tokenInfo.expiresAt).toISOString(),
       );
     }

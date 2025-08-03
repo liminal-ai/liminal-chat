@@ -107,48 +107,72 @@ function getJwks() {
   return jwks;
 }
 
+// Fallback JWKS for User Management (password grant) tokens
+const userManagementJwks = createRemoteJWKSet(
+  new URL('https://api.workos.com/user_management/jwks'),
+);
+
 async function verifyToken(token: string): Promise<AuthenticatedUser | null> {
   const clean = token.replace(/^Bearer\s+/i, '');
   if (!clean) return null;
 
   try {
     const { payload } = await withRetry(() => jwtVerify(clean, getJwks()));
-    const id = typeof payload.sub === 'string' ? payload.sub : '';
-    const email = typeof payload['urn:myapp:email'] === 'string' ? payload['urn:myapp:email'] : '';
-
-    // Log successful verification (sanitized)
-    console.log('Edge auth: JWT verification successful', {
-      userId: id,
-      userEmail: email ? `${email.substring(0, 3)}***@${email.split('@')[1]}` : 'none',
-      hasSystemUser: !!payload.system_user,
-      tokenLength: clean.length,
-    });
-
-    return {
-      id,
-      email,
-      customClaims: {
-        system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
-        test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
-        environment: typeof payload.environment === 'string' ? payload.environment : undefined,
-        permissions:
-          Array.isArray(payload.permissions) &&
-          payload.permissions.every((p) => typeof p === 'string')
-            ? payload.permissions
-            : undefined,
-      },
-    };
-  } catch (error) {
-    const context: AuthErrorContext = {
-      operation: 'jwt_verification',
-      timestamp: Date.now(),
-      tokenLength: token.length,
-      hasClientId: !!process.env.WORKOS_CLIENT_ID,
-      originalError: (error as Error).message,
-    };
-    console.error('Edge auth: JWT verification failed', context);
-    return null;
+    return buildUserFromPayload(clean.length, payload);
+  } catch (primaryError) {
+    // Retry with User Management JWKS in case token came from password authentication
+    try {
+      const { payload } = await withRetry(() => jwtVerify(clean, userManagementJwks));
+      console.warn('Edge auth: Verified JWT using User Management JWKS fallback');
+      return buildUserFromPayload(clean.length, payload);
+    } catch (secondaryError) {
+      const context: AuthErrorContext = {
+        operation: 'jwt_verification',
+        timestamp: Date.now(),
+        tokenLength: token.length,
+        hasClientId: !!process.env.WORKOS_CLIENT_ID,
+        originalError: (secondaryError as Error).message,
+      };
+      console.error('Edge auth: JWT verification failed', context);
+      return null;
+    }
   }
+}
+
+// Helper to build the AuthenticatedUser object from JWT payload without duplicating logic
+function buildUserFromPayload(
+  tokenLength: number,
+  payload: Record<string, any>,
+): AuthenticatedUser {
+  const id = typeof payload.sub === 'string' ? payload.sub : '';
+  const email =
+    typeof payload['urn:myapp:email'] === 'string'
+      ? payload['urn:myapp:email']
+      : typeof payload.email === 'string'
+        ? payload.email
+        : '';
+
+  console.log('Edge auth: JWT verification successful', {
+    userId: id,
+    userEmail: email ? `${email.substring(0, 3)}***@${email.split('@')[1]}` : 'none',
+    hasSystemUser: !!payload.system_user,
+    tokenLength,
+  });
+
+  return {
+    id,
+    email,
+    customClaims: {
+      system_user: typeof payload.system_user === 'string' ? payload.system_user : undefined,
+      test_context: typeof payload.test_context === 'string' ? payload.test_context : undefined,
+      environment: typeof payload.environment === 'string' ? payload.environment : undefined,
+      permissions:
+        Array.isArray(payload.permissions) &&
+        payload.permissions.every((p) => typeof p === 'string')
+          ? payload.permissions
+          : undefined,
+    },
+  };
 }
 
 export const requireAuth = action({
