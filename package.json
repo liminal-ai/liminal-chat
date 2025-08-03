@@ -53,7 +53,22 @@
     "oc:start": "cd apps/opencode && bun run dev /Users/leemoore/code/liminal-chat",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write --log-level warn ."
+    "format:fix": "prettier --write --log-level warn .",
+    "consult:v0": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:large": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\", \\\"useLargeModel\\\": true}\"",
+    "consult:perplexity:pro": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-pro -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:perplexity:deep": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-deep-research -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:o3-pro": "curl -s -X POST http://127.0.0.1:8081/consult/o3-pro -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-mini": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-mini -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-nano": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-nano -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:formatted": "pnpm run consult:v0 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:v0:large:formatted": "pnpm run consult:v0:large --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:perplexity:pro:formatted": "pnpm run consult:perplexity:pro --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1:formatted": "pnpm run consult:gpt4.1 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-mini:formatted": "pnpm run consult:gpt4.1-mini --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-nano:formatted": "pnpm run consult:gpt4.1-nano --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:help": "echo 'LLM Consultation Commands:\\n\\n🎨 v0 (Vercel Design):\\n  pnpm run consult:v0 --prompt=\"create a login form\"\\n  pnpm run consult:v0:large --prompt=\"complex dashboard design\"\\n\\n🔍 Perplexity (Research):\\n  pnpm run consult:perplexity:pro --prompt=\"latest AI developments\"\\n  pnpm run consult:perplexity:deep --prompt=\"comprehensive analysis of quantum computing\"\\n\\n🧠 OpenAI Models:\\n  pnpm run consult:o3-pro --prompt=\"complex reasoning task\" (async - returns ID)\\n  pnpm run consult:gpt4.1 --prompt=\"general purpose query\"\\n  pnpm run consult:gpt4.1-mini --prompt=\"fast response needed\"\\n  pnpm run consult:gpt4.1-nano --prompt=\"simple question\"\\n\\n📝 Formatted Output (response only):\\n  pnpm run consult:v0:formatted --prompt=\"your prompt\"\\n  pnpm run consult:perplexity:pro:formatted --prompt=\"your query\"\\n  pnpm run consult:gpt4.1:formatted --prompt=\"your prompt\"\\n  pnpm run consult:gpt4.1-mini:formatted --prompt=\"your prompt\"\\n  pnpm run consult:gpt4.1-nano:formatted --prompt=\"your prompt\"\\n\\n💡 Note: o3-pro is async - returns ID, check status separately'"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.1",
