@@ -86,42 +86,45 @@ Browser          Convex HTTP         Edge Auth          WorkOS
 ## Auth Flow - Development
 
 ```
-Browser          Dev Auth          Convex HTTP         Edge Auth
-   │                │                  │                  │
-   │─Page Load─────▶│                  │                  │
-   │                │                  │                  │
-   │◀─Dev Token─────│                  │                  │
-   │  (Generated)   │                  │                  │
-   │                │                  │                  │
-   │─Request with───┼─────────────────▶│                  │
-   │  Dev Token     │                  │─Extract Token───▶│
-   │                │                  │                  │
-   │                │                  │◀─User Object─────│
-   │                │                  │  (Dev User)      │
-   │                │                  │                  │
-   │◀───Response────┼──────────────────│                  │
+Browser          Local Dev         WorkOS API        Convex Backend
+   │             Service                │                  │
+   │             (localhost)            │                  │
+   │                │                   │                  │
+   │─Check──────────│                   │                  │
+   │ localStorage   │                   │                  │
+   │                │                   │                  │
+   │─POST /auth/────▶│                   │                  │
+   │  token         │──Authenticate────▶│                  │
+   │ (if expired)   │  with password    │                  │
+   │                │◀──JWT + refresh───│                  │
+   │◀─JWT───────────│                   │                  │
+   │                │                   │                  │
+   │─Store in───────│                   │                  │
+   │ localStorage   │                   │                  │
+   │                │                   │                  │
+   │─API Request────┼───────────────────┼─────────────────▶│
+   │ with JWT       │                   │                  │
+   │                │                   │                  │
+   │◀──Response─────┼───────────────────┼──────────────────│
 ```
 
 ## Dev Auth Pattern
 
 ### Concept
-Development-only token generator that creates valid JWTs matching production structure but with fixed dev user data. Excluded from production builds via environment detection.
+Local development service generates real WorkOS JWTs using password authentication. Tokens are stored in localStorage and managed by the React app. The local service runs only on localhost, preventing accidental exposure of auth endpoints.
 
 ### Implementation Strategy
-1. **Environment Detection**: `import.meta.env.DEV && import.meta.env.VITE_AUTH_MODE === 'dev'`
-2. **Token Generation**: Use same JWT structure as WorkOS but with dev payload
-3. **Build Exclusion**: Tree-shaken in production via dynamic imports
-4. **User Scenarios**: Easy switching between dev user profiles
+1. **Local Service**: Fastify server on localhost:8081 handles WorkOS authentication
+2. **Token Storage**: Valid JWTs stored in localStorage with expiry tracking
+3. **Auto Refresh**: React hook checks expiry and refreshes before token expires
+4. **Security**: Service only accessible from localhost, no public endpoints
 
-### Token Structure Contract
-```
-{
-  sub: "dev_[userId]",
-  email: "[scenario]@dev.local",
-  exp: [1 hour from now],
-  iat: [now]
-}
-```
+### Token Flow
+1. React app checks localStorage for valid token
+2. If missing/expired, calls localhost:8081/auth/token
+3. Local service authenticates with WorkOS using dev credentials
+4. Returns real JWT that matches production structure
+5. React stores token and uses for all Convex requests
 
 ## Implementation Phases
 
@@ -193,3 +196,81 @@ VITE_DEV_USER_ID=dev_user_123
 VITE_CONVEX_URL=https://[prod-instance].convex.cloud
 VITE_AUTH_MODE=production
 ```
+
+## Local Dev Service
+
+### Why We Need It
+1. **Security**: Cannot expose dev auth endpoints on public Convex backend
+2. **API Keys**: Keep sensitive keys (WorkOS, Perplexity, v0) local only
+3. **Agent Tooling**: Enable Claude/agents to use research and code generation
+4. **Extensibility**: Central place for all local dev tools
+
+### Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Browser   │────▶│  localhost  │────▶│   WorkOS    │
+│  React App  │     │   :8081     │     ├─────────────┤
+│   Claude    │     │             │────▶│ Perplexity  │
+│   Agents    │     │  Fastify    │     ├─────────────┤
+└─────────────┘     │  Service    │────▶│  v0 Model   │
+                    └─────────────┘     └─────────────┘
+                          │
+                          ▼
+                    ┌─────────────┐
+                    │   Unified   │
+                    │     API     │
+                    └─────────────┘
+```
+
+### Directory Structure
+
+```
+apps/local-dev-service/
+├── src/
+│   ├── plugins/
+│   │   ├── auth/           # WorkOS JWT generation
+│   │   ├── perplexity/     # Search integration
+│   │   └── v0/             # Component generation
+│   ├── routes/
+│   │   ├── auth.ts         # POST /auth/token
+│   │   ├── search.ts       # POST /search
+│   │   └── generate.ts     # POST /v0/generate
+│   ├── server.ts           # Fastify setup
+│   └── config.ts           # Environment config
+├── package.json
+├── tsconfig.json
+└── .env.example
+```
+
+### Initial Dev Tooling
+
+#### 1. JWT Token Generation
+- **Endpoint**: `POST /auth/token`
+- **Purpose**: Generate real WorkOS JWTs for dev user
+- **Response**: `{ token: string, expiresAt: number }`
+
+#### 2. Perplexity Search
+- **Endpoint**: `POST /search`
+- **Purpose**: Research capabilities for Claude
+- **Payload**: `{ query: string, options?: {...} }`
+- **Response**: Search results with sources
+
+#### 3. v0 Component Generation
+- **Endpoint**: `POST /v0/generate`
+- **Purpose**: Generate and iterate on React components
+- **Payload**: `{ prompt: string, code?: string }`
+- **Response**: Generated component code
+
+### Security Measures
+- Only binds to localhost (127.0.0.1)
+- Validates origin headers
+- No CORS for external domains
+- Dies if PORT !== 8081
+
+### Future Extensions
+- Cache management endpoints
+- Debug tools for Convex data
+- Mock data generators
+- Performance profiling
+- Local LLM testing

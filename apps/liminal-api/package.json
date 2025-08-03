@@ -26,9 +26,10 @@
     "reset": "npm run clean && convex dev --until-success",
     "env:pull": "convex env list",
     "env:set": "convex env set",
-    "test": "playwright test",
-    "test:smoke": "playwright test smoke-test.spec.ts",
-    "test:ui": "playwright test --ui",
+    "test": "node scripts/check-test-deps.js && playwright test",
+    "test:smoke": "node scripts/check-test-deps.js && playwright test smoke-test.spec.ts",
+    "test:ui": "node scripts/check-test-deps.js && playwright test --ui",
+    "test:deps": "node scripts/check-test-deps.js",
     "docs": "typedoc --out ../../docs/tsdocs/api convex",
     "docs:llm": "node scripts/generate-llms-custom.js && node scripts/generate-api-for-claude-v2.js"
   },
