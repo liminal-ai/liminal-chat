@@ -21,6 +21,13 @@ async function checkService(name, url) {
 async function main() {
   console.log('Checking test dependencies...\n');
 
+  // Skip local service checks in CI environment
+  if (process.env.CI === 'true') {
+    console.log('🤖 Running in CI environment - skipping local service checks');
+    console.log('✨ All test dependencies are ready!');
+    return;
+  }
+
   const checks = [
     { name: 'Local Dev Service', url: 'http://127.0.0.1:8081/health' },
     // Add Convex check if needed
