@@ -1,9 +1,15 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '../../../'); // Navigate to liminal-chat root
+const scratchpadDir = path.join(projectRoot, '.scratchpad');
 
 test('o3-pro async: start request and get ID', async ({ request }) => {
-  const outputFile = '/Users/leemoore/code/liminal-chat/.scratchpad/o3-pro-async-test.json';
+  const outputFile = path.join(scratchpadDir, 'o3-pro-async-test.json');
 
   // Simple test prompt
   const prompt = `Analyze the async o3-pro pattern implementation for a local development service. Comment on the design approach of returning an immediate ID while processing in the background.`;
@@ -62,8 +68,8 @@ test('o3-pro async: start request and get ID', async ({ request }) => {
 
 test('o3-pro async: wait and get response', async ({ request }) => {
   test.setTimeout(600000); // 10 minutes timeout
-  const outputFile = '/Users/leemoore/code/liminal-chat/.scratchpad/o3-pro-async-test.json';
-  const responseFile = '/Users/leemoore/code/liminal-chat/.scratchpad/o3-pro-async-response.json';
+  const outputFile = path.join(scratchpadDir, 'o3-pro-async-test.json');
+  const responseFile = path.join(scratchpadDir, 'o3-pro-async-response.json');
 
   // Read the test data to get request ID
   let testData;

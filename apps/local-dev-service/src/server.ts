@@ -52,8 +52,15 @@ redis.on('connect', () => {
   server.log.info('✅ Connected to Redis');
 });
 
-// Connect to Redis
-await redis.connect();
+// Connect to Redis with proper error handling
+try {
+  await redis.connect();
+  server.log.info('✅ Successfully connected to Redis');
+} catch (err) {
+  server.log.error('❌ Failed to connect to Redis:', err);
+  server.log.error('Please ensure Redis is running: brew services start redis');
+  process.exit(1);
+}
 
 // Background processing function for o3-pro requests
 async function processO3ProInBackground(id: string, prompt: string) {
@@ -548,7 +555,7 @@ server.get('/o3/responses', async (request, reply) => {
   }
 
   try {
-    const keys = await redis.keys('o3:response:*');
+    const keys = await redis.keys('o3-pro-response-*');
     const responses = [];
 
     for (const key of keys.sort()) {
@@ -585,7 +592,7 @@ server.get('/o3/responses/:id', async (request, reply) => {
   const { id } = request.params as { id: string };
 
   try {
-    const data = await redis.get(`o3:response:${id}`);
+    const data = await redis.get(`o3-pro-response-${id}`);
     if (!data) {
       reply.code(404);
       return { error: `Response ${id} not found` };
