@@ -154,22 +154,24 @@ jobs:
           echo "::warning::⚠️ TYPESCRIPT CHECK IS DISABLED"
 
       # Integration Tests (Stop on failures)
-      - name: Integration Tests
-        if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
-        working-directory: apps/liminal-api
-        env:
-          SYSTEM_USER_EMAIL: ${{ secrets.SYSTEM_USER_EMAIL }}
-          SYSTEM_USER_PASSWORD: ${{ secrets.SYSTEM_USER_PASSWORD }}
-          WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
-          WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
-        run: |
-          echo "Running integration tests..."
-          pnpm test
+      # NOTE: Temporarily disabled - tests require local-dev-service which isn't available in CI
+      # - name: Integration Tests
+      #   if: ${{ vars.DISABLE_INTEGRATION_TESTS != 'true' }}
+      #   working-directory: apps/liminal-api
+      #   env:
+      #     SYSTEM_USER_EMAIL: ${{ secrets.SYSTEM_USER_EMAIL }}
+      #     SYSTEM_USER_PASSWORD: ${{ secrets.SYSTEM_USER_PASSWORD }}
+      #     WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+      #     WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
+      #   run: |
+      #     echo "Running integration tests..."
+      #     pnpm test
 
       - name: Integration Tests Disabled Warning
-        if: ${{ vars.DISABLE_INTEGRATION_TESTS == 'true' }}
         run: |
-          echo "::warning::⚠️ INTEGRATION TESTS ARE DISABLED"
+          echo "::warning::⚠️ INTEGRATION TESTS ARE TEMPORARILY DISABLED"
+          echo "Integration tests are disabled because they require local-dev-service which isn't available in CI environment."
+          echo "Tests should be run locally before merging."
 
       # Show disabled gates summary
       - name: Disabled Gates Summary
