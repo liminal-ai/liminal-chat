@@ -31,7 +31,22 @@
     "test:ui": "node scripts/check-test-deps.js && playwright test --ui",
     "test:deps": "node scripts/check-test-deps.js",
     "docs": "typedoc --out ../../docs/tsdocs/api convex",
-    "docs:llm": "node scripts/generate-llms-custom.js && node scripts/generate-api-for-claude-v2.js"
+    "docs:llm": "node scripts/generate-llms-custom.js && node scripts/generate-api-for-claude-v2.js",
+    "consult:v0": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:large": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\", \\\"useLargeModel\\\": true}\"",
+    "consult:perplexity:pro": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-pro -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:perplexity:deep": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-deep-research -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:o3-pro": "curl -s -X POST http://127.0.0.1:8081/consult/o3-pro -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-mini": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-mini -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-nano": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-nano -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:formatted": "npm run consult:v0 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:v0:large:formatted": "npm run consult:v0:large --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:perplexity:pro:formatted": "npm run consult:perplexity:pro --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1:formatted": "npm run consult:gpt4.1 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-mini:formatted": "npm run consult:gpt4.1-mini --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-nano:formatted": "npm run consult:gpt4.1-nano --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:help": "echo 'LLM Consultation Commands:\\n\\n🎨 v0 (Vercel Design):\\n  npm run consult:v0 --prompt=\"create a login form\"\\n  npm run consult:v0:large --prompt=\"complex dashboard design\"\\n\\n🔍 Perplexity (Research):\\n  npm run consult:perplexity:pro --prompt=\"latest AI developments\"\\n  npm run consult:perplexity:deep --prompt=\"comprehensive analysis of quantum computing\"\\n\\n🧠 OpenAI Models:\\n  npm run consult:o3-pro --prompt=\"complex reasoning task\" (async - returns ID)\\n  npm run consult:gpt4.1 --prompt=\"general purpose query\"\\n  npm run consult:gpt4.1-mini --prompt=\"fast response needed\"\\n  npm run consult:gpt4.1-nano --prompt=\"simple question\"\\n\\n📝 Formatted Output (response only):\\n  npm run consult:v0:formatted --prompt=\"your prompt\"\\n  npm run consult:perplexity:pro:formatted --prompt=\"your query\"\\n  npm run consult:gpt4.1:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-mini:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-nano:formatted --prompt=\"your prompt\"\\n\\n💡 Note: o3-pro is async - returns ID, check status separately'"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
