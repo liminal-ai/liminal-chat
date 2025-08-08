@@ -22,19 +22,23 @@ export function useDemoControls(scriptId: string): DemoControls {
   const script = getDemoScript(scriptId);
   const [currentStep, setCurrentStep] = useState(0);
   const [openAgentModal, setOpenAgentModal] = useState<string | undefined>();
+  const [openFocusedChat, setOpenFocusedChat] = useState<string | undefined>();
   const [userInputOverride, setUserInputOverride] = useState<string>('');
 
   // Calculate current roundtable state
   const currentState = useMemo(() => {
     const state = calculateRoundtableState(script, currentStep, openAgentModal);
 
+    // Add focused chat state
+    const stateWithFocusedChat = { ...state, openFocusedChat };
+
     // Apply user input override if present
     if (userInputOverride) {
-      return { ...state, currentUserInput: userInputOverride };
+      return { ...stateWithFocusedChat, currentUserInput: userInputOverride };
     }
 
-    return state;
-  }, [script, currentStep, openAgentModal, userInputOverride]);
+    return stateWithFocusedChat;
+  }, [script, currentStep, openAgentModal, openFocusedChat, userInputOverride]);
 
   // Navigation handlers
   const nextStep = useCallback(() => {
@@ -94,6 +98,14 @@ export function useDemoControls(scriptId: string): DemoControls {
     setOpenAgentModal(undefined);
   }, []);
 
+  const handleAgentFocusedChatOpen = useCallback((agentId: string) => {
+    setOpenFocusedChat(agentId);
+  }, []);
+
+  const handleAgentFocusedChatClose = useCallback(() => {
+    setOpenFocusedChat(undefined);
+  }, []);
+
   return {
     currentState,
     currentStep,
@@ -107,6 +119,8 @@ export function useDemoControls(scriptId: string): DemoControls {
     handleAgentMention,
     handleAgentModalOpen,
     handleAgentModalClose,
+    handleAgentFocusedChatOpen,
+    handleAgentFocusedChatClose,
   };
 }
 

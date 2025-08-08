@@ -62,8 +62,8 @@ function buildConversationHistory(script: DemoScript, upToStepIndex: number): Co
     const step = script.steps[i];
     const timestamp = Date.now() - (script.steps.length - i) * 60000; // Fake timestamps
 
-    // Add user input if present and message has been sent
-    if (step.userInput && (step.state === 'message-sent' || step.state === 'agents-complete')) {
+    // Add user input only when message is first sent (not again when complete)
+    if (step.userInput && step.state === 'message-sent') {
       const mentionedAgents = extractMentionedAgents(step.userInput);
 
       history.push({
