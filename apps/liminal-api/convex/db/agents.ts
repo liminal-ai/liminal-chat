@@ -31,7 +31,6 @@ import { mutation, query } from '../_generated/server';
  */
 export const create = mutation({
   args: {
-    userId: v.string(),
     name: v.string(),
     systemPrompt: v.string(),
     provider: v.string(),
@@ -48,6 +47,9 @@ export const create = mutation({
   },
   returns: v.id('agents'),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Check for empty name first
     if (!args.name || args.name.trim().length === 0) {
       throw new Error('Agent name cannot be empty');
@@ -67,7 +69,7 @@ export const create = mutation({
     // Check if agent with this name already exists for this user
     const existingAgent = await ctx.db
       .query('agents')
-      .withIndex('by_user_and_name', (q) => q.eq('userId', args.userId).eq('name', normalizedName))
+      .withIndex('by_user_and_name', (q) => q.eq('userId', userId).eq('name', normalizedName))
       .unique();
 
     if (existingAgent) {
@@ -76,7 +78,7 @@ export const create = mutation({
 
     const now = Date.now();
     return await ctx.db.insert('agents', {
-      userId: args.userId,
+      userId,
       name: normalizedName,
       systemPrompt: args.systemPrompt,
       provider: args.provider,
@@ -119,7 +121,6 @@ export const create = mutation({
 export const update = mutation({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
     name: v.optional(v.string()),
     systemPrompt: v.optional(v.string()),
     provider: v.optional(v.string()),
@@ -136,9 +137,12 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 
@@ -165,7 +169,7 @@ export const update = mutation({
         const existingAgent = await ctx.db
           .query('agents')
           .withIndex('by_user_and_name', (q) =>
-            q.eq('userId', args.userId).eq('name', newNormalizedName),
+            q.eq('userId', userId).eq('name', newNormalizedName),
           )
           .unique();
 
@@ -236,7 +240,6 @@ export const update = mutation({
 export const get = query({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
   },
   returns: v.union(
     v.object({
@@ -262,9 +265,13 @@ export const get = query({
     v.null(),
   ),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = identity.subject;
+
     const agent = await ctx.db.get(args.agentId);
 
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       return null;
     }
 
@@ -291,7 +298,6 @@ export const get = query({
  */
 export const list = query({
   args: {
-    userId: v.string(),
     includeArchived: v.optional(v.boolean()),
   },
   returns: v.array(
@@ -317,19 +323,22 @@ export const list = query({
     }),
   ),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const userId = identity.subject;
     let agents;
     if (args.includeArchived) {
       // Return all agents regardless of archived status
       agents = await ctx.db
         .query('agents')
-        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId))
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId))
         .order('desc')
         .collect();
     } else {
       // Default behavior: return only non-archived agents
       agents = await ctx.db
         .query('agents')
-        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId).eq('archived', false))
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId).eq('archived', false))
         .order('desc')
         .collect();
     }
@@ -362,13 +371,15 @@ export const list = query({
 export const archive = mutation({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 

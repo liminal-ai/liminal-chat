@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { AuthContext, AuthState, AuthActions, createAuthManager } from '../../lib/auth';
+import { convex } from '../../lib/convex';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -59,6 +60,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           throw new Error('Invalid token received from dev service');
         }
 
+        // Wire Convex auth to always fetch a fresh valid token (LocalDevAuth caches until exp-5m)
+        convex.setAuth(async () => {
+          return await devAuth.getValidToken();
+        });
+
         setState((prev) => ({
           ...prev,
           isAuthenticated: true,
@@ -88,6 +94,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (devAuth) {
       devAuth.clearCache();
     }
+
+    // Clear Convex auth so future requests are anonymous
+    convex.setAuth(async () => null as unknown as string);
 
     setState((prev) => ({
       ...prev,

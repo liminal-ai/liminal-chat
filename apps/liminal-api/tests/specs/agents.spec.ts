@@ -59,7 +59,7 @@ test.describe('Agents API', () => {
 
     const body = await response.json();
     expect(body).toHaveProperty('error');
-    expect(body.error).toContain('authorization header');
+    expect(/authorization header/i.test(body.error)).toBeTruthy();
   });
 
   test('Cannot create an agent with duplicate name for same user', async ({
@@ -445,7 +445,7 @@ test.describe('Agents API', () => {
 
       const body = await response.json();
       expect(body).toHaveProperty('error');
-      expect(body.error).toContain('authorization header');
+      expect(/authorization header/i.test(body.error)).toBeTruthy();
     });
 
     test('Returns user agents excluding archived by default', async ({ authenticatedRequest }) => {
@@ -599,7 +599,7 @@ test.describe('Agents API', () => {
 
       const body = await response.json();
       expect(body).toHaveProperty('error');
-      expect(body.error).toContain('authorization header');
+      expect(/authorization header/i.test(body.error)).toBeTruthy();
     });
 
     test('Successfully archives agent', async ({ authenticatedRequest }) => {

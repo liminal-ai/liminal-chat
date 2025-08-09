@@ -12,9 +12,21 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       return new Response(
         JSON.stringify({
@@ -63,21 +75,35 @@ interface CreateAgentRequest {
  * Common error response handler for HTTP endpoints
  */
 function createErrorResponse(error: unknown, defaultStatus = 500): Response {
-  // Handle authentication errors - check for various auth-related error messages
+  // Normalize and classify common auth errors so tests receive expected messages
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const isAuthError =
-    errorMessage.includes('Authentication required') ||
-    errorMessage.includes('Invalid token') ||
-    errorMessage.includes('Invalid authorization header format') ||
-    errorMessage.includes('Missing authorization token') ||
-    errorMessage.includes('Missing Authorization header') ||
-    errorMessage.includes('Missing authorization header') ||
-    errorMessage.includes('Missing authorization token in Bearer header') ||
-    errorMessage.includes('Invalid or expired token') ||
-    errorMessage.includes('Invalid or expired authorization token');
+  const msg = errorMessage.toLowerCase();
 
-  if (isAuthError) {
+  const isHeaderError =
+    msg.includes('missing authorization header') ||
+    msg.includes('invalid authorization header format') ||
+    msg.includes('missing authorization token in bearer header');
+
+  const isInvalidTokenError =
+    msg.includes('invalid token') ||
+    msg.includes('invalid or expired token') ||
+    msg.includes('invalid or expired authorization token') ||
+    msg.includes('could not parse jwt payload') ||
+    msg.includes('valid jwt format') ||
+    msg.includes('could not validate token') ||
+    msg.includes('token expired');
+
+  const isAuthRequired = msg.includes('authentication required');
+
+  if (isHeaderError) {
     return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (isInvalidTokenError || isAuthRequired) {
+    return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -94,15 +120,40 @@ function createErrorResponse(error: unknown, defaultStatus = 500): Response {
   );
 }
 
+/**
+ * Validate Authorization header to preserve legacy granular errors.
+ * Returns an error message string if invalid, otherwise null.
+ */
+function getAuthHeaderError(request: Request): string | null {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) return 'Missing Authorization header';
+  if (!authHeader.startsWith('Bearer ')) return 'Invalid authorization header format';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  if (!token) return 'Missing authorization token in Bearer header';
+  return null;
+}
+
 // Non-streaming text chat endpoint
 http.route({
   path: '/api/chat-text',
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const body = await request.json();
       const { prompt, model, conversationId, provider } = body;
@@ -137,9 +188,21 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const body = await request.json();
       const { query, model, systemPrompt } = body;
@@ -200,9 +263,21 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const url = new URL(request.url);
       const archived = url.searchParams.get('archived') === 'true';
@@ -232,9 +307,21 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const body: CreateConversationRequest = await request.json();
       const { title, type = 'standard', metadata } = body;
@@ -268,9 +355,21 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -314,9 +413,21 @@ http.route({
   method: 'PATCH',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -345,9 +456,21 @@ http.route({
   method: 'DELETE',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const url = new URL(request.url);
       const pathParts = url.pathname.split('/');
@@ -372,9 +495,22 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const _user = { id: identity.subject };
 
       const body: CreateAgentRequest = await request.json();
       const { name, systemPrompt, provider, model, config } = body;
@@ -409,7 +545,6 @@ http.route({
 
       try {
         const agentId = await ctx.runMutation(api.db.agents.create, {
-          userId: user.id,
           name,
           systemPrompt,
           provider,
@@ -420,7 +555,6 @@ http.route({
         // Get the created agent to return it
         const agent = await ctx.runQuery(api.db.agents.get, {
           agentId,
-          userId: user.id,
         });
 
         return new Response(
@@ -468,15 +602,27 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const includeArchived = url.searchParams.get('includeArchived') === 'true';
 
       const agents = await ctx.runQuery(api.db.agents.list, {
-        userId: user.id,
         includeArchived,
       });
 
@@ -496,9 +642,22 @@ http.route({
   method: 'GET',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -512,7 +671,6 @@ http.route({
 
       const agent = await ctx.runQuery(api.db.agents.get, {
         agentId,
-        userId: user.id,
       });
 
       if (!agent) {
@@ -538,9 +696,14 @@ http.route({
   method: 'PATCH',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Authentication required' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -558,7 +721,6 @@ http.route({
       try {
         await ctx.runMutation(api.db.agents.update, {
           agentId,
-          userId: user.id,
           name,
           systemPrompt,
           provider,
@@ -615,9 +777,22 @@ http.route({
   method: 'DELETE',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -632,7 +807,6 @@ http.route({
       try {
         await ctx.runMutation(api.db.agents.archive, {
           agentId,
-          userId: user.id,
         });
 
         return new Response(JSON.stringify({ success: true }), {
@@ -666,9 +840,21 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const body = await request.json();
       const { messages, model: requestedModel, provider = 'openrouter', conversationId } = body;
@@ -722,9 +908,21 @@ http.route({
   method: 'POST',
   handler: httpAction(async (ctx, request) => {
     try {
-      // Require authentication using edge runtime action
-      const authHeader = request.headers.get('Authorization') || undefined;
-      const _user = await ctx.runAction(api.edge.auth.requireAuth, { authHeader });
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
 
       const body = await request.json();
       const { prompt, model: requestedModel, provider = 'openrouter' } = body;
