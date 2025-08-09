@@ -23,7 +23,6 @@ Security: Critical Security (Stop on fail)
    - Command: `pnpm precommit:trufflehog`
      - Runs trufflehog on staged files with .trufflehog-exclude file
      - Uses .trufflehog.yaml for custom detectors (Clerk, OpenRouter, Perplexity, Vercel v0)
-   - Optional: `pnpm precommit:gitleaks` if available
 
 Code Standards Pass (Show violations)
    - Manual review against docs/engineering-practices.md
