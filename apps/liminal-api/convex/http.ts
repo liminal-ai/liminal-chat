@@ -693,9 +693,17 @@ http.route({
   method: 'PATCH',
   handler: httpAction(async (ctx, request) => {
     try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
       const identity = await ctx.auth.getUserIdentity();
       if (!identity) {
-        return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' },
         });

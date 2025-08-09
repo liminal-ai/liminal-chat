@@ -380,3 +380,31 @@ Testing:            │                   │                │               �
 - **Automatic Management**: Token refresh handled transparently
 - **Clear Errors**: Descriptive messages for auth failures
 - **Fast Iteration**: No OAuth flow delays in development
+
+## Next Auth Feature: Observability (Planned)
+
+To improve security monitoring and debugging without exposing secrets, add structured auth observability:
+
+- What to log
+  - auth_outcome: success | header_missing | header_format | token_missing | token_invalid_expired
+  - http context: method, path
+  - user context: userId on success, null otherwise
+  - correlation: requestId (short), timestamp
+  - Never log the Authorization header, raw token, or claims
+
+- Where to log
+  - HTTP entry points in `apps/liminal-api/convex/http.ts`:
+    - Log immediately on header parse failures
+    - Log after `ctx.auth.getUserIdentity()` for success vs invalid/expired
+  - Actions accessed via Convex client (e.g., `apps/liminal-api/convex/node/chat.ts`):
+    - Log identity presence vs null at action start
+
+- How to log
+  - Emit concise JSON lines via `console.log` for easy aggregation
+  - Example: `{ "evt": "auth", "outcome": "token_invalid_expired", "method": "POST", "path": "/api/agents", "userId": null, "requestId": "r_7f3a2", "ts": 1712345678901 }`
+
+- Optional
+  - Feature-gate via env (e.g., `AUTH_LOG_LEVEL=basic|verbose`)
+  - Consider RFC 6750 `WWW-Authenticate` header in 401s (no token details)
+
+This feature is scoped to logging only (no metrics backend required) and avoids sensitive data exposure while enabling actionable monitoring across success and failure paths.
