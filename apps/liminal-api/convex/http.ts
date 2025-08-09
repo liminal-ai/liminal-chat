@@ -79,6 +79,38 @@ function createErrorResponse(error: unknown, defaultStatus = 500): Response {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const msg = errorMessage.toLowerCase();
 
+  // 1) Convex validator and application errors → 4xx
+  // ArgumentValidationError is Convex's standard validator failure
+  if (msg.includes('argumentvalidationerror') || msg.includes('value does not match validator')) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Common application-level validation messages from our mutations/queries
+  if (
+    msg.includes('already exists') ||
+    msg.includes('cannot be empty') ||
+    msg.includes('letters, numbers, and hyphens') ||
+    msg.includes('title is required') ||
+    msg.includes('prompt is required') ||
+    msg.includes('messages array is required')
+  ) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Not-found style messages
+  if (msg.includes('not found or access denied') || msg === 'conversation not found') {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const isHeaderError =
     msg.includes('missing authorization header') ||
     msg.includes('invalid authorization header format') ||
@@ -107,6 +139,13 @@ function createErrorResponse(error: unknown, defaultStatus = 500): Response {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // Final fallback: log minimal details and return 500
+  try {
+    console.error('http_fallback_500', { message: errorMessage });
+  } catch {
+    // Ignore logging errors to prevent cascading failures
   }
 
   return new Response(
