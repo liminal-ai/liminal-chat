@@ -68,6 +68,9 @@ export interface RoundtableState {
   // Which agent modal is open (if any)
   openAgentModal?: string;
 
+  // Which agent focused chat is open (if any)
+  openFocusedChat?: string;
+
   // Current step metadata
   currentStepTitle?: string;
   currentStepIndex?: number;
@@ -92,6 +95,8 @@ export interface DemoControls {
   handleAgentMention: (agentId: string) => void;
   handleAgentModalOpen: (agentId: string) => void;
   handleAgentModalClose: () => void;
+  handleAgentFocusedChatOpen: (agentId: string) => void;
+  handleAgentFocusedChatClose: () => void;
 }
 
 // For the component that v0 will generate
@@ -101,4 +106,7 @@ export interface RoundtableInterfaceProps {
   onAgentMention?: (agentId: string) => void;
   onAgentModalOpen?: (agentId: string) => void;
   onAgentModalClose?: () => void;
+  onAgentFocusedChatOpen?: (agentId: string) => void;
+  onAgentFocusedChatClose?: () => void;
+  onSend?: () => void;
 }

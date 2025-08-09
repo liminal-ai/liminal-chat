@@ -38,6 +38,15 @@ const server = fastify({
   logger: true,
 });
 
+// Add content type parser for text/plain with size limit
+server.addContentTypeParser(
+  'text/plain',
+  { parseAs: 'string', bodyLimit: 1048576 }, // 1MB limit
+  function (_req, body, done) {
+    done(null, body);
+  },
+);
+
 // Redis client for agent laboratory
 const redis = createClient({
   url: 'redis://localhost:6379',
@@ -241,7 +250,7 @@ server.post('/auth/token', async (request, reply) => {
   }
 });
 
-// v0 consultation endpoint
+// v0 consultation endpoint - accepts raw text body
 server.post('/consult/v0', async (request, reply) => {
   const clientIp = request.ip;
   if (clientIp !== '127.0.0.1' && clientIp !== '::1') {
@@ -249,12 +258,14 @@ server.post('/consult/v0', async (request, reply) => {
     return { error: 'Forbidden: This endpoint is only accessible from localhost' };
   }
 
-  const { prompt, useLargeModel = false } = request.body as {
-    prompt: string;
-    useLargeModel?: boolean;
-  };
+  // Get prompt from raw body (text/plain)
+  const prompt = request.body as string;
 
-  if (!prompt) {
+  // Get useLargeModel from query string
+  const { useLargeModel } = request.query as { useLargeModel?: string };
+  const useModel = useLargeModel === 'true';
+
+  if (!prompt || prompt.trim() === '') {
     reply.code(400);
     return { error: 'Prompt is required' };
   }
@@ -265,7 +276,7 @@ server.post('/consult/v0', async (request, reply) => {
   }
 
   // Select model based on useLargeModel flag
-  const selectedModel = useLargeModel ? 'v0-1.5-lg' : 'v0-1.5-md';
+  const selectedModel = useModel ? 'v0-1.5-lg' : 'v0-1.5-md';
 
   try {
     const response = await fetch('https://api.v0.dev/v1/chat/completions', {

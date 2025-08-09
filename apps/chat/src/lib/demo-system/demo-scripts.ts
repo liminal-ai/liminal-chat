@@ -135,7 +135,7 @@ export const characterDevelopmentScript: DemoScript = {
       id: 'step-3-sent',
       title: 'User message sent - agents responding',
       userInput:
-        '@supportive @critical respond to what @creative suggested about emotional residue',
+        '@supportive @critical respond to what #creative suggested about emotional residue',
       expectedAgentResponses: [
         {
           agentId: 'supportive',
@@ -298,8 +298,43 @@ export const codeReviewScript: DemoScript = {
   ],
   steps: [
     {
-      id: 'step-1',
+      id: 'step-1-composing',
       title: 'User submits code for review',
+      userInput:
+        '@security @performance @practices please review this user authentication component',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-1-sent',
+      title: 'User message sent - agents analyzing code',
+      userInput:
+        '@security @performance @practices please review this user authentication component',
+      expectedAgentResponses: [
+        {
+          agentId: 'security',
+          content:
+            '🔍 SECURITY ISSUES FOUND:\n• No input sanitization on email field\n• Password visibility toggle lacks rate limiting\n• JWT storage in localStorage vulnerable to XSS\n• Missing CSRF protection on login endpoint\n• Consider implementing 2FA support',
+          isComplete: true,
+        },
+        {
+          agentId: 'performance',
+          content:
+            '⚡ PERFORMANCE CONCERNS:\n• Re-rendering entire form on every keystroke\n• Missing debouncing on validation\n• Large bundle size from importing entire lodash\n• No lazy loading of validation schema\n• Consider using React.memo for form fields',
+          isComplete: true,
+        },
+        {
+          agentId: 'practices',
+          content:
+            '📋 CODE QUALITY NOTES:\n• Good TypeScript usage overall\n• Consider extracting validation logic to custom hook\n• Error handling could be more specific\n• Missing accessibility attributes (aria-labels)\n• Inconsistent naming convention (camelCase vs kebab-case)',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-1-complete',
+      title: 'Agents finished initial review',
       userInput:
         '@security @performance @practices please review this user authentication component',
       expectedAgentResponses: [
@@ -325,8 +360,29 @@ export const codeReviewScript: DemoScript = {
       state: 'agents-complete',
     },
     {
-      id: 'step-2',
+      id: 'step-2-composing',
       title: 'User asks about security priority',
+      userInput: '@security which security issue should I fix first?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-2-sent',
+      title: 'User message sent - security agent responding',
+      userInput: '@security which security issue should I fix first?',
+      expectedAgentResponses: [
+        {
+          agentId: 'security',
+          content:
+            'Priority 1: Move JWT from localStorage to httpOnly cookies immediately. This prevents XSS token theft. Priority 2: Add input sanitization - even with a trusted frontend, always validate server-side. The other issues are important but these two are critical vulnerabilities.',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-2-complete',
+      title: 'Security agent finished responding',
       userInput: '@security which security issue should I fix first?',
       expectedAgentResponses: [
         {
@@ -339,10 +395,39 @@ export const codeReviewScript: DemoScript = {
       state: 'agents-complete',
     },
     {
-      id: 'step-3',
-      title: 'Cross-agent discussion on solutions',
+      id: 'step-3-composing',
+      title: 'Multi-agent discussion on implementation',
       userInput:
-        '@performance @practices how would you implement the security fixes without hurting performance or code quality?',
+        '@performance @practices how would you implement what #security suggested without hurting performance or code quality?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-3-sent',
+      title: 'User message sent - agents discussing solutions',
+      userInput:
+        '@performance @practices how would you implement what #security suggested without hurting performance or code quality?',
+      expectedAgentResponses: [
+        {
+          agentId: 'performance',
+          content:
+            "For JWT cookies: Use SameSite=Strict and Secure flags. For validation: implement schema-based validation with Zod - it's fast and tree-shakeable. Use React Hook Form's resolver for efficient re-renders. This actually improves performance by reducing unnecessary validations.",
+          isComplete: true,
+        },
+        {
+          agentId: 'practices',
+          content:
+            'Create a useSecureAuth hook that encapsulates token management. Use a validation utility that returns consistent error shapes. Consider a FormField component that handles validation, accessibility, and security concerns in one place. This makes security fixes reusable across forms.',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-3-complete',
+      title: 'Agents finished discussing solutions',
+      userInput:
+        '@performance @practices how would you implement what #security suggested without hurting performance or code quality?',
       expectedAgentResponses: [
         {
           agentId: 'performance',
@@ -359,84 +444,375 @@ export const codeReviewScript: DemoScript = {
       ],
       state: 'agents-complete',
     },
-  ],
-};
-
-/**
- * Creative Brainstorming Demo - Story Development Scenario
- * Shows open-ended creative collaboration between agents
- */
-export const brainstormingScript: DemoScript = {
-  id: 'creative-brainstorming',
-  title: 'Story Ending Brainstorm',
-  description: 'Writers collaborate to find the perfect ending for a sci-fi mystery',
-  agents: [
     {
-      id: 'plot',
-      name: 'Plot Architect',
-      systemPrompt:
-        'You focus on story structure, plot coherence, and narrative satisfaction. You ensure all plot threads resolve meaningfully.',
-      color: '#7c3aed', // violet
-    },
-    {
-      id: 'emotion',
-      name: 'Emotional Storyteller',
-      systemPrompt:
-        'You prioritize character development and emotional impact. You ensure the story resonates with readers on a personal level.',
-      color: '#e11d48', // rose
-    },
-    {
-      id: 'wild',
-      name: 'Wild Card',
-      systemPrompt:
-        'You suggest unexpected twists and unconventional approaches. You push creative boundaries and challenge assumptions.',
-      color: '#f97316', // orange
-    },
-  ],
-  steps: [
-    {
-      id: 'step-1',
-      title: 'User describes the story dilemma',
+      id: 'step-4-composing',
+      title: 'User explores performance trade-offs',
       userInput:
-        "@plot @emotion @wild I'm stuck on the ending. My protagonist discovers that saving Earth means sacrificing their home planet. How should this resolve?",
+        '@performance what performance impacts should I expect from implementing these security changes?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-4-sent',
+      title: 'User message sent - performance expert responding',
+      userInput:
+        '@performance what performance impacts should I expect from implementing these security changes?',
       expectedAgentResponses: [
         {
-          agentId: 'plot',
+          agentId: 'performance',
           content:
-            "This is a classic moral dilemma with rich dramatic potential. The key is ensuring the choice feels inevitable based on character development. Has the protagonist's journey prepared them for this sacrifice? Consider: what would choosing their home planet cost Earth, and vice versa? The weight of either choice should feel earned.",
+            'Surprisingly, most security changes will improve performance. httpOnly cookies reduce client-side storage overhead. Zod validation is faster than manual checks. The main cost is the initial bundle size increase (~5KB for Zod), but you can tree-shake unused validators. Debounced validation actually reduces server calls. Overall: slight initial load increase, better runtime performance.',
           isComplete: true,
         },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-4-complete',
+      title: 'Performance expert finished responding',
+      userInput:
+        '@performance what performance impacts should I expect from implementing these security changes?',
+      expectedAgentResponses: [
         {
-          agentId: 'emotion',
+          agentId: 'performance',
           content:
-            "Focus on the emotional core - what does \"home\" mean to your protagonist? Is it the planet itself, or the people and memories there? Maybe the real conflict isn't between two planets, but between duty and belonging. The ending should honor both what they're saving and what they're losing.",
-          isComplete: true,
-        },
-        {
-          agentId: 'wild',
-          content:
-            'What if it\'s a false choice? Maybe the "sacrifice" is actually a transformation - saving Earth requires merging it with the home planet somehow. Or the protagonist discovers they\'re not actually from either planet, making the choice both easier and more complex. Challenge the premise itself!',
+            'Surprisingly, most security changes will improve performance. httpOnly cookies reduce client-side storage overhead. Zod validation is faster than manual checks. The main cost is the initial bundle size increase (~5KB for Zod), but you can tree-shake unused validators. Debounced validation actually reduces server calls. Overall: slight initial load increase, better runtime performance.',
           isComplete: true,
         },
       ],
       state: 'agents-complete',
     },
     {
-      id: 'step-2',
-      title: 'User explores the transformation idea',
+      id: 'step-5-composing',
+      title: 'User requests implementation guidance',
       userInput:
-        '@wild @plot how would a planet merger work narratively? Would that feel like a cop-out?',
+        '@practices @security can you walk me through the step-by-step refactoring process?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-5-sent',
+      title: 'User message sent - agents providing implementation plan',
+      userInput:
+        '@practices @security can you walk me through the step-by-step refactoring process?',
       expectedAgentResponses: [
         {
-          agentId: 'wild',
+          agentId: 'practices',
           content:
-            'Not if it\'s foreshadowed! What if earlier "alien technology" was actually Earth-tech from the future? The merger could be revealing a deeper connection - maybe the protagonist\'s home planet IS Earth, just from a different timeline. The choice becomes: preserve the past or create a new future.',
+            '1. Extract validation schema first (no breaking changes). 2. Create useSecureAuth hook with current logic. 3. Replace localStorage with secure cookie handling. 4. Add input sanitization layer. 5. Update component to use new hook. 6. Add accessibility attributes. 7. Test each step incrementally. This prevents big-bang failures.',
           isComplete: true,
         },
         {
-          agentId: 'plot',
+          agentId: 'security',
           content:
-            "A merger works if it requires genuine sacrifice from the protagonist. Maybe they must give up their individual existence to become the bridge between worlds. It's not a cop-out if it's the hardest choice possible - losing yourself to save everyone. The resolution feels earned if the cost is personal.",
+            'Critical: Test the cookie implementation in dev first - httpOnly cookies behave differently than localStorage. Set up CSRF tokens before removing localStorage completely. Use a feature flag to switch between old/new auth during transition. Have a rollback plan ready. Security changes should never be rushed.',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-5-complete',
+      title: 'Agents finished providing implementation plan',
+      userInput:
+        '@practices @security can you walk me through the step-by-step refactoring process?',
+      expectedAgentResponses: [
+        {
+          agentId: 'practices',
+          content:
+            '1. Extract validation schema first (no breaking changes). 2. Create useSecureAuth hook with current logic. 3. Replace localStorage with secure cookie handling. 4. Add input sanitization layer. 5. Update component to use new hook. 6. Add accessibility attributes. 7. Test each step incrementally. This prevents big-bang failures.',
+          isComplete: true,
+        },
+        {
+          agentId: 'security',
+          content:
+            'Critical: Test the cookie implementation in dev first - httpOnly cookies behave differently than localStorage. Set up CSRF tokens before removing localStorage completely. Use a feature flag to switch between old/new auth during transition. Have a rollback plan ready. Security changes should never be rushed.',
+          isComplete: true,
+        },
+      ],
+      state: 'agents-complete',
+    },
+  ],
+};
+
+/**
+ * Economic Policy Debate Demo - Universal Basic Income Discussion
+ * Shows ideological diversity and evidence-based policy analysis
+ */
+export const economicDebateDemo: DemoScript = {
+  id: 'economic-debate',
+  title: 'Economic Policy Debate',
+  description:
+    'Three economists with different perspectives debate Universal Basic Income implementation',
+  agents: [
+    {
+      id: 'market',
+      name: 'Free Market Advocate',
+      systemPrompt:
+        'You analyze policies through the lens of economic efficiency, fiscal responsibility, and market mechanisms.',
+      color: '#dc2626', // red
+    },
+    {
+      id: 'progressive',
+      name: 'Progressive Economist',
+      systemPrompt:
+        'You focus on inequality reduction, social justice, and policies that support human dignity and opportunity.',
+      color: '#2563eb', // blue
+    },
+    {
+      id: 'data',
+      name: 'Data Analyst',
+      systemPrompt:
+        'You provide empirical evidence, analyze pilot programs, and focus on measurable policy outcomes.',
+      color: '#059669', // emerald
+    },
+  ],
+  steps: [
+    {
+      id: 'step-1-composing',
+      title: 'User asks for initial UBI positions',
+      userInput:
+        '@market @progressive @data What are your initial thoughts on implementing Universal Basic Income in the US?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-1-sent',
+      title: 'User message sent - economists analyzing UBI',
+      userInput:
+        '@market @progressive @data What are your initial thoughts on implementing Universal Basic Income in the US?',
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            '🏛️ FISCAL REALITY CHECK:\n• $4+ trillion annual cost for $1000/month to all adults\n• Creates massive work disincentives - why work if guaranteed income?\n• Crowds out private charity and voluntary cooperation\n• Government dependency undermines human agency\n• Better solution: reduce barriers to employment, lower taxes, expand opportunity',
+          isComplete: true,
+        },
+        {
+          agentId: 'progressive',
+          content:
+            '⚖️ SOCIAL JUSTICE IMPERATIVE:\n• 40 million Americans in poverty despite working multiple jobs\n• UBI provides dignity - no means testing, no bureaucratic humiliation\n• Enables entrepreneurship by providing safety net for risk-taking\n• Recognizes unpaid care work, community service, artistic creation\n• Economic security is a human right in the 21st century',
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            '📊 PILOT PROGRAM EVIDENCE:\n• Stockton, CA: 78% spent on basic needs, only 1% on "vices"\n• Finland: No significant work reduction, improved mental health\n• Kenya GiveDirectly: Local economic multiplier effects\n• Alaska Permanent Fund: Popular across political spectrum for 40+ years\n• Key question: Which design parameters optimize outcomes?',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-1-complete',
+      title: 'Economists finished initial positions',
+      userInput:
+        '@market @progressive @data What are your initial thoughts on implementing Universal Basic Income in the US?',
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            '🏛️ FISCAL REALITY CHECK:\n• $4+ trillion annual cost for $1000/month to all adults\n• Creates massive work disincentives - why work if guaranteed income?\n• Crowds out private charity and voluntary cooperation\n• Government dependency undermines human agency\n• Better solution: reduce barriers to employment, lower taxes, expand opportunity',
+          isComplete: true,
+        },
+        {
+          agentId: 'progressive',
+          content:
+            '⚖️ SOCIAL JUSTICE IMPERATIVE:\n• 40 million Americans in poverty despite working multiple jobs\n• UBI provides dignity - no means testing, no bureaucratic humiliation\n• Enables entrepreneurship by providing safety net for risk-taking\n• Recognizes unpaid care work, community service, artistic creation\n• Economic security is a human right in the 21st century',
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            '📊 PILOT PROGRAM EVIDENCE:\n• Stockton, CA: 78% spent on basic needs, only 1% on "vices"\n• Finland: No significant work reduction, improved mental health\n• Kenya GiveDirectly: Local economic multiplier effects\n• Alaska Permanent Fund: Popular across political spectrum for 40+ years\n• Key question: Which design parameters optimize outcomes?',
+          isComplete: true,
+        },
+      ],
+      state: 'agents-complete',
+    },
+    {
+      id: 'step-2-composing',
+      title: 'User challenges market advocate on work incentives',
+      userInput:
+        '@market what if the work disincentive concern is overblown? What evidence would change your mind?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-2-sent',
+      title: 'User message sent - market advocate responding',
+      userInput:
+        '@market what if the work disincentive concern is overblown? What evidence would change your mind?',
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            "Fair question. I would need to see: 1) Long-term studies (5+ years) showing sustained work participation rates. 2) Evidence that UBI recipients invest in human capital - education, skills, starting businesses. 3) Demonstration that it doesn't create inflation spiral as landlords/retailers raise prices knowing everyone has guaranteed income. 4) Proof it can be funded without destroying economic growth through massive tax increases. Show me those four things consistently across different demographics and regions, and I'll reconsider.",
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-2-complete',
+      title: 'Market advocate finished responding',
+      userInput:
+        '@market what if the work disincentive concern is overblown? What evidence would change your mind?',
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            "Fair question. I would need to see: 1) Long-term studies (5+ years) showing sustained work participation rates. 2) Evidence that UBI recipients invest in human capital - education, skills, starting businesses. 3) Demonstration that it doesn't create inflation spiral as landlords/retailers raise prices knowing everyone has guaranteed income. 4) Proof it can be funded without destroying economic growth through massive tax increases. Show me those four things consistently across different demographics and regions, and I'll reconsider.",
+          isComplete: true,
+        },
+      ],
+      state: 'agents-complete',
+    },
+    {
+      id: 'step-3-composing',
+      title: 'Cross-examination of work incentive concerns',
+      userInput:
+        '@progressive @data how would you address what #market raised about work incentives and inflation risks?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-3-sent',
+      title: 'User message sent - progressive and data analyst responding',
+      userInput:
+        '@progressive @data how would you address what #market raised about work incentives and inflation risks?',
+      expectedAgentResponses: [
+        {
+          agentId: 'progressive',
+          content:
+            'The work incentive argument assumes people only work for survival. But humans work for purpose, social connection, status, self-actualization. UBI could unleash creativity by removing desperation. On inflation: housing costs are driven by supply constraints, not demand. Fix zoning laws. Healthcare costs are driven by monopolistic practices, not spending power. UBI lets people choose work that matters rather than any job that pays bills.',
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            "Addressing #market's specific criteria: 1) Kenya's 12-year GiveDirectly study shows sustained economic activity. 2) Stockton saw 37% increase in full-time employment during pilot. 3) Alaska's PFD hasn't caused systemic inflation over 40 years. 4) Carbon tax or land value capture could fund it progressively. The evidence exists, but you need to look at the right metrics and timeframes.",
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-3-complete',
+      title: 'Progressive and data analyst finished responding',
+      userInput:
+        '@progressive @data how would you address what #market raised about work incentives and inflation risks?',
+      expectedAgentResponses: [
+        {
+          agentId: 'progressive',
+          content:
+            'The work incentive argument assumes people only work for survival. But humans work for purpose, social connection, status, self-actualization. UBI could unleash creativity by removing desperation. On inflation: housing costs are driven by supply constraints, not demand. Fix zoning laws. Healthcare costs are driven by monopolistic practices, not spending power. UBI lets people choose work that matters rather than any job that pays bills.',
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            "Addressing #market's specific criteria: 1) Kenya's 12-year GiveDirectly study shows sustained economic activity. 2) Stockton saw 37% increase in full-time employment during pilot. 3) Alaska's PFD hasn't caused systemic inflation over 40 years. 4) Carbon tax or land value capture could fund it progressively. The evidence exists, but you need to look at the right metrics and timeframes.",
+          isComplete: true,
+        },
+      ],
+      state: 'agents-complete',
+    },
+    {
+      id: 'step-4-composing',
+      title: 'Deep dive into pilot program data',
+      userInput:
+        '@data break down the pilot program results - what do they actually tell us about scalability?',
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-4-sent',
+      title: 'User message sent - data analyst providing detailed analysis',
+      userInput:
+        '@data break down the pilot program results - what do they actually tell us about scalability?',
+      expectedAgentResponses: [
+        {
+          agentId: 'data',
+          content:
+            'Critical limitations: Most pilots are small-scale (hundreds, not millions) and short-term (1-2 years, not decades). General equilibrium effects unknown - what happens when EVERYONE has UBI? However, promising signals: 1) No "laptop and drugs" stereotype - spending remarkably rational. 2) Mental health improvements reduce healthcare costs. 3) Administrative costs 90% lower than means-tested programs. 4) Economic multiplier effects in local communities. Key missing data: labor market responses at scale, political sustainability, interaction with existing programs.',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-4-complete',
+      title: 'Data analyst finished detailed analysis',
+      userInput:
+        '@data break down the pilot program results - what do they actually tell us about scalability?',
+      expectedAgentResponses: [
+        {
+          agentId: 'data',
+          content:
+            'Critical limitations: Most pilots are small-scale (hundreds, not millions) and short-term (1-2 years, not decades). General equilibrium effects unknown - what happens when EVERYONE has UBI? However, promising signals: 1) No "laptop and drugs" stereotype - spending remarkably rational. 2) Mental health improvements reduce healthcare costs. 3) Administrative costs 90% lower than means-tested programs. 4) Economic multiplier effects in local communities. Key missing data: labor market responses at scale, political sustainability, interaction with existing programs.',
+          isComplete: true,
+        },
+      ],
+      state: 'agents-complete',
+    },
+    {
+      id: 'step-5-composing',
+      title: 'Synthesis challenge - designing compromise system',
+      userInput:
+        "@market @progressive @data if you had to design a compromise UBI system that addresses everyone's concerns, what would it look like?",
+      expectedAgentResponses: [],
+      state: 'composing-message',
+    },
+    {
+      id: 'step-5-sent',
+      title: 'User message sent - all economists collaborating on compromise',
+      userInput:
+        "@market @progressive @data if you had to design a compromise UBI system that addresses everyone's concerns, what would it look like?",
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            'Compromise position: Start with Earned Income Tax Credit expansion + Child Tax Credit universalization. Phase in gradually by age cohort (18-25 first). Cap at poverty line, not comfort level. Sunset clause requiring Congressional reauthorization every 10 years. Fund through carbon tax + land value capture, not income taxes. Eliminate overlapping programs to avoid bureaucratic bloat. Include work/education/community service incentives.',
+          isComplete: true,
+        },
+        {
+          agentId: 'progressive',
+          content:
+            "I can accept #market's phase-in approach if: 1) We start with those most vulnerable - caregivers, formerly incarcerated, rural communities hit by automation. 2) No means testing - dignity requires universality. 3) Amount provides genuine choice, not just survival. 4) Include housing vouchers/public options to prevent landlord capture. 5) Strong worker protections so UBI doesn't subsidize exploitative employers.",
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            'Evidence-based synthesis: Randomized controlled trial with 50,000 participants across urban/rural/diverse demographics. Control for spillover effects. Track for 5 years minimum. Measure: work participation, health outcomes, educational attainment, business creation, community engagement, political attitudes. Use findings to calibrate amount, eligibility, funding mechanism. Let data, not ideology, guide scaling decisions.',
+          isComplete: true,
+        },
+      ],
+      state: 'message-sent',
+    },
+    {
+      id: 'step-5-complete',
+      title: 'All economists finished collaboration',
+      userInput:
+        "@market @progressive @data if you had to design a compromise UBI system that addresses everyone's concerns, what would it look like?",
+      expectedAgentResponses: [
+        {
+          agentId: 'market',
+          content:
+            'Compromise position: Start with Earned Income Tax Credit expansion + Child Tax Credit universalization. Phase in gradually by age cohort (18-25 first). Cap at poverty line, not comfort level. Sunset clause requiring Congressional reauthorization every 10 years. Fund through carbon tax + land value capture, not income taxes. Eliminate overlapping programs to avoid bureaucratic bloat. Include work/education/community service incentives.',
+          isComplete: true,
+        },
+        {
+          agentId: 'progressive',
+          content:
+            "I can accept #market's phase-in approach if: 1) We start with those most vulnerable - caregivers, formerly incarcerated, rural communities hit by automation. 2) No means testing - dignity requires universality. 3) Amount provides genuine choice, not just survival. 4) Include housing vouchers/public options to prevent landlord capture. 5) Strong worker protections so UBI doesn't subsidize exploitative employers.",
+          isComplete: true,
+        },
+        {
+          agentId: 'data',
+          content:
+            'Evidence-based synthesis: Randomized controlled trial with 50,000 participants across urban/rural/diverse demographics. Control for spillover effects. Track for 5 years minimum. Measure: work participation, health outcomes, educational attainment, business creation, community engagement, political attitudes. Use findings to calibrate amount, eligibility, funding mechanism. Let data, not ideology, guide scaling decisions.',
           isComplete: true,
         },
       ],
@@ -451,7 +827,7 @@ export const brainstormingScript: DemoScript = {
 export const demoScripts: Record<string, DemoScript> = {
   'character-development': characterDevelopmentScript,
   'code-review': codeReviewScript,
-  'creative-brainstorming': brainstormingScript,
+  'economic-debate': economicDebateDemo,
 };
 
 /**
