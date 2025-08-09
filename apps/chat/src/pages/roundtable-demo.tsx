@@ -41,6 +41,7 @@ export default function RoundtableDemo() {
                   onAgentMention={controls.handleAgentMention}
                   onAgentModalOpen={controls.handleAgentModalOpen}
                   onAgentModalClose={controls.handleAgentModalClose}
+                  onSend={controls.nextStep}
                 />
               </div>
             </div>

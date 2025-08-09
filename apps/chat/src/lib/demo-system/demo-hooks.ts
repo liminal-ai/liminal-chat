@@ -74,7 +74,7 @@ export function useDemoControls(scriptId: string): DemoControls {
       const mention = {
         agentId: agent.id,
         agentName: agent.name,
-        insertText: `@${agent.name.toLowerCase().replace(/\s+/g, '')}`,
+        insertText: `@${agent.id}`,
       };
 
       // Insert mention at end of current input

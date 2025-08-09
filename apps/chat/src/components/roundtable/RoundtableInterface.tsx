@@ -10,6 +10,7 @@ export function RoundtableInterface({
   onAgentMention,
   onAgentModalOpen,
   onAgentModalClose,
+  onSend,
 }: RoundtableInterfaceProps) {
   // Filter conversation history for each agent
   const getAgentConversation = (agentId: string) => {
@@ -33,10 +34,11 @@ export function RoundtableInterface({
         state={state}
         onUserInput={onUserInput}
         onMentionClick={handleMentionClick}
+        onSend={onSend}
       />
 
-      {/* Agent Chatboxes - 3 across the bottom, maximizing vertical space */}
-      <div className="flex flex-row gap-2 flex-1 min-h-0 w-full">
+      {/* Agent Chatboxes - responsive layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-1 min-h-0 w-full">
         {state.agents.map((agent) => (
           <AgentChatBox
             key={agent.id}
@@ -84,9 +86,9 @@ function AgentChatBox({ agent, conversation, onAgentNameClick }: AgentChatBoxPro
       }
     };
 
-    // Small delay to ensure DOM is updated
-    const timer = setTimeout(scrollToBottom, 10);
-    return () => clearTimeout(timer);
+    // Use rAF for smoother UX after DOM updates
+    const raf = requestAnimationFrame(scrollToBottom);
+    return () => cancelAnimationFrame(raf);
   }, [conversation.length, agent.id]);
 
   return (
@@ -96,6 +98,7 @@ function AgentChatBox({ agent, conversation, onAgentNameClick }: AgentChatBoxPro
         <button
           onClick={onAgentNameClick}
           className="flex items-center gap-2 hover:bg-gray-100 p-1 rounded transition-colors w-full text-left"
+          aria-label={`Open details for ${agent.name}`}
         >
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold"
@@ -122,7 +125,7 @@ function AgentChatBox({ agent, conversation, onAgentNameClick }: AgentChatBoxPro
             </div>
             <p className="text-xs">No messages yet</p>
             <p className="text-xs text-gray-400 mt-1">
-              Mention @{agent.name.toLowerCase().replace(/\s+/g, '')} to start
+              Mention @{agent.id} to start
             </p>
           </div>
         ) : (
@@ -181,11 +184,21 @@ interface UserInputSectionProps {
   };
   onUserInput?: (input: string) => void;
   onMentionClick: (agentId: string) => void;
+  onSend?: () => void;
 }
 
-function UserInputSection({ state, onUserInput, onMentionClick }: UserInputSectionProps) {
+function UserInputSection({ state, onUserInput, onMentionClick, onSend }: UserInputSectionProps) {
+  const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onUserInput?.(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.key === 'Enter' && !e.shiftKey) && state.currentUserInput.trim()) {
+      e.preventDefault();
+      onSend?.();
+    }
   };
 
   return (
@@ -193,10 +206,13 @@ function UserInputSection({ state, onUserInput, onMentionClick }: UserInputSecti
       {/* Input Area with mention buttons at bottom */}
       <div className="relative">
         <textarea
+          ref={textareaRef}
           value={state.currentUserInput}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           placeholder="Type your message to the roundtable..."
-          className="w-full h-16 p-2 pr-20 pb-8 border border-gray-300 rounded resize-none focus:ring-1 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="w-full h-16 p-2 pr-24 pb-8 border border-gray-300 rounded resize-none focus:ring-1 focus:ring-blue-500 focus:border-transparent text-sm"
+          aria-label="Roundtable message input"
         />
 
         {/* Mention Buttons - positioned at bottom of textarea */}
@@ -206,6 +222,7 @@ function UserInputSection({ state, onUserInput, onMentionClick }: UserInputSecti
               key={mention.agentId}
               onClick={() => onMentionClick(mention.agentId)}
               className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+              aria-label={`Mention ${mention.agentName}`}
             >
               {mention.insertText}
             </button>
@@ -215,8 +232,10 @@ function UserInputSection({ state, onUserInput, onMentionClick }: UserInputSecti
         {/* Send Button */}
         <div className="absolute bottom-1 right-1">
           <button
+            onClick={onSend}
             disabled={!state.currentUserInput.trim()}
             className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            aria-label="Send message"
           >
             Send
           </button>

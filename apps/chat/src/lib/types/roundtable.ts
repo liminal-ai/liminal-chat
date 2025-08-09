@@ -101,4 +101,5 @@ export interface RoundtableInterfaceProps {
   onAgentMention?: (agentId: string) => void;
   onAgentModalOpen?: (agentId: string) => void;
   onAgentModalClose?: () => void;
+  onSend?: () => void;
 }

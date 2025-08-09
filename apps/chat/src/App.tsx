@@ -2,8 +2,6 @@ import { ConvexProvider } from 'convex/react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider } from './components/auth/AuthProvider';
 import { AuthStatus } from './components/auth/AuthStatus';
-import { HealthCheck } from './components/health/HealthCheck';
-import { ConvexQueryTest } from './components/health/ConvexQueryTest';
 import RoundtableDemo from './pages/roundtable-demo';
 import { convex } from './lib/convex';
 
@@ -32,8 +30,9 @@ function HomePage() {
       </div>
 
       <AuthStatus />
-      <HealthCheck />
-      <ConvexQueryTest />
+      {/* Health components disabled for demo build while @liminal/api generated types are unavailable */}
+      {/* <HealthCheck /> */}
+      {/* <ConvexQueryTest /> */}
     </div>
   );
 }

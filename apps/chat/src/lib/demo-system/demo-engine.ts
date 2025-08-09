@@ -29,7 +29,7 @@ export function calculateRoundtableState(
   const availableAgentMentions: AgentMention[] = script.agents.map((agent) => ({
     agentId: agent.id,
     agentName: agent.name,
-    insertText: `@${agent.name.toLowerCase().replace(/\s+/g, '')}`,
+    insertText: `@${agent.id}`,
   }));
 
   // Determine current user input based on step
@@ -99,8 +99,8 @@ function buildConversationHistory(script: DemoScript, upToStepIndex: number): Co
  * Extract mentioned agent IDs from user input text
  */
 function extractMentionedAgents(userInput: string): string[] {
-  const mentions = userInput.match(/@\w+/g) || [];
-  return mentions.map((mention) => mention.substring(1)); // Remove @ symbol
+  const mentions = userInput.match(/@[a-z0-9_\-]+/gi) || [];
+  return mentions.map((mention) => mention.substring(1).toLowerCase());
 }
 
 /**
