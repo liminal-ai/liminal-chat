@@ -188,7 +188,7 @@ function UserInput({
             className="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
             style={{ borderColor: agent.color, borderWidth: 1 }}
           >
-            @{agent.name.toLowerCase().replace(/\\s+/g, '')}
+            @{agent.name.toLowerCase().replace(/\s+/g, '')}
           </button>
         ))}
       </div>

@@ -101,7 +101,7 @@ function ChatMessage({ message, agents }: { message: Message; agents: Agent[] })
 
   if (message.isThinking && agent) {
     return (
-      <div className="flex items-start space-x-3 animate-fadeIn">
+      <div className="flex items-start space-x-3 animate-in fade-in duration-300">
         <AgentAvatar agent={agent} />
         <div className="flex items-center space-x-2 mt-2">
           <span className="text-sm text-gray-500">{agent.name} is thinking</span>
@@ -126,7 +126,7 @@ function ChatMessage({ message, agents }: { message: Message; agents: Agent[] })
 
   if (isUser) {
     return (
-      <div className="flex justify-end animate-fadeIn">
+      <div className="flex justify-end animate-in fade-in duration-300">
         <div className="max-w-[70%] space-y-1">
           <div className="bg-blue-600 text-white rounded-2xl px-4 py-3 shadow-md">
             <p className="text-sm">{message.content}</p>
@@ -141,7 +141,7 @@ function ChatMessage({ message, agents }: { message: Message; agents: Agent[] })
 
   if (agent) {
     return (
-      <div className="flex items-start space-x-3 animate-fadeIn">
+      <div className="flex items-start space-x-3 animate-in fade-in duration-300">
         <AgentAvatar agent={agent} />
         <div className="flex-1 max-w-[70%] space-y-1">
           <div className="flex items-center space-x-2">
@@ -358,23 +358,3 @@ export default function RoundtableDemo4() {
     </div>
   );
 }
-
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
-  }
-`;
-document.head.appendChild(style);

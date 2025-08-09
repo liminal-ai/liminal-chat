@@ -38,10 +38,14 @@ const server = fastify({
   logger: true,
 });
 
-// Add content type parser for text/plain
-server.addContentTypeParser('text/plain', { parseAs: 'string' }, function (req, body, done) {
-  done(null, body);
-});
+// Add content type parser for text/plain with size limit
+server.addContentTypeParser(
+  'text/plain',
+  { parseAs: 'string', bodyLimit: 1048576 }, // 1MB limit
+  function (_req, body, done) {
+    done(null, body);
+  },
+);
 
 // Redis client for agent laboratory
 const redis = createClient({
