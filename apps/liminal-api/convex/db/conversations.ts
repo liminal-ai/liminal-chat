@@ -86,6 +86,7 @@ export const list = query({
       }),
     ),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return { page: [], isDone: true } as any;
@@ -128,6 +129,7 @@ export const get = query({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.union(v.any(), v.null()),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
@@ -272,6 +274,7 @@ export const updateLastMessageAt = internalMutation({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     // Internal only; caller must ensure auth/ownership
 
@@ -286,6 +289,7 @@ export const updateLastMessageAt = internalMutation({
       lastMessageAt: Date.now(),
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
@@ -307,6 +311,7 @@ export const count = query({
   args: {
     archived: v.optional(v.boolean()),
   },
+  returns: v.number(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return 0;

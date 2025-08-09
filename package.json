@@ -50,6 +50,8 @@
     "precommit:branch-check": "git branch --show-current | grep -E \"^(main|master)$\" && echo \"WARNING: You are on the main/master branch!\" || echo \"Branch check passed\"",
     "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\"",
     "precommit:temp-files": "git diff --cached --name-only | grep -E \"(^test-.*\\.(js|ts|tsx|jsx)$|\\.tmp$|\\.temp$|\\.bak$|^(scratch|debug|temp)-)\" && echo \"⚠️  WARNING: Temporary/test files detected in commit\" || echo \"No temporary files detected\"",
+    "precommit:snyk:test": "snyk test --all-projects --severity-threshold=high --prune-repeated-subdependencies --exclude=.next,dist,build,.vercel",
+    "precommit:snyk:monitor": "snyk monitor --all-projects --prune-repeated-subdependencies --exclude=.next,dist,build,.vercel",
     "oc:start": "cd apps/opencode && bun run dev /Users/leemoore/code/liminal-chat",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -88,5 +90,5 @@
       "cookie": ">=0.7.0"
     }
   },
-  "packageManager": "pnpm@8.15.1"
+  "packageManager": "pnpm@8.17.0"
 }

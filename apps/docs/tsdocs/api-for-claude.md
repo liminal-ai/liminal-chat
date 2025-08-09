@@ -81,27 +81,27 @@ Lists all conversations in the public API with pagination support.
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
 Returns: Paginated conversation list with page array and isDone flag  
 
-**`get`** (query) - convex/db/conversations.ts:127  
+**`get`** (query) - convex/db/conversations.ts:128  
 Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
 Returns: The conversation object or null if not found  
 
-**`update`** (mutation) - convex/db/conversations.ts:167  
+**`update`** (mutation) - convex/db/conversations.ts:169  
 Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`archive`** (mutation) - convex/db/conversations.ts:227  
+**`archive`** (mutation) - convex/db/conversations.ts:229  
 Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`updateLastMessageAt`** (internalMutation) - convex/db/conversations.ts:271  
+**`updateLastMessageAt`** (internalMutation) - convex/db/conversations.ts:273  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/db/conversations.ts:306  
+**`count`** (query) - convex/db/conversations.ts:310  
 Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
 Returns: The count of conversations matching the filter  
