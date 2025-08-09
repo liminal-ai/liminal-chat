@@ -5,7 +5,6 @@ import { mutation, query } from '../_generated/server';
  * Creates a new agent for the authenticated user.
  * Agent names must be unique per user.
  *
- * @param args.userId - The authenticated user ID from WorkOS
  * @param args.name - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage)
  * @param args.systemPrompt - The personality/behavior prompt
  * @param args.provider - Provider like "openai" or "anthropic"
@@ -17,7 +16,6 @@ import { mutation, query } from '../_generated/server';
  * @example
  * ```typescript
  * const agentId = await ctx.runMutation(api.db.agents.create, {
- *   userId: "user_123",
  *   name: "assistant",
  *   systemPrompt: "You are a helpful assistant.",
  *   provider: "openai",
@@ -97,7 +95,6 @@ export const create = mutation({
  * Agent names must be unique per user and will be normalized to lowercase.
  *
  * @param args.agentId - The ID of the agent to update
- * @param args.userId - The authenticated user ID from WorkOS
  * @param args.name - New unique identifier (optional, will be normalized)
  * @param args.systemPrompt - New personality/behavior prompt (optional)
  * @param args.provider - New provider like "openai" or "anthropic" (optional)
@@ -109,7 +106,6 @@ export const create = mutation({
  * ```typescript
  * await ctx.runMutation(api.db.agents.update, {
  *   agentId: "j123...",
- *   userId: "user_123",
  *   systemPrompt: "You are a more helpful assistant.",
  *   config: {
  *     temperature: 0.8,
@@ -226,14 +222,12 @@ export const update = mutation({
  * Gets an agent by ID for the authenticated user.
  *
  * @param args.agentId - The ID of the agent to retrieve
- * @param args.userId - The authenticated user ID
  * @returns The agent object or null if not found/not owned by user
  *
  * @example
  * ```typescript
  * const agent = await ctx.runQuery(api.db.agents.get, {
  *   agentId: "j123...",
- *   userId: "user_123"
  * });
  * ```
  */
@@ -356,7 +350,6 @@ export const list = query({
  * Archived agents become invisible in all queries and endpoints.
  *
  * @param args.agentId - The ID of the agent to archive
- * @param args.userId - The authenticated user ID from WorkOS
  * @returns null on success
  * @throws Error if agent not found or not owned by user
  *
@@ -364,7 +357,6 @@ export const list = query({
  * ```typescript
  * await ctx.runMutation(api.db.agents.archive, {
  *   agentId: "j123...",
- *   userId: "user_123"
  * });
  * ```
  */

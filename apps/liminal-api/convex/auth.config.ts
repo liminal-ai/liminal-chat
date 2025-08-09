@@ -17,7 +17,7 @@ export default {
       type: 'customJwt',
       issuer: `https://api.workos.com/user_management/${clientId}`,
       algorithm: 'RS256',
-      jwks: `https://api.workos.com/sso/jwks/${clientId}`,
+      jwks: `https://api.workos.com/user_management/jwks/${clientId}`,
       applicationID: clientId,
     },
   ],

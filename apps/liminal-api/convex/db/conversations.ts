@@ -38,6 +38,7 @@ export const create = mutation({
       }),
     ),
   },
+  returns: v.id('conversations'),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Authentication required');
@@ -176,6 +177,7 @@ export const update = mutation({
       }),
     ),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Authentication required');
@@ -204,6 +206,7 @@ export const update = mutation({
     }
 
     await ctx.db.patch(args.conversationId, updates);
+    return null;
   },
 });
 
@@ -225,6 +228,7 @@ export const archive = mutation({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error('Authentication required');
@@ -244,6 +248,7 @@ export const archive = mutation({
       },
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 

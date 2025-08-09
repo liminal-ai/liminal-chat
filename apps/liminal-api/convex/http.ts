@@ -510,7 +510,6 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const _user = { id: identity.subject };
 
       const body: CreateAgentRequest = await request.json();
       const { name, systemPrompt, provider, model, config } = body;
@@ -617,7 +616,6 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const includeArchived = url.searchParams.get('includeArchived') === 'true';
@@ -657,7 +655,6 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -703,7 +700,6 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;
@@ -792,7 +788,6 @@ http.route({
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const _user = { id: identity.subject };
 
       const url = new URL(request.url);
       const agentId = url.pathname.split('/').pop() as Id<'agents'>;

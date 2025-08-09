@@ -32,30 +32,30 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 #### agents.ts
 
-**`create`** (query) - convex/db/agents.ts:32  
+**`create`** (query) - convex/db/agents.ts:30  
 Creates a new agent for the authenticated user.  
-Args: - The authenticated user ID from WorkOS, - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage), - The personality/behavior prompt, - Provider like "openai" or "anthropic", - Model like "gpt-4" or "claude-3-sonnet", - Optional configuration object  
+Args: - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage), - The personality/behavior prompt, - Provider like "openai" or "anthropic", - Model like "gpt-4" or "claude-3-sonnet", - Optional configuration object  
 Returns: The ID of the created agent  
 Throws: Error if agent name already exists for this user  
 
-**`update`** (query) - convex/db/agents.ts:121  
+**`update`** (query) - convex/db/agents.ts:117  
 Updates an existing agent for the authenticated user.  
-Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing)  
+Args: - The ID of the agent to update, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing)  
 Throws: Error if agent not found, not owned by user, or name conflicts  
 
-**`get`** (query) - convex/db/agents.ts:240  
+**`get`** (query) - convex/db/agents.ts:234  
 Gets an agent by ID for the authenticated user.  
-Args: - The ID of the agent to retrieve, - The authenticated user ID  
+Args: - The ID of the agent to retrieve  
 Returns: The agent object or null if not found/not owned by user  
 
-**`list`** (query) - convex/db/agents.ts:299  
+**`list`** (query) - convex/db/agents.ts:293  
 Lists all agents for the authenticated user with optional filtering.  
 Args: - The authenticated user ID, - Include archived agents in results (optional, defaults to false)  
 Returns: Array of agents owned by the user  
 
-**`archive`** (mutation) - convex/db/agents.ts:371  
+**`archive`** (mutation) - convex/db/agents.ts:363  
 Archives (soft deletes) an agent for the authenticated user.  
-Args: - The ID of the agent to archive, - The authenticated user ID from WorkOS  
+Args: - The ID of the agent to archive  
 Returns: null on success  
 Throws: Error if agent not found or not owned by user  
 
@@ -76,32 +76,32 @@ Creates a new conversation in the public API.
 Args: - The title of the conversation, - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard"), - Optional metadata including provider, model, and tags  
 Returns: The ID of the created conversation  
 
-**`list`** (query) - convex/db/conversations.ts:78  
+**`list`** (query) - convex/db/conversations.ts:79  
 Lists all conversations in the public API with pagination support.  
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
 Returns: Paginated conversation list with page array and isDone flag  
 
-**`get`** (query) - convex/db/conversations.ts:126  
+**`get`** (query) - convex/db/conversations.ts:127  
 Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
 Returns: The conversation object or null if not found  
 
-**`update`** (mutation) - convex/db/conversations.ts:166  
+**`update`** (mutation) - convex/db/conversations.ts:167  
 Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`archive`** (mutation) - convex/db/conversations.ts:224  
+**`archive`** (mutation) - convex/db/conversations.ts:227  
 Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`updateLastMessageAt`** (internalMutation) - convex/db/conversations.ts:266  
+**`updateLastMessageAt`** (internalMutation) - convex/db/conversations.ts:271  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/db/conversations.ts:301  
+**`count`** (query) - convex/db/conversations.ts:306  
 Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
 Returns: The count of conversations matching the filter  
