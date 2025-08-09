@@ -5,7 +5,6 @@ import { mutation, query } from '../_generated/server';
  * Creates a new agent for the authenticated user.
  * Agent names must be unique per user.
  *
- * @param args.userId - The authenticated user ID from WorkOS
  * @param args.name - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage)
  * @param args.systemPrompt - The personality/behavior prompt
  * @param args.provider - Provider like "openai" or "anthropic"
@@ -17,7 +16,6 @@ import { mutation, query } from '../_generated/server';
  * @example
  * ```typescript
  * const agentId = await ctx.runMutation(api.db.agents.create, {
- *   userId: "user_123",
  *   name: "assistant",
  *   systemPrompt: "You are a helpful assistant.",
  *   provider: "openai",
@@ -31,7 +29,6 @@ import { mutation, query } from '../_generated/server';
  */
 export const create = mutation({
   args: {
-    userId: v.string(),
     name: v.string(),
     systemPrompt: v.string(),
     provider: v.string(),
@@ -48,6 +45,9 @@ export const create = mutation({
   },
   returns: v.id('agents'),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Check for empty name first
     if (!args.name || args.name.trim().length === 0) {
       throw new Error('Agent name cannot be empty');
@@ -67,7 +67,7 @@ export const create = mutation({
     // Check if agent with this name already exists for this user
     const existingAgent = await ctx.db
       .query('agents')
-      .withIndex('by_user_and_name', (q) => q.eq('userId', args.userId).eq('name', normalizedName))
+      .withIndex('by_user_and_name', (q) => q.eq('userId', userId).eq('name', normalizedName))
       .unique();
 
     if (existingAgent) {
@@ -76,7 +76,7 @@ export const create = mutation({
 
     const now = Date.now();
     return await ctx.db.insert('agents', {
-      userId: args.userId,
+      userId,
       name: normalizedName,
       systemPrompt: args.systemPrompt,
       provider: args.provider,
@@ -95,7 +95,6 @@ export const create = mutation({
  * Agent names must be unique per user and will be normalized to lowercase.
  *
  * @param args.agentId - The ID of the agent to update
- * @param args.userId - The authenticated user ID from WorkOS
  * @param args.name - New unique identifier (optional, will be normalized)
  * @param args.systemPrompt - New personality/behavior prompt (optional)
  * @param args.provider - New provider like "openai" or "anthropic" (optional)
@@ -107,7 +106,6 @@ export const create = mutation({
  * ```typescript
  * await ctx.runMutation(api.db.agents.update, {
  *   agentId: "j123...",
- *   userId: "user_123",
  *   systemPrompt: "You are a more helpful assistant.",
  *   config: {
  *     temperature: 0.8,
@@ -119,7 +117,6 @@ export const create = mutation({
 export const update = mutation({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
     name: v.optional(v.string()),
     systemPrompt: v.optional(v.string()),
     provider: v.optional(v.string()),
@@ -136,9 +133,12 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 
@@ -165,7 +165,7 @@ export const update = mutation({
         const existingAgent = await ctx.db
           .query('agents')
           .withIndex('by_user_and_name', (q) =>
-            q.eq('userId', args.userId).eq('name', newNormalizedName),
+            q.eq('userId', userId).eq('name', newNormalizedName),
           )
           .unique();
 
@@ -222,21 +222,18 @@ export const update = mutation({
  * Gets an agent by ID for the authenticated user.
  *
  * @param args.agentId - The ID of the agent to retrieve
- * @param args.userId - The authenticated user ID
  * @returns The agent object or null if not found/not owned by user
  *
  * @example
  * ```typescript
  * const agent = await ctx.runQuery(api.db.agents.get, {
  *   agentId: "j123...",
- *   userId: "user_123"
  * });
  * ```
  */
 export const get = query({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
   },
   returns: v.union(
     v.object({
@@ -262,9 +259,13 @@ export const get = query({
     v.null(),
   ),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = identity.subject;
+
     const agent = await ctx.db.get(args.agentId);
 
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       return null;
     }
 
@@ -291,7 +292,6 @@ export const get = query({
  */
 export const list = query({
   args: {
-    userId: v.string(),
     includeArchived: v.optional(v.boolean()),
   },
   returns: v.array(
@@ -317,19 +317,22 @@ export const list = query({
     }),
   ),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const userId = identity.subject;
     let agents;
     if (args.includeArchived) {
       // Return all agents regardless of archived status
       agents = await ctx.db
         .query('agents')
-        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId))
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId))
         .order('desc')
         .collect();
     } else {
       // Default behavior: return only non-archived agents
       agents = await ctx.db
         .query('agents')
-        .withIndex('by_user_and_archived', (q) => q.eq('userId', args.userId).eq('archived', false))
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId).eq('archived', false))
         .order('desc')
         .collect();
     }
@@ -347,7 +350,6 @@ export const list = query({
  * Archived agents become invisible in all queries and endpoints.
  *
  * @param args.agentId - The ID of the agent to archive
- * @param args.userId - The authenticated user ID from WorkOS
  * @returns null on success
  * @throws Error if agent not found or not owned by user
  *
@@ -355,20 +357,21 @@ export const list = query({
  * ```typescript
  * await ctx.runMutation(api.db.agents.archive, {
  *   agentId: "j123...",
- *   userId: "user_123"
  * });
  * ```
  */
 export const archive = mutation({
   args: {
     agentId: v.id('agents'),
-    userId: v.string(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
     // Get agent and validate ownership
     const agent = await ctx.db.get(args.agentId);
-    if (!agent || agent.userId !== args.userId || agent.archived) {
+    if (!agent || agent.userId !== userId || agent.archived) {
       throw new Error('Agent not found or access denied');
     }
 

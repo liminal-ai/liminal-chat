@@ -32,30 +32,30 @@ npx convex env set DEV_USER_NAME "Dev User"
 
 #### agents.ts
 
-**`create`** (query) - convex/db/agents.ts:32  
+**`create`** (query) - convex/db/agents.ts:30  
 Creates a new agent for the authenticated user.  
-Args: - The authenticated user ID from WorkOS, - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage), - The personality/behavior prompt, - Provider like "openai" or "anthropic", - Model like "gpt-4" or "claude-3-sonnet", - Optional configuration object  
+Args: - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage), - The personality/behavior prompt, - Provider like "openai" or "anthropic", - Model like "gpt-4" or "claude-3-sonnet", - Optional configuration object  
 Returns: The ID of the created agent  
 Throws: Error if agent name already exists for this user  
 
-**`update`** (query) - convex/db/agents.ts:119  
+**`update`** (query) - convex/db/agents.ts:117  
 Updates an existing agent for the authenticated user.  
-Args: - The ID of the agent to update, - The authenticated user ID from WorkOS, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing)  
+Args: - The ID of the agent to update, - New unique identifier (optional, will be normalized), - New personality/behavior prompt (optional), - New provider like "openai" or "anthropic" (optional), - New model like "gpt-4" or "claude-3-sonnet" (optional), - New configuration object (optional, replaces existing)  
 Throws: Error if agent not found, not owned by user, or name conflicts  
 
-**`get`** (query) - convex/db/agents.ts:236  
+**`get`** (query) - convex/db/agents.ts:234  
 Gets an agent by ID for the authenticated user.  
-Args: - The ID of the agent to retrieve, - The authenticated user ID  
+Args: - The ID of the agent to retrieve  
 Returns: The agent object or null if not found/not owned by user  
 
-**`list`** (query) - convex/db/agents.ts:292  
+**`list`** (query) - convex/db/agents.ts:293  
 Lists all agents for the authenticated user with optional filtering.  
 Args: - The authenticated user ID, - Include archived agents in results (optional, defaults to false)  
 Returns: Array of agents owned by the user  
 
-**`archive`** (mutation) - convex/db/agents.ts:362  
+**`archive`** (mutation) - convex/db/agents.ts:363  
 Archives (soft deletes) an agent for the authenticated user.  
-Args: - The ID of the agent to archive, - The authenticated user ID from WorkOS  
+Args: - The ID of the agent to archive  
 Returns: null on success  
 Throws: Error if agent not found or not owned by user  
 
@@ -71,37 +71,37 @@ Returns: messages - Current number of messages
 
 #### conversations.ts
 
-**`create`** (mutation) - convex/db/conversations.ts:28  
+**`create`** (mutation) - convex/db/conversations.ts:27  
 Creates a new conversation in the public API.  
 Args: - The title of the conversation, - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard"), - Optional metadata including provider, model, and tags  
 Returns: The ID of the created conversation  
 
-**`list`** (query) - convex/db/conversations.ts:78  
+**`list`** (query) - convex/db/conversations.ts:79  
 Lists all conversations in the public API with pagination support.  
 Args: - Filter by archived status (optional), - Pagination options, - Number of items per page (default: 50), - Cursor for pagination (optional)  
 Returns: Paginated conversation list with page array and isDone flag  
 
-**`get`** (query) - convex/db/conversations.ts:122  
+**`get`** (query) - convex/db/conversations.ts:128  
 Gets a single conversation by ID from the public API.  
 Args: - The ID of the conversation to retrieve  
 Returns: The conversation object or null if not found  
 
-**`update`** (mutation) - convex/db/conversations.ts:161  
+**`update`** (mutation) - convex/db/conversations.ts:169  
 Updates a conversation's title and/or metadata in the public API.  
 Args: - The ID of the conversation to update, - New title (optional), - Metadata to update (optional, merged with existing)  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`archive`** (mutation) - convex/db/conversations.ts:218  
+**`archive`** (mutation) - convex/db/conversations.ts:229  
 Archives a conversation (soft delete) in the public API.  
 Args: - The ID of the conversation to archive  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`updateLastMessageAt`** (mutation) - convex/db/conversations.ts:259  
+**`updateLastMessageAt`** (internalMutation) - convex/db/conversations.ts:273  
 Updates the last message timestamp for a conversation.  
 Args: - The ID of the conversation to update  
 Throws: Error "Conversation not found" if conversation doesn't exist  
 
-**`count`** (query) - convex/db/conversations.ts:295  
+**`count`** (query) - convex/db/conversations.ts:310  
 Counts the total number of conversations in the public API.  
 Args: - Filter by archived status (optional)  
 Returns: The count of conversations matching the filter  
@@ -114,28 +114,28 @@ Args: - The ID of the conversation, - Type of author: "user", "agent", or "syste
 Returns: The ID of the created message  
 Throws: Error if conversation not found  
 
-**`list`** (query) - convex/db/messages.ts:104  
+**`list`** (query) - convex/db/messages.ts:106  
 Lists messages in a conversation with pagination support.  
 Args: - The ID of the conversation, - Pagination options, - Number of items per page (default: 50), - Cursor for pagination  
 Returns: Empty result if conversation not found  
 
-**`getAll`** (query) - convex/db/messages.ts:169  
+**`getAll`** (query) - convex/db/messages.ts:171  
 Gets all messages for a conversation with cursor-based pagination.  
 Args: - The ID of the conversation, - Maximum messages to return (default: 100, max: 1000), - Message ID to start after (for pagination)  
 Returns: Empty result if conversation not found  
 
-**`createBatch`** (mutation) - convex/db/messages.ts:269  
+**`createBatch`** (mutation) - convex/db/messages.ts:271  
 Creates multiple messages at once in a conversation using the public API.  
 Args: - The ID of the conversation, - Array of message objects to create  
 Returns: Array of created message IDs  
 Throws: Error if conversation not found  
 
-**`count`** (query) - convex/db/messages.ts:361  
+**`count`** (query) - convex/db/messages.ts:362  
 Counts messages in a conversation, optionally filtered by type.  
 Args: - The ID of the conversation, - Optional filter by message type  
 Returns: 0 if conversation not found  
 
-**`getLatest`** (query) - convex/db/messages.ts:417  
+**`getLatest`** (query) - convex/db/messages.ts:418  
 Gets the latest messages from a conversation.  
 Args: - The ID of the conversation, - Number of messages to return (default: 10)  
 Returns: Empty array if conversation not found  
@@ -185,14 +185,6 @@ Singleton instance of AIService.
 AI Service for centralized model operations.  
 
 Interfaces: `GenerateTextParams`  
-
-#### auth.ts
-
-**`requireAuth`** (action) - convex/edge/auth.ts:178  
-
-**`optionalAuth`** (action) - convex/edge/auth.ts:209  
-
-Interfaces: `AuthenticatedUser`  
 
 ### convex/lib/
 
@@ -252,7 +244,7 @@ Non-streaming text generation action for simple chat completions.
 Args: - The user's input prompt, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Generated text response with metadata including conversationId  
 
-**`streamingChatAction`** (action) - convex/node/chat.ts:180  
+**`streamingChatAction`** (action) - convex/node/chat.ts:184  
 Streaming chat action that prepares conversation context.  
 Args: - Array of conversation messages, - Optional model override (provider-specific), - AI provider to use (default: "openrouter"), - Optional existing conversation to continue  
 Returns: Conversation context for streaming  
@@ -285,9 +277,8 @@ migrations.ts: `addUpdatedAtToMessages`, `addUpdatedAtToConversations`
 
 ### Convex Mutations
 agents.ts: `archive`  
-conversations.ts: `create`, `update`, `archive`, `updateLastMessageAt`  
+conversations.ts: `create`, `update`, `archive`  
 messages.ts: `create`, `createBatch`  
 
 ### Convex Actions
-auth.ts: `requireAuth`, `optionalAuth`  
 chat.ts: `simpleChatAction`, `streamingChatAction`  

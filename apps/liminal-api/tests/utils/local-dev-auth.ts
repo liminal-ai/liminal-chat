@@ -36,8 +36,12 @@ export class LocalDevAuth {
    * Uses cached token if still valid.
    */
   async getValidToken(): Promise<string> {
-    if (this.cachedToken && Date.now() < this.cachedToken.expiresAt) {
-      return this.cachedToken.token;
+    if (this.cachedToken) {
+      const now = Date.now();
+      const refreshBufferMs = 5 * 60 * 1000; // 5 minutes
+      if (now < this.cachedToken.expiresAt - refreshBufferMs) {
+        return this.cachedToken.token;
+      }
     }
 
     try {

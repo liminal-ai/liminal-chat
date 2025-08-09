@@ -1,7 +1,6 @@
 import { v } from 'convex/values';
-import { mutation, query } from '../_generated/server';
+import { mutation, query, internalMutation } from '../_generated/server';
 import { Id as _Id } from '../_generated/dataModel';
-// Remove auth imports
 
 /**
  * Creates a new conversation in the public API.
@@ -39,13 +38,15 @@ export const create = mutation({
       }),
     ),
   },
+  returns: v.id('conversations'),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    const _userId = 'anonymous';
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
 
     const now = Date.now();
     return await ctx.db.insert('conversations', {
-      userId: _userId,
+      userId,
       title: args.title,
       type: args.type || 'standard',
       metadata: args.metadata,
@@ -85,9 +86,11 @@ export const list = query({
       }),
     ),
   },
+  returns: v.any(),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint - return all conversations
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { page: [], isDone: true } as any;
+    const userId = identity.subject;
 
     const { archived: _archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
 
@@ -97,8 +100,11 @@ export const list = query({
       cursor: paginationOpts.cursor ?? null,
     };
 
-    // Public endpoint - return all conversations (no user filtering or indexing)
-    return await ctx.db.query('conversations').order('desc').paginate(paginationOptions);
+    return await ctx.db
+      .query('conversations')
+      .filter((q) => q.eq(q.field('userId'), userId))
+      .order('desc')
+      .paginate(paginationOptions);
   },
 });
 
@@ -123,14 +129,16 @@ export const get = query({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.union(v.any(), v.null()),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = identity.subject;
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation) {
+    if (!conversation || conversation.userId !== userId) {
       return null;
     }
 
@@ -171,14 +179,16 @@ export const update = mutation({
       }),
     ),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    const _userId = 'anonymous';
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation) {
+    if (!conversation || conversation.userId !== userId) {
       throw new Error('Conversation not found');
     }
 
@@ -198,6 +208,7 @@ export const update = mutation({
     }
 
     await ctx.db.patch(args.conversationId, updates);
+    return null;
   },
 });
 
@@ -219,14 +230,16 @@ export const archive = mutation({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    const _userId = 'anonymous';
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
 
     const conversation = await ctx.db.get(args.conversationId);
 
     // Check ownership
-    if (!conversation) {
+    if (!conversation || conversation.userId !== userId) {
       throw new Error('Conversation not found');
     }
 
@@ -237,6 +250,7 @@ export const archive = mutation({
       },
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
@@ -256,13 +270,13 @@ export const archive = mutation({
  * });
  * ```
  */
-export const updateLastMessageAt = mutation({
+export const updateLastMessageAt = internalMutation({
   args: {
     conversationId: v.id('conversations'),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    const _userId = 'anonymous';
+    // Internal only; caller must ensure auth/ownership
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -275,6 +289,7 @@ export const updateLastMessageAt = mutation({
       lastMessageAt: Date.now(),
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
@@ -296,13 +311,18 @@ export const count = query({
   args: {
     archived: v.optional(v.boolean()),
   },
+  returns: v.number(),
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
+    const userId = identity.subject;
 
     const { archived: _archived } = args;
 
-    const conversations = await ctx.db.query('conversations').collect();
+    const conversations = await ctx.db
+      .query('conversations')
+      .filter((q) => q.eq(q.field('userId'), userId))
+      .collect();
 
     // Filter by archived status if specified
     if (_archived !== undefined) {

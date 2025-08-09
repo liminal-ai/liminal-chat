@@ -59,14 +59,16 @@ class DevAuthService {
         clientId: this.clientId,
       });
 
-      // Cache for 50 minutes (tokens typically expire in 1 hour)
-      const expiresAt = Date.now() + 50 * 60 * 1000;
+      // Derive cache expiry from JWT exp with a safety buffer (5 minutes)
+      const claims = jwtDecode<TokenClaims>(response.accessToken);
+      const jwtExpiresAtMs = (claims.exp || 0) * 1000;
+      const safetyBufferMs = 5 * 60 * 1000; // 5 minutes
+      const expiresAt = Math.max(0, jwtExpiresAtMs - safetyBufferMs);
+
       this.cachedToken = {
         token: response.accessToken,
         expiresAt,
       };
-
-      const claims = jwtDecode<TokenClaims>(response.accessToken);
 
       return {
         token: response.accessToken,

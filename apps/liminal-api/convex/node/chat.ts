@@ -63,12 +63,16 @@ export const simpleChatAction = action({
   }> => {
     const { prompt, provider = 'openrouter', model, conversationId } = args;
 
-    // No auth required - use anonymous user
-    const userId = 'anonymous';
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? '';
 
     let actualConversationId = conversationId;
 
     // If no conversationId provided, create a new conversation
+    if (!identity) {
+      throw new Error('Authentication required');
+    }
+
     if (!actualConversationId) {
       actualConversationId = await ctx.runMutation(api.db.conversations.create, {
         title: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
@@ -208,10 +212,15 @@ export const streamingChatAction = action({
   }> => {
     const { messages, provider = 'openrouter', model, conversationId } = args;
 
-    // No auth required - use anonymous user
-    const userId = 'anonymous';
+    const identity = await ctx.auth.getUserIdentity();
 
     let actualConversationId = conversationId;
+
+    if (!identity) {
+      throw new Error('Authentication required');
+    }
+
+    const userId: string = identity.subject;
 
     // Get the latest user message
     const userMessage = messages[messages.length - 1];

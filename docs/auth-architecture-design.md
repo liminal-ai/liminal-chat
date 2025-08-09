@@ -4,21 +4,21 @@
 
 This document details the authentication architecture for Liminal Chat, built on WorkOS for identity management and JWT-based authorization. The system supports production OAuth flows, automated testing, and local development with consistent security guarantees across all environments.
 
-## Core Security: Convex JWT Validation
+## Core Security: Convex JWT Validation (via Convex Auth Config)
 
 ### Architecture
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Incoming       │────▶│  Convex Edge    │────▶│  WorkOS JWKS    │
-│  Request        │     │  Runtime        │     │  Endpoint       │
-│  + JWT Header  │     │                 │     │                 │
+│  Incoming       │────▶│  Convex Auth    │────▶│  WorkOS JWKS    │
+│  Request        │     │  Built-in       │     │  Endpoint       │
+│  + JWT Header   │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
                                │                         │
                                │ 1. Extract JWT          │
-                               │ 2. Fetch JWKS          │
-                               │    (cached)            │
-                               │ 3. Validate with JOSE  │
+                               │ 2. Fetch JWKS           │
+                               │    (cached)             │
+                               │ 3. Validate signature   │
                                ▼                         │
                         ┌─────────────────┐              │
                         │  Validation     │◀─────────────┘
@@ -27,8 +27,8 @@ This document details the authentication architecture for Liminal Chat, built on
                                │
                                ▼
                         ┌─────────────────┐
-                        │  User Context   │
-                        │  or 401         │
+                        │  User Identity  │
+                        │  or null        │
                         └─────────────────┘
 ```
 
@@ -58,18 +58,18 @@ Client          Convex Function     JOSE Library      WorkOS JWKS
 
 ### Functional Description
 
-Every Convex function enforces JWT validation at the edge runtime layer. The validation process:
+Every Convex function enforces JWT validation using Convex's built-in authentication system configured in `auth.config.ts` with WorkOS AuthKit as the `customJwt` provider. The validation process:
 
 1. **Token Extraction**: Bearer tokens extracted from Authorization headers
-2. **JWKS Resolution**: Public keys fetched from WorkOS JWKS endpoint using the configured client ID
-3. **Signature Verification**: JOSE library validates JWT signature against WorkOS public keys
+2. **JWKS Resolution**: Convex resolves WorkOS JWKS using the configured client ID in `auth.config.ts`
+3. **Signature Verification**: Performed automatically by Convex's built-in auth system
 4. **Claims Validation**: Ensures required claims (sub, email, exp) are present and valid
 5. **Expiry Check**: Rejects expired tokens based on exp claim
-6. **Context Creation**: Valid tokens produce user context with tokenIdentifier and email
+6. **Identity Creation**: Valid tokens produce user identity accessible via `ctx.auth.getUserIdentity()`
 
-The JWKS keys are cached with a TTL to minimize external calls while maintaining security. Invalid tokens immediately return 401 Unauthorized without executing function logic.
+JWKS keys are cached by Convex to minimize external calls while maintaining security. Invalid tokens immediately return 401 Unauthorized without executing function logic.
 
-## Test Infrastructure: Playwright Token Generation
+## Test Infrastructure: Playwright Token Generation (Local Dev Service)
 
 ### Architecture
 
@@ -79,9 +79,9 @@ The JWKS keys are cached with a TTL to minimize external calls while maintaining
 │  Test Suite     │     │  Utility        │     │  (Node.js)      │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
         │                       │                         │
-        │                       │ 1. Load credentials    │
-        │                       │ 2. Authenticate        │
-        │                       │ 3. Cache tokens        │
+        │                       │ 1. Load credentials     │
+        │                       │ 2. Authenticate         │
+        │                       │ 3. Cache tokens         │
         │                       ▼                         │
         │               ┌─────────────────┐              │
         │               │  Token Cache    │◀─────────────┘
@@ -124,12 +124,12 @@ Test            SystemAuth       WorkOS SDK      Token Cache
 
 ### Functional Description
 
-The Playwright test infrastructure uses a dedicated system user with password authentication to generate real WorkOS JWTs:
+The Playwright test infrastructure and local dev flows use a dedicated local service (`apps/local-dev-service`) to obtain real WorkOS JWTs without UI middleware. Tests also support a system user flow when needed:
 
 1. **Credential Management**: System user credentials stored in environment variables
 2. **Token Generation**: WorkOS SDK authenticates using password flow
-3. **Token Caching**: JWTs cached per test worker with 50-minute lifetime
-4. **Automatic Refresh**: Refresh tokens used before expiry to maintain session
+3. **Token Caching**: JWTs cached with expiry derived from the token `exp` minus a 5-minute safety buffer
+4. **Automatic Refresh**: Tokens refreshed proactively before expiry; tests never use stale tokens
 5. **Header Injection**: Proxy pattern adds Authorization headers to all test requests
 
 This approach ensures integration tests use the same authentication path as production, validating the entire auth stack. The system user has specific JWT template claims for test identification.
@@ -144,7 +144,7 @@ This approach ensures integration tests use the same authentication path as prod
 │  (Browser)      │     │  Authorization  │     │  (Google, etc)  │
 └─────────────────┘     │  Server         │     └─────────────────┘
         │               └─────────────────┘              │
-        │                       │                        │
+        │                       │                         │
         │               ┌─────────────────┐              │
         │◀──────────────│  Callback       │◀─────────────┘
         │  httpOnly     │  + Cookie       │   Auth Code
@@ -204,7 +204,7 @@ Production authentication uses OAuth 2.0 with PKCE for secure browser-based auth
 
 The PKCE flow ensures security without client secrets, while httpOnly cookies prevent XSS token theft.
 
-## Local Development: Service-Based Authentication
+## Local Development: Service-Based Authentication (No UI Middleware)
 
 ### Architecture
 
@@ -264,8 +264,8 @@ Local development uses a dedicated service to provide real WorkOS JWTs without O
 3. **Token Generation**: Missing/expired tokens trigger call to local service
 4. **Password Authentication**: Service uses WorkOS password flow with dev credentials
 5. **Real JWTs**: Returns production-compatible tokens with dev user claims
-6. **Local Storage**: Tokens stored in localStorage with expiry tracking
-7. **Automatic Refresh**: Hook refreshes tokens 10 minutes before expiry
+6. **Convex Client Auth**: Vite app wires `convex.setAuth(async () => devAuth.getValidToken())` so each request fetches a fresh valid token from the local service cache
+7. **Automatic Refresh**: Local service and client cache respect JWT `exp` with a 5-minute refresh buffer (no UI prompts)
 
 This approach maintains security by keeping auth endpoints local while providing the same JWT structure as production.
 
@@ -276,38 +276,38 @@ This approach maintains security by keeping auth endpoints local while providing
 ```
 ┌────────────────────────────── Production Path ──────────────────────────────┐
 │                                                                              │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐ │
-│  │ Browser │───▶│ WorkOS  │───▶│  OAuth  │───▶│ Cookie  │───▶│ Convex  │ │
-│  │         │    │  Auth   │    │Provider │    │ Storage │    │         │ │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘ │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │
+│  │ Browser │───▶│ WorkOS  │───▶│  OAuth  │───▶│ Cookie  │───▶│ Convex  │  │
+│  │         │    │  Auth   │    │Provider │    │ Storage │    │         │  │
+│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘  │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────── Development Path ───────────────────────────────┐
 │                                                                              │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐ │
-│  │ Browser │───▶│  Local  │───▶│ WorkOS  │───▶│  Local  │───▶│ Convex  │ │
-│  │         │    │ Service │    │   API   │    │ Storage │    │         │ │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘ │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │
+│  │ Browser │───▶│  Local  │───▶│ WorkOS  │───▶│  Local  │───▶│ Convex  │  │
+│  │         │    │ Service │    │   API   │    │ Storage │    │         │  │
+│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘  │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────── Test Path ────────────────────────────────────┐
 │                                                                              │
-│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐ │
-│  │  Test   │───▶│ System  │───▶│ WorkOS  │───▶│ Header  │───▶│ Convex  │ │
-│  │ Runner  │    │  Auth   │    │   SDK   │    │Injection│    │         │ │
-│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘ │
+│  ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐  │
+│  │  Test   │───▶│ System  │───▶│ WorkOS  │───▶│ Header  │───▶│ Convex  │  │
+│  │ Runner  │    │  Auth   │    │   SDK   │    │Injection│    │         │  │
+│  └─────────┘    └─────────┘    └─────────┘    └─────────┘    └─────────┘  │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 
                                      │
                                      ▼
-                            ┌─────────────────┐
-                            │ Unified Convex  │
-                            │ JWT Validation  │
-                            │  (JOSE + JWKS)  │
-                            └─────────────────┘
+                          ┌───────────────────┐
+                          │  Unified Convex   │
+                          │  Built-in Auth    │
+                          │  (WorkOS JWKS)    │
+                          └───────────────────┘
 ```
 
 ### Complete Sequence Flow
@@ -335,7 +335,7 @@ Testing:            │                   │                │               �
     │               │                   │                │               │
     │               │                   │                │               ▼
     │               │                   │                │      ┌─────────────┐
-    │               │                   │                │      │ JOSE Valid. │
+    │               │                   │                │      │ Convex Auth │
     │               │                   │                │      │ Same Logic  │
     │               │                   │                │      │ All Paths   │
     │               │                   │                │      └─────────────┘
@@ -345,7 +345,7 @@ Testing:            │                   │                │               �
 
 ### Token Security
 - **Production**: httpOnly cookies prevent XSS attacks
-- **Development**: localStorage acceptable for local-only tokens
+- **Development**: Tokens are fetched from a localhost-only service and forwarded by the Convex client auth callback (`convex.setAuth`). Avoid persistent localStorage as the primary auth store; prefer transient in-memory use.
 - **Testing**: In-memory storage prevents token leakage
 - **All Environments**: Real WorkOS JWTs with proper expiry
 
@@ -367,11 +367,11 @@ Testing:            │                   │                │               �
 - **JWKS Caching**: Reduces external calls while maintaining security
 - **Token Refresh**: Proactive refresh prevents auth interruptions
 - **Local Service**: Minimal latency for development tokens
-- **Edge Validation**: JWT validation at edge for fastest rejection
+- **Built-in Validation**: JWT validation by Convex auth for fastest rejection
 
 ### Reliability
-- **Refresh Tokens**: Automatic refresh maintains long sessions
-- **Error Handling**: Clear 401 responses for invalid tokens
+- **Refresh Policy**: Proactive refresh using JWT `exp` with a 5-minute safety buffer maintains long sessions
+- **Error Handling**: Clear 401 responses for invalid tokens; Convex returns null identity for missing/invalid auth
 - **Fallback**: Password auth fallback for refresh failures
 - **Health Checks**: Service endpoints include auth validation
 
@@ -380,3 +380,31 @@ Testing:            │                   │                │               �
 - **Automatic Management**: Token refresh handled transparently
 - **Clear Errors**: Descriptive messages for auth failures
 - **Fast Iteration**: No OAuth flow delays in development
+
+## Next Auth Feature: Observability (Planned)
+
+To improve security monitoring and debugging without exposing secrets, add structured auth observability:
+
+- What to log
+  - auth_outcome: success | header_missing | header_format | token_missing | token_invalid_expired
+  - http context: method, path
+  - user context: userId on success, null otherwise
+  - correlation: requestId (short), timestamp
+  - Never log the Authorization header, raw token, or claims
+
+- Where to log
+  - HTTP entry points in `apps/liminal-api/convex/http.ts`:
+    - Log immediately on header parse failures
+    - Log after `ctx.auth.getUserIdentity()` for success vs invalid/expired
+  - Actions accessed via Convex client (e.g., `apps/liminal-api/convex/node/chat.ts`):
+    - Log identity presence vs null at action start
+
+- How to log
+  - Emit concise JSON lines via `console.log` for easy aggregation
+  - Example: `{ "evt": "auth", "outcome": "token_invalid_expired", "method": "POST", "path": "/api/agents", "userId": null, "requestId": "r_7f3a2", "ts": 1712345678901 }`
+
+- Optional
+  - Feature-gate via env (e.g., `AUTH_LOG_LEVEL=basic|verbose`)
+  - Consider RFC 6750 `WWW-Authenticate` header in 401s (no token details)
+
+This feature is scoped to logging only (no metrics backend required) and avoids sensitive data exposure while enabling actionable monitoring across success and failure paths.

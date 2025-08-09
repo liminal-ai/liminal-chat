@@ -53,15 +53,17 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
     if (!conversation) {
       throw new Error('Conversation not found');
     }
-
-    // Public endpoint - no validation required
+    if (args.authorType === 'user' && conversation.userId !== identity.subject) {
+      throw new Error('Access denied');
+    }
 
     // Create the message with proper timestamps
     const now = Date.now();
@@ -112,12 +114,12 @@ export const list = query({
     ),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { page: [], isDone: true };
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation) {
+    if (!conversation || conversation.userId !== identity.subject) {
       return { page: [], isDone: true };
     }
 
@@ -173,12 +175,12 @@ export const getAll = query({
     cursor: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { messages: [], hasMore: false, nextCursor: null };
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation) {
+    if (!conversation || conversation.userId !== identity.subject) {
       return { messages: [], hasMore: false, nextCursor: null };
     }
 
@@ -296,11 +298,12 @@ export const createBatch = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation) {
+    if (!conversation || conversation.userId !== identity.subject) {
       throw new Error('Conversation not found');
     }
 
@@ -309,8 +312,6 @@ export const createBatch = mutation({
 
     // Insert all messages
     for (const message of args.messages) {
-      // Public endpoint - no validation required
-
       const messageId = await ctx.db.insert('messages', {
         conversationId: args.conversationId,
         authorType: message.authorType,
@@ -372,12 +373,12 @@ export const count = query({
     ),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation) {
+    if (!conversation || conversation.userId !== identity.subject) {
       return 0;
     }
 
@@ -420,12 +421,12 @@ export const getLatest = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Public endpoint - no auth required
-    // Public endpoint
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
 
     // Verify user owns the conversation
     const conversation = await ctx.db.get(args.conversationId);
-    if (!conversation) {
+    if (!conversation || conversation.userId !== identity.subject) {
       return [];
     }
 

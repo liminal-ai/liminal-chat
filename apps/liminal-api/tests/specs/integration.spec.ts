@@ -73,7 +73,7 @@ test.describe('Liminal API Integration Tests', () => {
     expect(errorBody.error).toContain('Prompt is required');
   });
 
-  test('Invalid provider returns 500 error', async ({ authenticatedRequest }) => {
+  test('Invalid provider returns 400 error', async ({ authenticatedRequest }) => {
     const { response: invalidProvider } = await makeChatRequest(
       authenticatedRequest,
       '/api/chat-text',
@@ -83,7 +83,7 @@ test.describe('Liminal API Integration Tests', () => {
       },
     );
 
-    expect(invalidProvider.status()).toBe(500);
+    expect(invalidProvider.status()).toBe(400);
   });
 
   test('First concurrent request succeeds', async ({ authenticatedRequest }) => {

@@ -4,9 +4,9 @@ pwd to see what directory you are in
 
 If not in project root, cd into project root
 
-Stage all changes
+Stage all changes (blocking)
    - Command: `pnpm precommit:stage-all`
-   - Stages all changes with git add -A
+   - Stages all changes with git add -A (non-interactive)
 
 Temporary File Check (Show warnings)
    - Command: `pnpm precommit:temp-files`
@@ -42,7 +42,6 @@ Lint Check (Stop on errors)
    - Command: `pnpm lint`
      - Checks code syntax and style across all packages
    - Stop if linting errors found
-   - Show warnings but continue
 
 Type Check (Stop on errors)
    - Command: `pnpm typecheck`
@@ -56,10 +55,12 @@ Documentation Generation (Auto-update)
    - Command: `git add apps/liminal-api/docs/api/* apps/liminal-api/llms-config.json`
      - Stage the updated documentation files from Convex package
    - Continue even if generation has warnings
+   - Note: If docs regeneration is expensive, allow skipping with `COMMITPREP_SKIP_DOCS=1`
 
 Final Summary
    - Show summary of all checks (passed/failed/warnings)
    - List any issues that need attention
    - If all critical checks pass, proceed to commit message
+   - Recommended: emit a JSON summary to `.commitprep/summary.json` for CI consumption
 
 All output should be shown in the conversation
