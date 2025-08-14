@@ -50,11 +50,16 @@ jobs:
           pnpm -F web typecheck
           pnpm -F @liminal/api typecheck
 
-      - name: Build
-        run: |
-          pnpm -F @liminal/chat build
-          pnpm -F web build
-          pnpm -F @liminal/api build
+      - name: Build @liminal/chat
+        run: pnpm -F @liminal/chat build
+
+      - name: Build web (Next.js)
+        run: pnpm -F web build
+        env:
+          NEXT_PUBLIC_CONVEX_URL: https://example.convex.cloud
+
+      - name: Build @liminal/api
+        run: pnpm -F @liminal/api build
 
       - name: Unit tests (@liminal/chat)
         run: pnpm -F @liminal/chat test -- --run --reporter=dot
