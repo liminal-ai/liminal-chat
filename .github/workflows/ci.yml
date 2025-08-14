@@ -56,7 +56,7 @@ jobs:
       - name: Build web (Next.js)
         run: pnpm -F web build
         env:
-          NEXT_PUBLIC_CONVEX_URL: https://example.convex.cloud
+          NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
 
       - name: Build @liminal/api
         run: pnpm -F @liminal/api build
