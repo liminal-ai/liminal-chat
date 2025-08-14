@@ -34,6 +34,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Convex types (@liminal/api)
+        working-directory: apps/liminal-api
+        run: pnpm exec convex codegen
+
       - name: Lint
         run: |
           pnpm -F @liminal/chat lint
