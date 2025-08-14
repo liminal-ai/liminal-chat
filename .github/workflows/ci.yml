@@ -14,6 +14,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    environment: staging
 
     steps:
       - name: Checkout
