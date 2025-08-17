@@ -10,7 +10,8 @@ reviews:
   consolidate_findings: true
 
   # Generate comprehensive analysis suitable for Claude AI secondary review
-  auto_review: true
+  auto_review:
+    enabled: true
 
   # Always include sequence diagrams for complex changes
   sequence_diagrams: true

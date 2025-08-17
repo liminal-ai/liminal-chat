@@ -61,6 +61,5 @@ Final Summary
    - Show summary of all checks (passed/failed/warnings)
    - List any issues that need attention
    - If all critical checks pass, proceed to commit message
-   - Recommended: emit a JSON summary to `.commitprep/summary.json` for CI consumption
 
 All output should be shown in the conversation
