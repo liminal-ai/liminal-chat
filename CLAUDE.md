@@ -122,6 +122,48 @@ LLMs tend to suggest complex git operations without explaining risks or creating
 **Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
 
 
+## Git Safety Protocol
+
+**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
+
+### 🚨 NEVER Execute Without User Discussion:
+- `git rebase -i` (interactive rebase) - Can lose commits easily
+- `git reset --hard` on wrong branch - Permanent data loss  
+- `git push --force` - Can overwrite others' work
+- Complex merge conflict resolution - Easy to delete important code
+
+### Safety Requirements:
+1. **ALWAYS create backup branch first** before complex git operations
+2. **ALWAYS discuss git strategy** before executing destructive commands
+3. **ALWAYS explain risks** of proposed git operations to user
+4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
+
+### Why This Matters:
+LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
+
+**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
+
+## Git Safety Protocol
+
+**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
+
+### 🚨 NEVER Execute Without User Discussion:
+- `git rebase -i` (interactive rebase) - Can lose commits easily
+- `git reset --hard` on wrong branch - Permanent data loss  
+- `git push --force` - Can overwrite others' work
+- Complex merge conflict resolution - Easy to delete important code
+
+### Safety Requirements:
+1. **ALWAYS create backup branch first** before complex git operations
+2. **ALWAYS discuss git strategy** before executing destructive commands
+3. **ALWAYS explain risks** of proposed git operations to user
+4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
+
+### Why This Matters:
+LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
+
+**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
+
 ## Remember
 - Read before editing
 - Test before claiming completion  
