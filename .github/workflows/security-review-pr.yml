@@ -1,0 +1,63 @@
+name: Security Review - PR Changes
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+jobs:
+  security-review:
+    name: Claude Security Review (PR Changes)
+    runs-on: ubuntu-latest
+
+    # Only run when explicitly requested via comment
+    if: |
+      github.event.issue.pull_request && 
+      contains(github.event.comment.body, '/security-scan') &&
+      (github.event.comment.author_association == 'MEMBER' || 
+       github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+
+    steps:
+      - name: React to trigger comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
+      - name: Run Claude Security Review
+        uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          upload-results: true
+          exclude-directories: 'node_modules,dist,build,.next'
+          claudecode-timeout: 15
+
+      - name: Notify completion
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}' === 'success' ? '✅ Complete' : '❌ Failed';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🔒 Security Review ${status}\n\nPR-level security scan has finished. Check the review comments above for any findings.`
+            });

@@ -1,0 +1,98 @@
+name: Security Review - Full Repository
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  security-review:
+    name: Claude Security Review (Full Repository)
+    runs-on: ubuntu-latest
+
+    # Only run when explicitly requested via comment on issues (not PRs)
+    if: |
+      !github.event.issue.pull_request && 
+      contains(github.event.comment.body, '/security-scan-repo') &&
+      (github.event.comment.author_association == 'MEMBER' || 
+       github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+
+    steps:
+      - name: React to trigger comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create temporary commit for full scan
+        run: |
+          # Create a temporary commit to trigger full repo scan
+          git config user.name "Security Review Bot"
+          git config user.email "security@liminal.ai"
+          git commit --allow-empty -m "Trigger full repository security scan"
+
+      - name: Run Claude Security Review
+        uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: false
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          upload-results: true
+          exclude-directories: 'node_modules,dist,build,.next,test-results,playwright-report'
+          claudecode-timeout: 30
+          run-every-commit: true
+
+      - name: Post results to issue
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let resultsContent = '## 🔒 Full Repository Security Scan Results\n\n';
+
+            try {
+              if (fs.existsSync('claudecode-results.json')) {
+                const results = JSON.parse(fs.readFileSync('claudecode-results.json', 'utf8'));
+                
+                if (results.findings && results.findings.length > 0) {
+                  resultsContent += `**Findings: ${results.findings.length} security issues detected**\n\n`;
+                  
+                  results.findings.forEach((finding, index) => {
+                    resultsContent += `### ${index + 1}. ${finding.title || 'Security Issue'}\n`;
+                    resultsContent += `- **Severity**: ${finding.severity || 'Unknown'}\n`;
+                    resultsContent += `- **File**: ${finding.file || 'Unknown'}\n`;
+                    if (finding.line) resultsContent += `- **Line**: ${finding.line}\n`;
+                    resultsContent += `- **Description**: ${finding.description || 'No description available'}\n\n`;
+                  });
+                } else {
+                  resultsContent += '✅ No security vulnerabilities detected in repository scan.\n';
+                }
+              } else {
+                resultsContent += '❌ Security scan failed - results file not found.\n';
+              }
+            } catch (error) {
+              resultsContent += `❌ Error processing security scan results: ${error.message}\n`;
+            }
+
+            resultsContent += '\n📁 **Detailed results available in workflow artifacts.**';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: resultsContent
+            });
