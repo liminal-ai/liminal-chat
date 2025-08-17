@@ -1,6 +1,6 @@
 {
-  "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm run build",
+  "installCommand": "cd ../.. && pnpm -w install --no-frozen-lockfile --filter @liminal/api --filter @liminal/chat",
+  "buildCommand": "cd ../liminal-api && npx convex codegen && cd ../chat && pnpm run build",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
