@@ -5,8 +5,8 @@ node_modules/
 .env.local
 .env*.local
 
-# Convex generated files
-convex/_generated/
+# Convex generated files (committed for CI stability)
+# convex/_generated/
 
 # IDE
 .vscode/
