@@ -2,7 +2,7 @@ import { ConvexReactClient } from 'convex/react';
 
 // Try window override → Vercel env → fallback to staging Convex URL
 const convexUrl =
-  (typeof window !== 'undefined' && (window as any).__CONVEX_URL) ||
+  (typeof window !== 'undefined' && (window as { __CONVEX_URL?: string }).__CONVEX_URL) ||
   import.meta.env.VITE_CONVEX_URL ||
   'https://peaceful-cassowary-494.convex.cloud';
 
