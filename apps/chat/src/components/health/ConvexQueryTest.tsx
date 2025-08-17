@@ -1,13 +1,9 @@
 import { useQuery } from 'convex/react';
-let api: any = {};
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  api = require('@liminal/api/convex/_generated/api');
-} catch {}
+import { api } from '@liminal/api/convex/_generated/api.js';
 
 export function ConvexQueryTest() {
   // Test real-time subscription with authenticated query
-  const conversations = useQuery((api as any)?.api?.db?.conversations?.list as any, {
+  const conversations = useQuery(api.db.conversations.list, {
     archived: false,
     paginationOpts: { numItems: 5 },
   });
@@ -31,7 +27,7 @@ export function ConvexQueryTest() {
           <div style={{ color: '#f59e0b' }}>🔄 Loading...</div>
         ) : (
           <div style={{ color: '#10b981' }}>
-            ✅ Loaded {(conversations as any)?.page?.length ?? 0} conversations
+            ✅ Loaded {conversations.page.length} conversations
             <pre
               style={{
                 backgroundColor: '#f1f5f9',

@@ -1,14 +1,10 @@
 import { useQuery } from 'convex/react';
-// Avoid hard build-time dependency on @liminal/api codegen; load at runtime if present
-let api: any = {};
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  api = require('@liminal/api/convex/_generated/api');
-} catch {}
+// Force runtime JS import to avoid type-only resolution in prod builds
+import { api } from '@liminal/api/convex/_generated/api.js';
 
 export function HealthCheck() {
   // Test authenticated Convex connection with a simple query
-  const conversations = useQuery((api as any)?.api?.db?.conversations?.list as any, {
+  const conversations = useQuery(api.db.conversations.list, {
     archived: false,
     paginationOpts: { numItems: 1 },
   });
@@ -40,7 +36,7 @@ export function HealthCheck() {
                 color: '#6b7280',
               }}
             >
-              Query returned {(conversations as any)?.page?.length ?? 0} conversation(s)
+              Query returned {conversations.page.length} conversation(s)
             </div>
           </div>
         )}
