@@ -1,0 +1,186 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# CodeRabbit Configuration for Liminal Chat
+# Optimized for solo development with Claude AI integration
+
+# Core review behavior - consolidate everything into comprehensive summary
+reviews:
+  # Single comprehensive comment instead of many individual line comments
+  high_level_summary: true
+  consolidate_findings: true
+
+  # Generate comprehensive analysis suitable for Claude AI secondary review
+  auto_review: true
+
+  # Always include sequence diagrams for complex changes
+  sequence_diagrams: true
+
+  # Enable release notes generation for feature PRs
+  auto_release_notes: true
+
+# Review focus areas tailored to Liminal Chat patterns
+review:
+  # Convex backend and TypeScript patterns
+  focus_areas:
+    - 'authentication_security'
+    - 'database_patterns'
+    - 'api_consistency'
+    - 'typescript_strict_compliance'
+    - 'convex_best_practices'
+    - 'error_handling'
+
+  # Reduced noise from common solo development patterns
+  ignore_patterns:
+    - 'formatting_minor'
+    - 'dependency_version_updates'
+    - 'console_log_statements' # Dev debugging
+
+  # Instructions for review tone and style
+  tone_instructions: |
+    Provide comprehensive analysis in a single detailed comment. Focus on:
+    1. Security implications, especially for authentication changes
+    2. Convex-specific patterns and best practices
+    3. TypeScript strict mode compliance
+    4. API consistency and error handling
+    5. Architectural implications
+
+    Consolidate similar issues rather than commenting on each occurrence.
+    Format for easy consumption by Claude AI for secondary analysis.
+    Include confidence levels for recommendations.
+
+# Context-aware review depth based on PR characteristics
+rules:
+  - name: 'security_critical_files'
+    files:
+      - 'apps/liminal-api/convex/auth.config.ts'
+      - 'apps/liminal-api/convex/http.ts'
+      - 'apps/liminal-api/convex/db/**/*.ts'
+      - 'apps/chat/src/lib/auth.ts'
+      - 'apps/local-dev-service/**/*.ts'
+    review_depth: 'thorough'
+    security_focus: true
+
+  - name: 'convex_backend_patterns'
+    files:
+      - 'apps/liminal-api/convex/**/*.ts'
+    custom_instructions: |
+      Focus on Convex-specific patterns:
+      - Proper use of query/mutation/action decorators
+      - Schema consistency and validation
+      - Authentication enforcement in all endpoints
+      - Error handling and response formatting
+      - Database query optimization
+
+  - name: 'frontend_auth_integration'
+    files:
+      - 'apps/chat/src/components/auth/**/*.tsx'
+      - 'apps/chat/src/lib/**/*.ts'
+    custom_instructions: |
+      Focus on:
+      - Proper token handling and refresh logic
+      - Type safety with Convex integration
+      - Error boundary implementation
+      - Dev vs production auth mode handling
+
+  - name: 'dependency_updates'
+    files:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '**/package.json'
+    review_depth: 'minimal'
+    focus: 'security_vulnerabilities'
+
+  - name: 'deployment_configs'
+    files:
+      - 'vercel.json'
+      - '.github/workflows/**'
+      - 'apps/chat/vite.config.ts'
+    focus: 'configuration_consistency'
+
+# Advanced features for comprehensive analysis
+advanced:
+  # Repository-wide analysis capabilities
+  enable_full_repo_scans: true
+
+  # Diagram generation and export
+  diagram_generation:
+    enabled: true
+    types: ['sequence', 'architecture', 'data_flow']
+    export_format: 'mermaid'
+
+  # Learning from Claude AI feedback integration
+  feedback_learning:
+    enabled: true
+    track_implementation_rate: true
+
+  # Specialized review modes
+  review_modes:
+    security_deep_dive:
+      enabled: true
+      trigger_keywords: ['security', 'auth', 'vulnerable']
+      focus: ['injection', 'authorization', 'secrets', 'validation']
+
+    architecture_review:
+      enabled: true
+      trigger_keywords: ['refactor', 'architecture', 'migrate']
+      focus: ['patterns', 'separation', 'scalability', 'maintainability']
+
+    performance_analysis:
+      enabled: true
+      trigger_keywords: ['performance', 'optimization', 'slow']
+      focus: ['queries', 'bundle_size', 'runtime', 'memory']
+
+# Chat and command integration
+chat:
+  # Enable commands for on-demand specialized reviews
+  auto_reply: true
+
+# Knowledge base for project-specific patterns
+knowledge:
+  # Liminal Chat specific patterns and preferences
+  project_patterns:
+    - name: 'convex_auth_pattern'
+      description: 'Use ctx.auth.getUserIdentity() for all authenticated endpoints'
+      files: ['apps/liminal-api/convex/**/*.ts']
+
+    - name: 'error_response_consistency'
+      description: 'Use createErrorResponse() helper for consistent HTTP error formatting'
+      files: ['apps/liminal-api/convex/http.ts']
+
+    - name: 'typescript_strict_ids'
+      description: "Use Id<'table'> types instead of string for document IDs"
+      files: ['apps/liminal-api/convex/**/*.ts']
+
+    - name: 'dev_auth_separation'
+      description: 'Maintain clear separation between dev and production auth modes'
+      files: ['apps/chat/src/**/*.ts', 'apps/local-dev-service/**/*.ts']
+
+# Path-based configurations for different areas of codebase
+paths:
+  'apps/liminal-api/convex/':
+    language: 'typescript'
+    framework: 'convex'
+    focus: ['security', 'performance', 'patterns']
+
+  'apps/chat/src/':
+    language: 'typescript'
+    framework: 'react'
+    focus: ['type_safety', 'auth_integration', 'user_experience']
+
+  'apps/local-dev-service/':
+    language: 'typescript'
+    framework: 'express'
+    focus: ['security', 'dev_workflow']
+
+# Integration with external tools and workflows
+integrations:
+  # Claude AI handoff optimization
+  claude_integration:
+    enabled: true
+    format_for_claude: true
+    include_confidence_scores: true
+
+  # Documentation integration
+  documentation:
+    auto_update_diagrams: true
+    export_to: 'docs/coderabbit/'
