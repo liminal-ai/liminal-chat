@@ -318,10 +318,11 @@ The Liminal Chat frontend (`apps/chat`) requires Convex-generated types for succ
 
 **Vercel Environment Variable Configuration:**
 ```bash
-# Set Convex URL in Vercel Environment Variables
-npx vercel env add VITE_CONVEX_URL
-# Value: https://staging-instance.convex.cloud (for staging)
-# Value: https://prod-instance.convex.cloud (for production)
+# Set Convex URL in Vercel Environment Variables with proper scoping
+vercel env add VITE_CONVEX_URL --scope preview
+# Value: https://staging-instance.convex.cloud
+vercel env add VITE_CONVEX_URL --scope production  
+# Value: https://prod-instance.convex.cloud
 
 # Or via Vercel Dashboard: Project Settings → Environment Variables
 ```
@@ -374,7 +375,7 @@ steps:
     working-directory: apps/chat
     env:
       VITE_CONVEX_URL: ${{ secrets.CONVEX_STAGING_URL }}
-    run: npx vercel --prod --target staging
+    run: vercel --target preview
 ```
 
 **Project-Specific Information:**
@@ -765,7 +766,7 @@ jobs:
       - name: Deploy to Vercel staging
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_STAGING_TOKEN }}
-        run: npx vercel --prod --target staging
+        run: vercel --target preview
 ```
 
 **Blacksmith Setup Status:**
@@ -1029,8 +1030,9 @@ The Liminal Chat frontend (`apps/chat`) requires Convex-generated types for succ
 VITE_CONVEX_URL=https://staging-instance.convex.cloud  # Staging
 VITE_CONVEX_URL=https://prod-instance.convex.cloud     # Production
 
-# Set via Vercel CLI
-npx vercel env add VITE_CONVEX_URL
+# Set via Vercel CLI with proper scoping
+vercel env add VITE_CONVEX_URL --scope preview  # For staging
+vercel env add VITE_CONVEX_URL --scope production  # For production
 # Set via Vercel Dashboard: Project Settings → Environment Variables
 ```
 
@@ -1063,7 +1065,7 @@ steps:
     working-directory: apps/chat
     env:
       VITE_CONVEX_URL: ${{ secrets.CONVEX_STAGING_URL }}
-    run: npm run build && npx vercel --prod --target staging
+    run: npm run build && vercel --target preview
 ```
 
 **Common Issues & Solutions:**
@@ -1167,10 +1169,11 @@ posthog.capture('chat_message_sent', {
   response_time: responseTimeMs
 })
 
-// User identification
+// User identification - privacy-safe approach
 posthog.identify(userId, {
-  email: user.email,
-  subscription_type: 'free'
+  email_domain: user.email.split('@')[1],  // Company insights without PII
+  user_segment: 'enterprise',              // Business categorization  
+  subscription_type: 'free'                // Plan-based insights
 })
 ```
 
@@ -1947,7 +1950,7 @@ npx convex deploy
 cd ../chat
 export VITE_CONVEX_URL="${CONVEX_STAGING_URL}"
 npm run build  # Must succeed with fresh types
-npx vercel --prod --target staging
+vercel --target preview
 
 # Step 6: Verify deployment
 curl "${CONVEX_STAGING_URL}/api/ping"  # Check backend
@@ -2000,7 +2003,7 @@ jobs:
           VITE_CONVEX_URL: ${{ secrets.CONVEX_STAGING_URL }}
         run: |
           npm run build
-          npx vercel --prod --target staging --token $VERCEL_TOKEN
+          vercel --target preview --token $VERCEL_TOKEN
           
       # 6. Verify deployment
       - name: Verify staging deployment
