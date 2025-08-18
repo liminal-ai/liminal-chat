@@ -144,7 +144,7 @@ WORKOS_API_KEY="sk_test_..."
 
 # Staging  
 WORKOS_CLIENT_ID="client_01STAGING..."
-WORKOS_API_KEY="sk_live_..."
+WORKOS_API_KEY="sk_test_..."
 
 # Production
 WORKOS_CLIENT_ID="client_01PROD..."

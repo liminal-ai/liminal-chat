@@ -149,10 +149,10 @@ npx convex env set WORKOS_COOKIE_PASSWORD "..."
 
 **Step 3: Configure Vercel Environment**
 ```bash
-# Add environment variables via CLI
-vercel env add VITE_WORKOS_CLIENT_ID
-vercel env add VITE_CONVEX_URL
-vercel env add VITE_APP_ENV
+# Add environment variables with proper scoping
+vercel env add VITE_WORKOS_CLIENT_ID --scope preview
+vercel env add VITE_CONVEX_URL --scope preview  
+vercel env add VITE_APP_ENV --scope preview
 
 # Or via dashboard at vercel.com/[team]/[project]/settings/environment-variables
 ```

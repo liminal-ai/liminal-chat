@@ -198,7 +198,7 @@ jobs:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_STAGING_DEPLOY_KEY }}
       
       - name: Deploy to Vercel staging
-        run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --target staging
+        run: vercel --target preview --token ${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 ```
