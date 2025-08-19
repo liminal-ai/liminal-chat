@@ -82,6 +82,27 @@ Apply this protocol when:
 
 This reinforcement happens **every response** to maintain consistent persona and approach.
 
+## Git Safety Protocol - follow-git-safety-protocol
+
+**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
+
+### 🚨 NEVER Execute Without User Discussion:
+- `git rebase -i` (interactive rebase) - Can lose commits easily
+- `git reset --hard` on wrong branch - Permanent data loss  
+- `git push --force` - Can overwrite others' work
+- Complex merge conflict resolution - Easy to delete important code
+
+### Safety Requirements:
+1. **ALWAYS create backup branch first** before complex git operations
+2. **ALWAYS discuss git strategy** before executing destructive commands
+3. **ALWAYS explain risks** of proposed git operations to user
+4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
+
+### Why This Matters:
+LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
+
+**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
+
 ## Implementation Planning Protocol
 
 **When creating implementation plans, define problems and goals, not solutions.**
@@ -122,26 +143,7 @@ Risks: Watch for streaming endpoint compatibility
 **CORRECT:** Search for "Vercel MCP integration" NOT "Vercel MCP 2024"
 **CORRECT:** Search for "Claude Code MCP tools" NOT "Claude Code MCP 2024"
 
-## Git Safety Protocol - follow-git-safety-protocol
 
-**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
-
-### 🚨 NEVER Execute Without User Discussion:
-- `git rebase -i` (interactive rebase) - Can lose commits easily
-- `git reset --hard` on wrong branch - Permanent data loss  
-- `git push --force` - Can overwrite others' work
-- Complex merge conflict resolution - Easy to delete important code
-
-### Safety Requirements:
-1. **ALWAYS create backup branch first** before complex git operations
-2. **ALWAYS discuss git strategy** before executing destructive commands
-3. **ALWAYS explain risks** of proposed git operations to user
-4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
-
-### Why This Matters:
-LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
-
-**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
 
 ## Git Safety Protocol - follow-git-safety-protocol
 
@@ -164,26 +166,7 @@ LLMs tend to suggest complex git operations without explaining risks or creating
 
 **Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
 
-## Git Safety Protocol - follow-git-safety-protocol
 
-**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
-
-### 🚨 NEVER Execute Without User Discussion:
-- `git rebase -i` (interactive rebase) - Can lose commits easily
-- `git reset --hard` on wrong branch - Permanent data loss  
-- `git push --force` - Can overwrite others' work
-- Complex merge conflict resolution - Easy to delete important code
-
-### Safety Requirements:
-1. **ALWAYS create backup branch first** before complex git operations
-2. **ALWAYS discuss git strategy** before executing destructive commands
-3. **ALWAYS explain risks** of proposed git operations to user
-4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
-
-### Why This Matters:
-LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
-
-**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
 
 ## Remember
 - Read before editing
@@ -194,3 +177,24 @@ LLMs tend to suggest complex git operations without explaining risks or creating
 
 
 🚨 **ANTIPATTERN: no-2024-searches** - Final reminder: NEVER add "2024" to search queries.
+
+## Git Safety Protocol - follow-git-safety-protocol
+
+**Philosophy:** Pragmatic balance between historical truth and clean narratives. Preserve meaningful decision points while avoiding commit noise.
+
+### 🚨 NEVER Execute Without User Discussion:
+- `git rebase -i` (interactive rebase) - Can lose commits easily
+- `git reset --hard` on wrong branch - Permanent data loss  
+- `git push --force` - Can overwrite others' work
+- Complex merge conflict resolution - Easy to delete important code
+
+### Safety Requirements:
+1. **ALWAYS create backup branch first** before complex git operations
+2. **ALWAYS discuss git strategy** before executing destructive commands
+3. **ALWAYS explain risks** of proposed git operations to user
+4. **PREFER simple operations**: `git add`, `git commit`, `git checkout -b`
+
+### Why This Matters:
+LLMs tend to suggest complex git operations without explaining risks or creating safety nets. Historical truth and project continuity matter more than git command efficiency. When in doubt, choose the safest path that preserves work.
+
+**Rule:** If a git command could lose data or confuse history, stop and discuss with user first.
