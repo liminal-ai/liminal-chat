@@ -129,6 +129,13 @@ apps/domain/
 workos-pivot-poc/
 opencode.json
 
+# WorkOS documentation scrapes
+docs/workos-docs/
+
+# Claude Code output styles and Obsidian
+docs/claude-output-styles/
+docs/.obsidian/
+
 # Opencode source code
 apps/opencode/
 docs/llm-agent-exploration/pocketflow-docs/core-design/comprehensive-design-summary.md
@@ -137,3 +144,4 @@ docs/llm-agent-exploration/pocketflow-docs/node.md
 docs/llm-agent-exploration/pocketflow-github.md
 docs/llm-agent-exploration/phase-1-impl.md
 agent-management/veloc-code-prompt.md
+.vercel
