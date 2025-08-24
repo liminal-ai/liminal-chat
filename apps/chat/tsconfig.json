@@ -35,6 +35,5 @@
     /* Types */
     "types": ["vite/client", "node"]
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"]
 }

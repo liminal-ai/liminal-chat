@@ -12,6 +12,8 @@ import RoundtableDemoStudio from './pages/roundtable-demo-studio';
 import RoundtableDemoStudioChat from './pages/roundtable-demo-studio-chat';
 import { RootProviders } from './components/auth/RootProviders';
 import { WorkOSAuthStatus } from './components/auth/WorkOSAuthStatus';
+import { onReconnectVisible } from './lib/authSync';
+import { useEffect, useState } from 'react';
 
 const MODE = (import.meta.env.VITE_AUTH_MODE || 'dev') as 'dev' | 'workos';
 
@@ -33,11 +35,33 @@ function ModeBanner() {
   );
 }
 
+function ReconnectBanner() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => onReconnectVisible(setVisible), []);
+  if (!visible) return null;
+  return (
+    <div
+      style={{
+        marginTop: '0.75rem',
+        padding: '0.5rem 0.75rem',
+        backgroundColor: '#fff7ed',
+        border: '1px solid #fdba74',
+        color: '#9a3412',
+        borderRadius: 6,
+        fontSize: '0.875rem',
+      }}
+    >
+      Reconnecting authentication…
+    </div>
+  );
+}
+
 function HomePage() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Liminal Chat</h1>
       <ModeBanner />
+      <ReconnectBanner />
       <p>✅ Vite + React is running on port 5173</p>
       <p>✅ Convex client connected to: {import.meta.env.VITE_CONVEX_URL}</p>
 
