@@ -28,7 +28,8 @@
     /* Path Mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@liminal/api/*": ["../liminal-api/*"]
     },
 
     /* Types */
