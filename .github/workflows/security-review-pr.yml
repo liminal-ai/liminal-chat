@@ -34,10 +34,22 @@ jobs:
               content: 'rocket'
             });
 
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return pr.data;
+
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ fromJson(steps.pr.outputs.result).head.sha }}
           fetch-depth: 2
 
       - name: Run Claude Security Review
