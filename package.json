@@ -92,7 +92,6 @@
   },
   "packageManager": "pnpm@8.15.9",
   "dependencies": {
-    "@convex-dev/workos": "^0.0.1",
     "@workos-inc/authkit-react": "^0.11.0"
   }
 }

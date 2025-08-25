@@ -58,13 +58,18 @@ export function createAuthManager(): {
   devAuth?: LocalDevAuth;
 } {
   const authMode = (import.meta.env.VITE_AUTH_MODE || 'production') as 'dev' | 'production';
-
-  if (authMode === 'dev') {
-    return {
-      authMode,
-      devAuth: new LocalDevAuth(),
-    };
+  // Singleton to avoid multiple instances & cache duplication
+  // (module scope variable retained across re-renders / hooks usage)
+  if (!(globalThis as Record<string, unknown>).__DEV_LOCAL_AUTH_INSTANCE) {
+    // Only create when needed
+    if (authMode === 'dev') {
+      (globalThis as Record<string, unknown>).__DEV_LOCAL_AUTH_INSTANCE = new LocalDevAuth();
+    }
   }
-
+  const devAuth: LocalDevAuth | undefined = (globalThis as Record<string, unknown>)
+    .__DEV_LOCAL_AUTH_INSTANCE as LocalDevAuth;
+  if (authMode === 'dev') {
+    return { authMode, devAuth };
+  }
   return { authMode };
 }
