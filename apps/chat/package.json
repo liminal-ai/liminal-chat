@@ -39,9 +39,8 @@
     "consult:help": "echo 'LLM Consultation Commands:\\n\\n🎨 v0 (Vercel Design):\\n  npm run consult:v0 --prompt=\"create a login form\"\\n  npm run consult:v0:large --prompt=\"complex dashboard design\"\\n\\n🔍 Perplexity (Research):\\n  npm run consult:perplexity:pro --prompt=\"latest AI developments\"\\n  npm run consult:perplexity:deep --prompt=\"comprehensive analysis of quantum computing\"\\n\\n🧠 OpenAI Models:\\n  npm run consult:o3-pro --prompt=\"complex reasoning task\" (async - returns ID)\\n  npm run consult:gpt4.1 --prompt=\"general purpose query\"\\n  npm run consult:gpt4.1-mini --prompt=\"fast response needed\"\\n  npm run consult:gpt4.1-nano --prompt=\"simple question\"\\n\\n📝 Formatted Output (response only):\\n  npm run consult:v0:formatted --prompt=\"your prompt\"\\n  npm run consult:perplexity:pro:formatted --prompt=\"your query\"\\n  npm run consult:gpt4.1:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-mini:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-nano:formatted --prompt=\"your prompt\"\\n\\n💡 Note: o3-pro is async - returns ID, check status separately'"
   },
   "dependencies": {
-    "@convex-dev/workos": "^0.0.1",
     "@workos-inc/authkit-react": "^0.11.0",
-    "convex": "^1.25.2",
+    "convex": "^1.26.1",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { AuthContext, AuthState, AuthActions, createAuthManager } from '../../lib/auth';
-import { convex } from '../../lib/convex';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -42,7 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email,
       };
     } catch (error) {
-      console.error('Failed to decode token:', error);
+      /* decode token failure ignored */
       return null;
     }
   }, []);
@@ -59,11 +58,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!user) {
           throw new Error('Invalid token received from dev service');
         }
-
-        // Wire Convex auth to always fetch a fresh valid token (LocalDevAuth caches until exp-5m)
-        convex.setAuth(async () => {
-          return await devAuth.getValidToken();
-        });
 
         setState((prev) => ({
           ...prev,
@@ -94,9 +88,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (devAuth) {
       devAuth.clearCache();
     }
-
-    // Clear Convex auth so future requests are anonymous
-    convex.setAuth(async () => null as unknown as string);
 
     setState((prev) => ({
       ...prev,
@@ -131,8 +122,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Auto-login in dev mode on mount
   useEffect(() => {
     if (authMode === 'dev' && state.isLoading) {
-      login().catch((error) => {
-        console.error('Auto-login failed:', error);
+      login().catch((_error) => {
+        /* auto login failed */
         setState((prev) => ({ ...prev, isLoading: false }));
       });
     } else if (authMode === 'production') {
