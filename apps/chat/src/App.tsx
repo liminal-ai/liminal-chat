@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { Authenticated } from 'convex/react';
+import { Authenticated, useConvexAuth } from 'convex/react';
+import { useAuth } from './lib/auth';
 import { AuthStatus } from './components/auth/AuthStatus';
 import { HealthCheck } from './components/health/HealthCheck';
 import { ConvexQueryTest } from './components/health/ConvexQueryTest';
@@ -14,6 +15,53 @@ import { RootProviders } from './components/auth/RootProviders';
 import { WorkOSAuthStatus } from './components/auth/WorkOSAuthStatus';
 import { onReconnectVisible } from './lib/authSync';
 import { useEffect, useState } from 'react';
+
+/**
+ * Handles the OAuth callback redirect from WorkOS AuthKit.
+ * Shows a loading state while auth token is processed, then redirects to home page.
+ *
+ * @returns Loading component with redirect functionality
+ */
+function AuthCallback() {
+  useEffect(() => {
+    // Brief delay to let WorkOS auth settle, then redirect to home page
+    const timer = setTimeout(() => {
+      window.location.href = '/';
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      style={{
+        padding: '2rem',
+        textAlign: 'center',
+        fontFamily: 'system-ui, sans-serif',
+      }}
+    >
+      <h2>Signing you in...</h2>
+      <p>Redirecting you back to the dashboard...</p>
+      <div
+        style={{
+          margin: '1rem auto',
+          width: '32px',
+          height: '32px',
+          border: '3px solid #f3f3f3',
+          borderTop: '3px solid #3b82f6',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }}
+      ></div>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 const MODE = (import.meta.env.VITE_AUTH_MODE || 'dev') as 'dev' | 'workos';
 
@@ -57,6 +105,25 @@ function ReconnectBanner() {
 }
 
 function HomePage() {
+  // Call the correct auth hook **only** for the active mode. This avoids
+  // runtime errors such as "Could not find ConvexProviderWithAuth as an ancestor component"
+  // when a hook is executed outside its expected provider hierarchy.
+
+  let isLoading: boolean;
+  let isAuthenticated: boolean;
+
+  if (MODE === 'workos') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const convexAuth = useConvexAuth();
+    isLoading = convexAuth.isLoading;
+    isAuthenticated = convexAuth.isAuthenticated;
+  } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const devAuth = useAuth();
+    isLoading = devAuth.isLoading;
+    isAuthenticated = devAuth.isAuthenticated;
+  }
+
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Liminal Chat</h1>
@@ -173,14 +240,26 @@ function HomePage() {
           <HealthCheck />
           <ConvexQueryTest />
         </Authenticated>
-      ) : (
+      ) : isAuthenticated ? (
         <>
           <HealthCheck />
           <ConvexQueryTest />
         </>
+      ) : isLoading ? (
+        <div style={{ marginTop: '1rem', color: '#f59e0b' }}>🔄 Initializing authentication...</div>
+      ) : (
+        <div style={{ marginTop: '1rem', color: '#ef4444' }}>
+          ❌ Authentication failed. Check AuthStatus above.
+        </div>
       )}
     </div>
   );
+}
+
+function _AuthGated({ children, ready }: { children: React.ReactNode; ready: boolean }) {
+  // In case we later add fade-in or metrics.
+  if (!ready) return null;
+  return <>{children}</>;
 }
 
 export function App() {
@@ -189,6 +268,7 @@ export function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/callback" element={<AuthCallback />} />
           <Route path="/roundtable-demo" element={<RoundtableDemo />} />
           <Route path="/roundtable-demo-2" element={<RoundtableDemo2 />} />
           <Route path="/roundtable-demo-3" element={<RoundtableDemo3 />} />

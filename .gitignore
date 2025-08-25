@@ -136,6 +136,9 @@ docs/workos-docs/
 docs/claude-output-styles/
 docs/.obsidian/
 
+# Claude slash commands (private)
+.claude/commands/debug-mode.md
+
 # Opencode source code
 apps/opencode/
 docs/llm-agent-exploration/pocketflow-docs/core-design/comprehensive-design-summary.md

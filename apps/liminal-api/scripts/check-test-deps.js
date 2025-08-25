@@ -29,16 +29,13 @@ async function main() {
   }
 
   const checks = [
-    { name: 'Local Dev Service', url: 'http://127.0.0.1:8081/health' },
-    // Add Convex check if needed
+    // Add service checks here if needed
   ];
 
   const results = await Promise.all(checks.map((check) => checkService(check.name, check.url)));
 
   if (results.some((result) => !result)) {
     console.log('\n⚠️  Required services are not running!');
-    console.log('Please run:');
-    console.log('  cd apps/local-dev-service && npm run dev:start');
     process.exit(1);
   }
 
