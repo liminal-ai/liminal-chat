@@ -1,0 +1,42 @@
+:root {
+  --panel-left-width: 280px;
+  --panel-right-width: 320px;
+  --panel-min-width: 240px;
+  --panel-max-width: 420px;
+}
+
+/* Smooth transitions for panel operations */
+.panel-transition {
+  transition:
+    width 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
+}
+
+/* Focus styles for accessibility */
+.resizer:focus {
+  outline: 2px solid theme('colors.blue.500');
+  outline-offset: 2px;
+}
+
+/* Ensure proper scrolling in panels */
+.panel-content {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.zinc.300') transparent;
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background-color: theme('colors.zinc.300');
+  border-radius: 3px;
+}
+
+.dark .panel-content::-webkit-scrollbar-thumb {
+  background-color: theme('colors.zinc.600');
+}
