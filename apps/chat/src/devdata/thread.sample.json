@@ -1,0 +1,102 @@
+[
+  {
+    "id": "m1",
+    "role": "system",
+    "text": "Welcome to Liminal Chat. This is a read-only demo thread.",
+    "ts": 1710000000000
+  },
+  {
+    "id": "m2",
+    "role": "user",
+    "text": "Hey there! Can you help me summarize a TypeScript function?",
+    "ts": 1710000005000
+  },
+  {
+    "id": "m3",
+    "role": "assistant",
+    "text": "Sure. Paste the function and I will explain it step by step.",
+    "ts": 1710000010000
+  },
+  {
+    "id": "m4",
+    "role": "user",
+    "text": "```ts\nfunction add(a: number, b: number) {\n  return a + b;\n}\n```\nWhat does it do?",
+    "ts": 1710000012000
+  },
+  {
+    "id": "m5",
+    "role": "assistant",
+    "text": "It takes two numbers and returns their sum. Types enforce that only numbers are accepted.",
+    "ts": 1710000017000
+  },
+  { "id": "m6", "role": "user", "text": "Great. What about edge cases?", "ts": 1710000020000 },
+  {
+    "id": "m7",
+    "role": "assistant",
+    "text": "For numbers, there are no special cases here beyond JavaScript number behavior (e.g., Infinity, NaN).",
+    "ts": 1710000025000
+  },
+  { "id": "m8", "role": "user", "text": "Can you show a usage example?", "ts": 1710000030000 },
+  {
+    "id": "m9",
+    "role": "assistant",
+    "text": "```ts\nconst result = add(2, 3);\nconsole.log(result); // 5\n```",
+    "ts": 1710000033000
+  },
+  {
+    "id": "m10",
+    "role": "assistant",
+    "text": "You can also rely on type inference in most call sites.",
+    "ts": 1710000036000
+  },
+  {
+    "id": "m11",
+    "role": "user",
+    "text": "Understood. How do I write a test?",
+    "ts": 1710000040000
+  },
+  {
+    "id": "m12",
+    "role": "assistant",
+    "text": "```ts\nimport { describe, it, expect } from 'vitest';\n\ndescribe('add', () => {\n  it('adds two numbers', () => {\n    expect(add(2, 3)).toBe(5);\n  });\n});\n```",
+    "ts": 1710000044000
+  },
+  {
+    "id": "m13",
+    "role": "user",
+    "text": "Nice. What coding style should I follow?",
+    "ts": 1710000048000
+  },
+  {
+    "id": "m14",
+    "role": "assistant",
+    "text": "Prefer small functions, descriptive names, and TypeScript strict mode. Format with Prettier.",
+    "ts": 1710000052000
+  },
+  { "id": "m15", "role": "user", "text": "How do I handle errors?", "ts": 1710000056000 },
+  {
+    "id": "m16",
+    "role": "assistant",
+    "text": "Use `try/catch` around risky code and surface clear error messages to the UI.",
+    "ts": 1710000060000
+  },
+  {
+    "id": "m17",
+    "role": "user",
+    "text": "Thanks!\n\nOne more: Show a code fence followed by text.",
+    "ts": 1710000064000
+  },
+  {
+    "id": "m18",
+    "role": "assistant",
+    "text": "```bash\n# install deps\npnpm i\n```\nThen run `pnpm dev:start`.",
+    "ts": 1710000068000
+  },
+  { "id": "m19", "role": "user", "text": "Perfect. That covers it.", "ts": 1710000072000 },
+  {
+    "id": "m20",
+    "role": "assistant",
+    "text": "Glad to help! Scroll to review the full thread.",
+    "ts": 1710000076000
+  }
+]

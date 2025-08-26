@@ -4,6 +4,7 @@
   "private": true,
   "description": "A threshold between human and AI communication",
   "scripts": {
+    "codex:commitprep": "bash scripts/commitprep.sh",
     "claude": "./scripts/claude-shell.sh",
     "research": "claude-code -p 'You are a research assistant with access to WebSearch, Context7, Firecrawl, and Perplexity via Convex. Help research technical questions thoroughly.'",
     "dev": "echo 'Delegating to dev:start to start both services...' && pnpm dev:start",

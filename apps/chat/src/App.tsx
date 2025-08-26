@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Authenticated, useConvexAuth } from 'convex/react';
 import { useAuth } from './lib/auth';
 import { AuthStatus } from './components/auth/AuthStatus';
@@ -15,6 +15,7 @@ import { RootProviders } from './components/auth/RootProviders';
 import { WorkOSAuthStatus } from './components/auth/WorkOSAuthStatus';
 import { onReconnectVisible } from './lib/authSync';
 import { useEffect, useState } from 'react';
+import ChatPage from './pages/ChatPage';
 
 /**
  * Handles the OAuth callback redirect from WorkOS AuthKit.
@@ -267,7 +268,9 @@ export function App() {
     <RootProviders>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/app/chat" replace />} />
+          <Route path="/app/chat" element={<ChatPage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/callback" element={<AuthCallback />} />
           <Route path="/roundtable-demo" element={<RoundtableDemo />} />
           <Route path="/roundtable-demo-2" element={<RoundtableDemo2 />} />
