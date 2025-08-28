@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import MessageView from './ChatMessage';
 import { useChatStream } from '../../hooks/useChatStream';
 import { Composer } from './Composer';
@@ -9,24 +9,77 @@ import { ProvenancePill } from './ProvenancePill';
 interface CenterChatShellProps {
   threadId: string;
   capability: Capability;
+  rag?: unknown;
   onScrollChange?: (scrolled: boolean) => void;
 }
 
-const ESTIMATED_ROW_PX = 88;
-const BUFFER_ROWS = 6;
+// NOTE: We temporarily removed naive estimated-height virtualization to fix
+// scroll jumping. We’ll reintroduce variable-size virtualization later.
 
 export const CenterChatShell: React.FC<CenterChatShellProps> = ({
   threadId,
   capability,
+  rag,
   onScrollChange,
 }) => {
   const { messages, status, error, send, cancel, retry } = useChatStream(threadId, capability);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const bottomSentinelRef = useRef<HTMLDivElement | null>(null);
+  const pinnedToBottomRef = useRef<boolean>(true);
   const lastOverlay = useRef<boolean>(false);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [clientHeight, setClientHeight] = useState(0);
+  // No need to track scrollTop/clientHeight for windowing anymore.
   const [showJump, setShowJump] = useState(false);
+  const animRef = useRef<number | null>(null); // rAF id for inertial follow
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    !!window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // How close to bottom we consider "pinned" (px)
+  const AUTO_FOLLOW_THRESHOLD = 240;
+
+  // helper removed; we rely on kickFollow() or direct scrolls
+
+  // Inertial follow: smoothly approach the bottom while pinned.
+  const cancelFollow = useCallback(() => {
+    if (animRef.current != null) {
+      cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+    }
+  }, []);
+
+  const kickFollow = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (!pinnedToBottomRef.current) return;
+    if (prefersReducedMotion) {
+      // Respect user preference: jump, no animation.
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
+    if (animRef.current != null) return; // already animating
+    const step = () => {
+      // Stop if user scrolled away or element vanished
+      const elNow = scrollRef.current;
+      if (!elNow || !pinnedToBottomRef.current) {
+        animRef.current = null;
+        return;
+      }
+      const maxTop = Math.max(0, elNow.scrollHeight - elNow.clientHeight);
+      const curr = elNow.scrollTop;
+      const delta = maxTop - curr;
+      if (Math.abs(delta) < 0.5) {
+        elNow.scrollTop = maxTop;
+        animRef.current = null;
+        return;
+      }
+      // Ease 35% toward target each frame (feels natural, adapts as content grows)
+      elNow.scrollTop = curr + delta * 0.35;
+      animRef.current = requestAnimationFrame(step);
+    };
+    animRef.current = requestAnimationFrame(step);
+  }, [prefersReducedMotion]);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -39,11 +92,16 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
       lastOverlay.current = showOverlay;
       onScrollChange?.(showOverlay);
     }
-    setScrollTop(scTop);
-    setClientHeight(el.clientHeight);
     const distanceFromBottom = el.scrollHeight - scTop - el.clientHeight;
+    // Show chip when clearly not at bottom
     setShowJump(distanceFromBottom > 300);
-  }, [onScrollChange]);
+    // Update "pinned" state so we auto-follow only when near bottom
+    pinnedToBottomRef.current = distanceFromBottom < AUTO_FOLLOW_THRESHOLD;
+    if (!pinnedToBottomRef.current) {
+      // If the user scrolled away, stop any running animation
+      if (animRef.current != null) cancelFollow();
+    }
+  }, [onScrollChange, cancelFollow]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -56,19 +114,20 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
     };
   }, [handleScroll]);
 
-  // Simple windowing based on estimated heights
-  const total = messages.length;
-  const startIndex = Math.max(0, Math.floor(scrollTop / ESTIMATED_ROW_PX) - BUFFER_ROWS);
-  const endIndex = Math.min(
-    total,
-    Math.ceil((scrollTop + clientHeight) / ESTIMATED_ROW_PX) + BUFFER_ROWS,
-  );
-  const visible = useMemo(
-    () => messages.slice(startIndex, endIndex),
-    [messages, startIndex, endIndex],
-  );
-  const topSpacer = startIndex * ESTIMATED_ROW_PX;
-  const bottomSpacer = Math.max(0, (total - endIndex) * ESTIMATED_ROW_PX);
+  // When new messages are appended (user submit or assistant row created),
+  // follow the bottom smoothly if we were already near it.
+  useEffect(() => {
+    if (!pinnedToBottomRef.current) return;
+    // Coalesce into one smooth animator instead of many tiny jumps
+    const id = requestAnimationFrame(() => kickFollow());
+    return () => cancelAnimationFrame(id);
+    // Only care that the list length changed; token updates are handled in onToken
+  }, [messages.length, kickFollow]);
+
+  // Cleanup any pending animation on unmount
+  useEffect(() => () => cancelFollow(), [cancelFollow]);
+
+  // Removed windowing; render full list to avoid jumpiness for now.
 
   const jumpToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -85,10 +144,10 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
         </div>
       </div>
 
-      {/* Messages Container - Ready for virtualization */}
+      {/* Messages Container */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-4"
+        className="flex-1 overflow-y-auto px-6 py-4 [overflow-anchor:none] [overscroll-behavior:contain] [scrollbar-gutter:stable]"
         data-testid="center-chat-list"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -98,10 +157,8 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
           }
         }}
       >
-        {/* Windowed list */}
-        <div style={{ height: topSpacer }} />
         <div className="space-y-4">
-          {visible.map((m) => (
+          {messages.map((m) => (
             <div key={m.id} className="space-y-1">
               <MessageView message={m} />
               {m.role === 'assistant' && m.metadata?.provenance && (
@@ -123,12 +180,14 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
             </div>
           )}
         </div>
-        <div style={{ height: bottomSpacer }} />
+        {/* Sentinel helps smooth scrollToBottom target and future virtualization */}
+        <div ref={bottomSentinelRef} data-testid="bottom-sentinel" />
 
         {showJump && (
           <button
             onClick={jumpToBottom}
-            className="fixed bottom-24 right-6 px-3 py-2 rounded-full bg-zinc-900 text-white text-xs shadow-md hover:bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-white"
+            className="fixed bottom-24 right-6 px-3 py-2 rounded bg-zinc-900 text-white text-sm shadow-sm hover:opacity-90 dark:bg-zinc-200 dark:text-zinc-900 dark:hover:bg-white"
+            aria-label="Jump to bottom"
           >
             Jump to bottom
           </button>
@@ -143,24 +202,27 @@ export const CenterChatShell: React.FC<CenterChatShellProps> = ({
         <div className="max-w-4xl mx-auto">
           <Composer
             status={status}
-            onSend={(t) => {
-              const nearBottom = (() => {
+            onSend={(t, opts) => {
+              // Snapshot whether we were near the bottom right before sending
+              const wasPinned = (() => {
                 const el = scrollRef.current;
                 if (!el) return true;
                 const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-                return distance < 200;
+                return distance < AUTO_FOLLOW_THRESHOLD;
               })();
               send(t, {
                 onToken: () => {
-                  if (nearBottom) {
-                    // Re-evaluate nearness each token; if still near, keep pinned
-                    const el = scrollRef.current;
-                    if (!el) return;
-                    const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-                    if (distance < 200) el.scrollTop = el.scrollHeight;
-                  }
+                  // While streaming, keep a single smooth animator running.
+                  if (!pinnedToBottomRef.current) return;
+                  kickFollow();
                 },
+                artifactIds: opts?.artifactIds,
+                rag,
               });
+              // After we optimistically append the user message, follow if we were pinned
+              if (wasPinned) {
+                requestAnimationFrame(() => kickFollow());
+              }
             }}
             onCancel={cancel}
           />

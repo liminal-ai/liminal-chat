@@ -1,6 +1,8 @@
 import type React from 'react';
 import { useMemo } from 'react';
 import type { ChatMessage as ChatMsg } from '@/types/chat';
+import { MOCK_ARTIFACTS_MAP } from '@/devapi/mockArtifacts';
+import { ArtifactChip } from './ArtifactChip';
 
 function formatTime(ts: number): string {
   try {
@@ -95,6 +97,15 @@ export default function ChatMessage({ message }: { message: ChatMsg }) {
                   {p.content}
                 </div>
               ),
+            )}
+            {message.metadata?.artifactIds && message.metadata.artifactIds.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {message.metadata.artifactIds.map((id) => {
+                  const a = MOCK_ARTIFACTS_MAP[id];
+                  if (!a) return null;
+                  return <ArtifactChip key={id} artifact={a} />;
+                })}
+              </div>
             )}
             <div className="mt-2 flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400">
               <span>{formatTime(message.ts)}</span>

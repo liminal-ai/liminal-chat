@@ -2,9 +2,9 @@
 // Main interface for testing the roundtable primitive with scripted interactions
 
 import { useState } from 'react';
-import { useDemoControls, useDemoNavigation, useDemoDebug } from '../lib/demo-system/demo-hooks';
-import { getAvailableScripts } from '../lib/demo-system/demo-scripts';
-import { RoundtableInterface } from '../components/roundtable/RoundtableInterface';
+import { useDemoControls, useDemoNavigation, useDemoDebug } from '../../lib/demo-system/demo-hooks';
+import { getAvailableScripts } from '../../lib/demo-system/demo-scripts';
+import { RoundtableInterface } from '../../components/roundtable/RoundtableInterface';
 
 export default function RoundtableDemo() {
   const [selectedScriptId, setSelectedScriptId] = useState('character-development');

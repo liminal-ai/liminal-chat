@@ -1,0 +1,5752 @@
+===== SINGLE FILE CONVEX REPO START =====
+Root: apps/liminal-api
+Generated: 2025-08-27T00:47:12.975Z
+Files: 39
+
+===== FILE: apps/liminal-api/.eslintrc.cjs =====
+
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true, node: true },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended-type-checked',
+    'plugin:prettier/recommended',
+  ],
+  ignorePatterns: [
+    '.eslintrc.cjs',
+    'convex/_generated',
+    'tests/**',
+    'test-utils/**',
+    'playwright.config.ts',
+    'index.ts',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: true,
+    tsconfigRootDir: __dirname,
+  },
+  rules: {
+    // All of these overrides ease getting into
+    // TypeScript, and can be removed for stricter
+    // linting down the line.
+
+    // Only warn on unused variables, and ignore variables starting with `_`
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+    ],
+
+    // Allow escaping the compiler
+    '@typescript-eslint/ban-ts-comment': 'error',
+
+    // Allow explicit `any`s
+    '@typescript-eslint/no-explicit-any': 'off',
+
+    // START: Allow implicit `any`s
+    '@typescript-eslint/no-unsafe-argument': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+    // END: Allow implicit `any`s
+
+    // Allow async functions without await
+    // for consistency (esp. Convex `handler`s)
+    '@typescript-eslint/require-await': 'off',
+  },
+};
+
+
+===== FILE: apps/liminal-api/convex/_generated/api.d.ts =====
+
+/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+import type * as db_agents from "../db/agents.js";
+import type * as db_cleanup from "../db/cleanup.js";
+import type * as db_conversations from "../db/conversations.js";
+import type * as db_messages from "../db/messages.js";
+import type * as db_migrations from "../db/migrations.js";
+import type * as edge_aiHttpHelpers from "../edge/aiHttpHelpers.js";
+import type * as edge_aiModelBuilder from "../edge/aiModelBuilder.js";
+import type * as edge_aiProviders from "../edge/aiProviders.js";
+import type * as edge_aiService from "../edge/aiService.js";
+import type * as http from "../http.js";
+import type * as lib_env from "../lib/env.js";
+import type * as lib_errors from "../lib/errors.js";
+import type * as node_chat from "../node/chat.js";
+import type * as node_startup from "../node/startup.js";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+declare const fullApi: ApiFromModules<{
+  "db/agents": typeof db_agents;
+  "db/cleanup": typeof db_cleanup;
+  "db/conversations": typeof db_conversations;
+  "db/messages": typeof db_messages;
+  "db/migrations": typeof db_migrations;
+  "edge/aiHttpHelpers": typeof edge_aiHttpHelpers;
+  "edge/aiModelBuilder": typeof edge_aiModelBuilder;
+  "edge/aiProviders": typeof edge_aiProviders;
+  "edge/aiService": typeof edge_aiService;
+  http: typeof http;
+  "lib/env": typeof lib_env;
+  "lib/errors": typeof lib_errors;
+  "node/chat": typeof node_chat;
+  "node/startup": typeof node_startup;
+}>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
+
+
+===== FILE: apps/liminal-api/convex/_generated/api.js =====
+
+/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import { anyApi } from "convex/server";
+
+/**
+ * A utility for referencing Convex functions in your app's API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export const api = anyApi;
+export const internal = anyApi;
+
+
+===== FILE: apps/liminal-api/convex/_generated/dataModel.d.ts =====
+
+/* eslint-disable */
+/**
+ * Generated data model types.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type {
+  DataModelFromSchemaDefinition,
+  DocumentByName,
+  TableNamesInDataModel,
+  SystemTableNames,
+} from "convex/server";
+import type { GenericId } from "convex/values";
+import schema from "../schema.js";
+
+/**
+ * The names of all of your Convex tables.
+ */
+export type TableNames = TableNamesInDataModel<DataModel>;
+
+/**
+ * The type of a document stored in Convex.
+ *
+ * @typeParam TableName - A string literal type of the table name (like "users").
+ */
+export type Doc<TableName extends TableNames> = DocumentByName<
+  DataModel,
+  TableName
+>;
+
+/**
+ * An identifier for a document in Convex.
+ *
+ * Convex documents are uniquely identified by their `Id`, which is accessible
+ * on the `_id` field. To learn more, see [Document IDs](https://docs.convex.dev/using/document-ids).
+ *
+ * Documents can be loaded using `db.get(id)` in query and mutation functions.
+ *
+ * IDs are just strings at runtime, but this type can be used to distinguish them from other
+ * strings when type checking.
+ *
+ * @typeParam TableName - A string literal type of the table name (like "users").
+ */
+export type Id<TableName extends TableNames | SystemTableNames> =
+  GenericId<TableName>;
+
+/**
+ * A type describing your Convex data model.
+ *
+ * This type includes information about what tables you have, the type of
+ * documents stored in those tables, and the indexes defined on them.
+ *
+ * This type is used to parameterize methods like `queryGeneric` and
+ * `mutationGeneric` to make them type-safe.
+ */
+export type DataModel = DataModelFromSchemaDefinition<typeof schema>;
+
+
+===== FILE: apps/liminal-api/convex/_generated/server.d.ts =====
+
+/* eslint-disable */
+/**
+ * Generated utilities for implementing server-side Convex query and mutation functions.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import {
+  ActionBuilder,
+  HttpActionBuilder,
+  MutationBuilder,
+  QueryBuilder,
+  GenericActionCtx,
+  GenericMutationCtx,
+  GenericQueryCtx,
+  GenericDatabaseReader,
+  GenericDatabaseWriter,
+} from "convex/server";
+import type { DataModel } from "./dataModel.js";
+
+/**
+ * Define a query in this Convex app's public API.
+ *
+ * This function will be allowed to read your Convex database and will be accessible from the client.
+ *
+ * @param func - The query function. It receives a {@link QueryCtx} as its first argument.
+ * @returns The wrapped query. Include this as an `export` to name it and make it accessible.
+ */
+export declare const query: QueryBuilder<DataModel, "public">;
+
+/**
+ * Define a query that is only accessible from other Convex functions (but not from the client).
+ *
+ * This function will be allowed to read from your Convex database. It will not be accessible from the client.
+ *
+ * @param func - The query function. It receives a {@link QueryCtx} as its first argument.
+ * @returns The wrapped query. Include this as an `export` to name it and make it accessible.
+ */
+export declare const internalQuery: QueryBuilder<DataModel, "internal">;
+
+/**
+ * Define a mutation in this Convex app's public API.
+ *
+ * This function will be allowed to modify your Convex database and will be accessible from the client.
+ *
+ * @param func - The mutation function. It receives a {@link MutationCtx} as its first argument.
+ * @returns The wrapped mutation. Include this as an `export` to name it and make it accessible.
+ */
+export declare const mutation: MutationBuilder<DataModel, "public">;
+
+/**
+ * Define a mutation that is only accessible from other Convex functions (but not from the client).
+ *
+ * This function will be allowed to modify your Convex database. It will not be accessible from the client.
+ *
+ * @param func - The mutation function. It receives a {@link MutationCtx} as its first argument.
+ * @returns The wrapped mutation. Include this as an `export` to name it and make it accessible.
+ */
+export declare const internalMutation: MutationBuilder<DataModel, "internal">;
+
+/**
+ * Define an action in this Convex app's public API.
+ *
+ * An action is a function which can execute any JavaScript code, including non-deterministic
+ * code and code with side-effects, like calling third-party services.
+ * They can be run in Convex's JavaScript environment or in Node.js using the "use node" directive.
+ * They can interact with the database indirectly by calling queries and mutations using the {@link ActionCtx}.
+ *
+ * @param func - The action. It receives an {@link ActionCtx} as its first argument.
+ * @returns The wrapped action. Include this as an `export` to name it and make it accessible.
+ */
+export declare const action: ActionBuilder<DataModel, "public">;
+
+/**
+ * Define an action that is only accessible from other Convex functions (but not from the client).
+ *
+ * @param func - The function. It receives an {@link ActionCtx} as its first argument.
+ * @returns The wrapped function. Include this as an `export` to name it and make it accessible.
+ */
+export declare const internalAction: ActionBuilder<DataModel, "internal">;
+
+/**
+ * Define an HTTP action.
+ *
+ * This function will be used to respond to HTTP requests received by a Convex
+ * deployment if the requests matches the path and method where this action
+ * is routed. Be sure to route your action in `convex/http.js`.
+ *
+ * @param func - The function. It receives an {@link ActionCtx} as its first argument.
+ * @returns The wrapped function. Import this function from `convex/http.js` and route it to hook it up.
+ */
+export declare const httpAction: HttpActionBuilder;
+
+/**
+ * A set of services for use within Convex query functions.
+ *
+ * The query context is passed as the first argument to any Convex query
+ * function run on the server.
+ *
+ * This differs from the {@link MutationCtx} because all of the services are
+ * read-only.
+ */
+export type QueryCtx = GenericQueryCtx<DataModel>;
+
+/**
+ * A set of services for use within Convex mutation functions.
+ *
+ * The mutation context is passed as the first argument to any Convex mutation
+ * function run on the server.
+ */
+export type MutationCtx = GenericMutationCtx<DataModel>;
+
+/**
+ * A set of services for use within Convex action functions.
+ *
+ * The action context is passed as the first argument to any Convex action
+ * function run on the server.
+ */
+export type ActionCtx = GenericActionCtx<DataModel>;
+
+/**
+ * An interface to read from the database within Convex query functions.
+ *
+ * The two entry points are {@link DatabaseReader.get}, which fetches a single
+ * document by its {@link Id}, or {@link DatabaseReader.query}, which starts
+ * building a query.
+ */
+export type DatabaseReader = GenericDatabaseReader<DataModel>;
+
+/**
+ * An interface to read from and write to the database within Convex mutation
+ * functions.
+ *
+ * Convex guarantees that all writes within a single mutation are
+ * executed atomically, so you never have to worry about partial writes leaving
+ * your data in an inconsistent state. See [the Convex Guide](https://docs.convex.dev/understanding/convex-fundamentals/functions#atomicity-and-optimistic-concurrency-control)
+ * for the guarantees Convex provides your functions.
+ */
+export type DatabaseWriter = GenericDatabaseWriter<DataModel>;
+
+
+===== FILE: apps/liminal-api/convex/_generated/server.js =====
+
+/* eslint-disable */
+/**
+ * Generated utilities for implementing server-side Convex query and mutation functions.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import {
+  actionGeneric,
+  httpActionGeneric,
+  queryGeneric,
+  mutationGeneric,
+  internalActionGeneric,
+  internalMutationGeneric,
+  internalQueryGeneric,
+} from "convex/server";
+
+/**
+ * Define a query in this Convex app's public API.
+ *
+ * This function will be allowed to read your Convex database and will be accessible from the client.
+ *
+ * @param func - The query function. It receives a {@link QueryCtx} as its first argument.
+ * @returns The wrapped query. Include this as an `export` to name it and make it accessible.
+ */
+export const query = queryGeneric;
+
+/**
+ * Define a query that is only accessible from other Convex functions (but not from the client).
+ *
+ * This function will be allowed to read from your Convex database. It will not be accessible from the client.
+ *
+ * @param func - The query function. It receives a {@link QueryCtx} as its first argument.
+ * @returns The wrapped query. Include this as an `export` to name it and make it accessible.
+ */
+export const internalQuery = internalQueryGeneric;
+
+/**
+ * Define a mutation in this Convex app's public API.
+ *
+ * This function will be allowed to modify your Convex database and will be accessible from the client.
+ *
+ * @param func - The mutation function. It receives a {@link MutationCtx} as its first argument.
+ * @returns The wrapped mutation. Include this as an `export` to name it and make it accessible.
+ */
+export const mutation = mutationGeneric;
+
+/**
+ * Define a mutation that is only accessible from other Convex functions (but not from the client).
+ *
+ * This function will be allowed to modify your Convex database. It will not be accessible from the client.
+ *
+ * @param func - The mutation function. It receives a {@link MutationCtx} as its first argument.
+ * @returns The wrapped mutation. Include this as an `export` to name it and make it accessible.
+ */
+export const internalMutation = internalMutationGeneric;
+
+/**
+ * Define an action in this Convex app's public API.
+ *
+ * An action is a function which can execute any JavaScript code, including non-deterministic
+ * code and code with side-effects, like calling third-party services.
+ * They can be run in Convex's JavaScript environment or in Node.js using the "use node" directive.
+ * They can interact with the database indirectly by calling queries and mutations using the {@link ActionCtx}.
+ *
+ * @param func - The action. It receives an {@link ActionCtx} as its first argument.
+ * @returns The wrapped action. Include this as an `export` to name it and make it accessible.
+ */
+export const action = actionGeneric;
+
+/**
+ * Define an action that is only accessible from other Convex functions (but not from the client).
+ *
+ * @param func - The function. It receives an {@link ActionCtx} as its first argument.
+ * @returns The wrapped function. Include this as an `export` to name it and make it accessible.
+ */
+export const internalAction = internalActionGeneric;
+
+/**
+ * Define a Convex HTTP action.
+ *
+ * @param func - The function. It receives an {@link ActionCtx} as its first argument, and a `Request` object
+ * as its second.
+ * @returns The wrapped endpoint function. Route a URL path to this function in `convex/http.js`.
+ */
+export const httpAction = httpActionGeneric;
+
+
+===== FILE: apps/liminal-api/convex/auth.config.ts =====
+
+const clientId = process.env.WORKOS_CLIENT_ID;
+
+if (!clientId) {
+  throw new Error('WORKOS_CLIENT_ID environment variable is required for auth configuration');
+}
+
+export default {
+  providers: [
+    {
+      type: 'customJwt',
+      issuer: 'https://api.workos.com',
+      algorithm: 'RS256',
+      jwks: `https://api.workos.com/sso/jwks/${clientId}`,
+      applicationID: clientId,
+    },
+    {
+      type: 'customJwt',
+      issuer: `https://api.workos.com/user_management/${clientId}`,
+      algorithm: 'RS256',
+      jwks: `https://api.workos.com/sso/jwks/${clientId}`,
+      applicationID: clientId,
+    },
+  ],
+};
+
+
+===== FILE: apps/liminal-api/convex/db/agents.ts =====
+
+import { v } from 'convex/values';
+import { mutation, query } from '../_generated/server';
+
+/**
+ * Creates a new agent for the authenticated user.
+ * Agent names must be unique per user.
+ *
+ * @param args.name - Unique identifier like "alice" or "jarvis" (automatically normalized to lowercase for storage)
+ * @param args.systemPrompt - The personality/behavior prompt
+ * @param args.provider - Provider like "openai" or "anthropic"
+ * @param args.model - Model like "gpt-4" or "claude-3-sonnet"
+ * @param args.config - Optional configuration object
+ * @returns The ID of the created agent
+ * @throws Error if agent name already exists for this user
+ *
+ * @example
+ * ```typescript
+ * const agentId = await ctx.runMutation(api.db.agents.create, {
+ *   name: "assistant",
+ *   systemPrompt: "You are a helpful assistant.",
+ *   provider: "openai",
+ *   model: "gpt-4",
+ *   config: {
+ *     temperature: 0.7,
+ *     maxTokens: 1000
+ *   }
+ * });
+ * ```
+ */
+export const create = mutation({
+  args: {
+    name: v.string(),
+    systemPrompt: v.string(),
+    provider: v.string(),
+    model: v.string(),
+    config: v.optional(
+      v.object({
+        temperature: v.optional(v.number()),
+        maxTokens: v.optional(v.number()),
+        topP: v.optional(v.number()),
+        reasoning: v.optional(v.boolean()),
+        streamingSupported: v.optional(v.boolean()),
+      }),
+    ),
+  },
+  returns: v.id('agents'),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+    // Check for empty name first
+    if (!args.name || args.name.trim().length === 0) {
+      throw new Error('Agent name cannot be empty');
+    }
+
+    // Validate original name format before normalization
+    // Only allow letters, numbers, and hyphens (will be converted to lowercase)
+    const originalNameRegex = /^[a-zA-Z0-9-]+$/;
+    if (!originalNameRegex.test(args.name.trim())) {
+      throw new Error('Agent name must contain only letters, numbers, and hyphens');
+    }
+
+    // Normalize name to lowercase for consistent storage and comparison
+    // This ensures "Alice", "alice", and "ALICE" are treated as the same agent name
+    const normalizedName = args.name.toLowerCase().trim();
+
+    // Check if agent with this name already exists for this user
+    const existingAgent = await ctx.db
+      .query('agents')
+      .withIndex('by_user_and_name', (q) => q.eq('userId', userId).eq('name', normalizedName))
+      .unique();
+
+    if (existingAgent) {
+      throw new Error('Agent with this name already exists for this user');
+    }
+
+    const now = Date.now();
+    return await ctx.db.insert('agents', {
+      userId,
+      name: normalizedName,
+      systemPrompt: args.systemPrompt,
+      provider: args.provider,
+      model: args.model,
+      config: args.config,
+      archived: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/**
+ * Updates an existing agent for the authenticated user.
+ * Only provided fields will be updated - partial updates are supported.
+ * Agent names must be unique per user and will be normalized to lowercase.
+ *
+ * @param args.agentId - The ID of the agent to update
+ * @param args.name - New unique identifier (optional, will be normalized)
+ * @param args.systemPrompt - New personality/behavior prompt (optional)
+ * @param args.provider - New provider like "openai" or "anthropic" (optional)
+ * @param args.model - New model like "gpt-4" or "claude-3-sonnet" (optional)
+ * @param args.config - New configuration object (optional, replaces existing)
+ * @throws Error if agent not found, not owned by user, or name conflicts
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.db.agents.update, {
+ *   agentId: "j123...",
+ *   systemPrompt: "You are a more helpful assistant.",
+ *   config: {
+ *     temperature: 0.8,
+ *     maxTokens: 2000
+ *   }
+ * });
+ * ```
+ */
+export const update = mutation({
+  args: {
+    agentId: v.id('agents'),
+    name: v.optional(v.string()),
+    systemPrompt: v.optional(v.string()),
+    provider: v.optional(v.string()),
+    model: v.optional(v.string()),
+    config: v.optional(
+      v.object({
+        temperature: v.optional(v.number()),
+        maxTokens: v.optional(v.number()),
+        topP: v.optional(v.number()),
+        reasoning: v.optional(v.boolean()),
+        streamingSupported: v.optional(v.boolean()),
+      }),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+    // Get agent and validate ownership
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent || agent.userId !== userId || agent.archived) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    // Handle name update if provided
+    let normalizedName: string | undefined = undefined;
+    if (args.name !== undefined) {
+      // Check for empty name
+      if (!args.name || args.name.trim().length === 0) {
+        throw new Error('Agent name cannot be empty');
+      }
+
+      // Validate name format before normalization
+      const originalNameRegex = /^[a-zA-Z0-9-]+$/;
+      if (!originalNameRegex.test(args.name.trim())) {
+        throw new Error('Agent name must contain only letters, numbers, and hyphens');
+      }
+
+      // Normalize name to lowercase
+      const newNormalizedName = args.name.toLowerCase().trim();
+      normalizedName = newNormalizedName;
+
+      // Check for name conflicts with OTHER agents (not current agent)
+      if (newNormalizedName !== agent.name) {
+        const existingAgent = await ctx.db
+          .query('agents')
+          .withIndex('by_user_and_name', (q) =>
+            q.eq('userId', userId).eq('name', newNormalizedName),
+          )
+          .unique();
+
+        if (existingAgent && existingAgent._id !== args.agentId) {
+          throw new Error('Agent with this name already exists for this user');
+        }
+      }
+    }
+
+    // Build updates object with only provided fields
+    interface AgentUpdates {
+      updatedAt: number;
+      name?: string;
+      systemPrompt?: string;
+      provider?: string;
+      model?: string;
+      config?: {
+        temperature?: number;
+        maxTokens?: number;
+        topP?: number;
+        reasoning?: boolean;
+        streamingSupported?: boolean;
+      };
+    }
+
+    const updates: AgentUpdates = {
+      updatedAt: Date.now(),
+    };
+
+    if (normalizedName !== undefined) {
+      updates.name = normalizedName;
+    }
+    if (args.systemPrompt !== undefined) {
+      updates.systemPrompt = args.systemPrompt;
+    }
+    if (args.provider !== undefined) {
+      updates.provider = args.provider;
+    }
+    if (args.model !== undefined) {
+      updates.model = args.model;
+    }
+    if (args.config !== undefined) {
+      updates.config = args.config;
+    }
+
+    // Apply updates
+    await ctx.db.patch(args.agentId, updates);
+
+    return null;
+  },
+});
+
+/**
+ * Gets an agent by ID for the authenticated user.
+ *
+ * @param args.agentId - The ID of the agent to retrieve
+ * @returns The agent object or null if not found/not owned by user
+ *
+ * @example
+ * ```typescript
+ * const agent = await ctx.runQuery(api.db.agents.get, {
+ *   agentId: "j123...",
+ * });
+ * ```
+ */
+export const get = query({
+  args: {
+    agentId: v.id('agents'),
+  },
+  returns: v.union(
+    v.object({
+      _id: v.id('agents'),
+      _creationTime: v.number(),
+      userId: v.string(),
+      name: v.string(),
+      systemPrompt: v.string(),
+      provider: v.string(),
+      model: v.string(),
+      config: v.optional(
+        v.object({
+          temperature: v.optional(v.number()),
+          maxTokens: v.optional(v.number()),
+          topP: v.optional(v.number()),
+          reasoning: v.optional(v.boolean()),
+          streamingSupported: v.optional(v.boolean()),
+        }),
+      ),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = identity.subject;
+
+    const agent = await ctx.db.get(args.agentId);
+
+    if (!agent || agent.userId !== userId || agent.archived) {
+      return null;
+    }
+
+    // Return agent without the archived field
+    const { archived: _archived, ...agentWithoutInternalFields } = agent;
+    return agentWithoutInternalFields;
+  },
+});
+
+/**
+ * Lists all agents for the authenticated user with optional filtering.
+ *
+ * @param args.userId - The authenticated user ID
+ * @param args.includeArchived - Include archived agents in results (optional, defaults to false)
+ * @returns Array of agents owned by the user
+ *
+ * @example
+ * ```typescript
+ * const activeAgents = await ctx.runQuery(api.db.agents.list, {
+ *   userId: "user_123",
+ *   includeArchived: false
+ * });
+ * ```
+ */
+export const list = query({
+  args: {
+    includeArchived: v.optional(v.boolean()),
+  },
+  returns: v.array(
+    v.object({
+      _id: v.id('agents'),
+      _creationTime: v.number(),
+      userId: v.string(),
+      name: v.string(),
+      systemPrompt: v.string(),
+      provider: v.string(),
+      model: v.string(),
+      config: v.optional(
+        v.object({
+          temperature: v.optional(v.number()),
+          maxTokens: v.optional(v.number()),
+          topP: v.optional(v.number()),
+          reasoning: v.optional(v.boolean()),
+          streamingSupported: v.optional(v.boolean()),
+        }),
+      ),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const userId = identity.subject;
+    let agents;
+    if (args.includeArchived) {
+      // Return all agents regardless of archived status
+      agents = await ctx.db
+        .query('agents')
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId))
+        .order('desc')
+        .collect();
+    } else {
+      // Default behavior: return only non-archived agents
+      agents = await ctx.db
+        .query('agents')
+        .withIndex('by_user_and_archived', (q) => q.eq('userId', userId).eq('archived', false))
+        .order('desc')
+        .collect();
+    }
+
+    // Return agents without the archived field
+    return agents.map((agent) => {
+      const { archived: _archived, ...agentWithoutInternalFields } = agent;
+      return agentWithoutInternalFields;
+    });
+  },
+});
+
+/**
+ * Archives (soft deletes) an agent for the authenticated user.
+ * Archived agents become invisible in all queries and endpoints.
+ *
+ * @param args.agentId - The ID of the agent to archive
+ * @returns null on success
+ * @throws Error if agent not found or not owned by user
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.db.agents.archive, {
+ *   agentId: "j123...",
+ * });
+ * ```
+ */
+export const archive = mutation({
+  args: {
+    agentId: v.id('agents'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+    // Get agent and validate ownership
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent || agent.userId !== userId || agent.archived) {
+      throw new Error('Agent not found or access denied');
+    }
+
+    // Archive the agent
+    await ctx.db.patch(args.agentId, {
+      archived: true,
+      updatedAt: Date.now(),
+    });
+
+    return null;
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/db/cleanup.ts =====
+
+/**
+ * Development data cleanup utilities
+ */
+
+import { mutation } from '../_generated/server';
+
+/**
+ * Clears all messages and conversations from the database.
+ * This is a development utility for cleaning up test data.
+ * Since authentication was removed, there are no users to preserve.
+ *
+ * @returns Object containing deletion counts
+ * @returns {number} messagesDeleted - Number of messages deleted
+ * @returns {number} conversationsDeleted - Number of conversations deleted
+ * @returns {number} usersPreserved - Always 0 since users table was removed
+ *
+ * @example
+ * ```typescript
+ * const result = await ctx.runMutation(api.cleanup.clearTestData, {});
+ * console.log(`Deleted ${result.messagesDeleted} messages and ${result.conversationsDeleted} conversations`);
+ * ```
+ */
+export const clearTestData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    console.log('Starting cleanup: clearing all messages and conversations');
+
+    // Clear all messages
+    const messages = await ctx.db.query('messages').collect();
+    let messagesDeleted = 0;
+    for (const message of messages) {
+      await ctx.db.delete(message._id);
+      messagesDeleted++;
+    }
+
+    // Clear all conversations
+    const conversations = await ctx.db.query('conversations').collect();
+    let conversationsDeleted = 0;
+    for (const conversation of conversations) {
+      await ctx.db.delete(conversation._id);
+      conversationsDeleted++;
+    }
+
+    console.log(
+      `Cleanup complete: ${messagesDeleted} messages and ${conversationsDeleted} conversations deleted`,
+    );
+    return {
+      messagesDeleted,
+      conversationsDeleted,
+      usersPreserved: 0, // Users table removed
+    };
+  },
+});
+
+/**
+ * Returns current count of data records in the database.
+ * Useful for monitoring data growth and verifying cleanup operations.
+ *
+ * @returns Object containing current record counts
+ * @returns {number} users - Always 0 since users table was removed
+ * @returns {number} conversations - Current number of conversations
+ * @returns {number} messages - Current number of messages
+ *
+ * @example
+ * ```typescript
+ * const counts = await ctx.runMutation(api.cleanup.getDataCounts, {});
+ * console.log(`Database contains: ${counts.conversations} conversations, ${counts.messages} messages`);
+ * ```
+ */
+export const getDataCounts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const users: any[] = []; // Users table removed
+    const conversations = await ctx.db.query('conversations').collect();
+    const messages = await ctx.db.query('messages').collect();
+
+    return {
+      users: users.length,
+      conversations: conversations.length,
+      messages: messages.length,
+    };
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/db/conversations.ts =====
+
+import { v } from 'convex/values';
+import { mutation, query, internalMutation } from '../_generated/server';
+import { Id as _Id } from '../_generated/dataModel';
+
+/**
+ * Creates a new conversation in the public API.
+ * All conversations are created as anonymous and publicly accessible.
+ *
+ * @param args.title - The title of the conversation
+ * @param args.type - Type of conversation: "standard", "roundtable", or "pipeline" (defaults to "standard")
+ * @param args.metadata - Optional metadata including provider, model, and tags
+ * @returns The ID of the created conversation
+ *
+ * @example
+ * ```typescript
+ * const conversationId = await ctx.runMutation(api.conversations.create, {
+ *   title: "Chat about TypeScript",
+ *   type: "standard",
+ *   metadata: {
+ *     provider: "openai",
+ *     model: "gpt-4",
+ *     tags: ["programming", "typescript"]
+ *   }
+ * });
+ * ```
+ */
+export const create = mutation({
+  args: {
+    title: v.string(),
+    type: v.optional(
+      v.union(v.literal('standard'), v.literal('roundtable'), v.literal('pipeline')),
+    ),
+    metadata: v.optional(
+      v.object({
+        provider: v.optional(v.string()),
+        model: v.optional(v.string()),
+        tags: v.optional(v.array(v.string())),
+      }),
+    ),
+  },
+  returns: v.id('conversations'),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+
+    const now = Date.now();
+    return await ctx.db.insert('conversations', {
+      userId,
+      title: args.title,
+      type: args.type || 'standard',
+      metadata: args.metadata,
+      lastMessageAt: now,
+      createdAt: now,
+      updatedAt: now,
+    });
+  },
+});
+
+/**
+ * Lists all conversations in the public API with pagination support.
+ * Returns all conversations without user filtering since the API is public.
+ *
+ * @param args.archived - Filter by archived status (optional)
+ * @param args.paginationOpts - Pagination options
+ * @param args.paginationOpts.numItems - Number of items per page (default: 50)
+ * @param args.paginationOpts.cursor - Cursor for pagination (optional)
+ * @returns Paginated conversation list with page array and isDone flag
+ *
+ * @example
+ * ```typescript
+ * const { page, isDone } = await ctx.runQuery(api.conversations.list, {
+ *   archived: false,
+ *   paginationOpts: { numItems: 20 }
+ * });
+ * console.log(`Found ${page.length} conversations`);
+ * ```
+ */
+export const list = query({
+  args: {
+    archived: v.optional(v.boolean()),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.optional(v.union(v.string(), v.null())),
+      }),
+    ),
+  },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { page: [], isDone: true } as any;
+    const userId = identity.subject;
+
+    const { archived: _archived = false, paginationOpts = { numItems: 50, cursor: null } } = args;
+
+    // Ensure cursor is always defined for pagination
+    const paginationOptions = {
+      numItems: paginationOpts.numItems,
+      cursor: paginationOpts.cursor ?? null,
+    };
+
+    return await ctx.db
+      .query('conversations')
+      .filter((q) => q.eq(q.field('userId'), userId))
+      .order('desc')
+      .paginate(paginationOptions);
+  },
+});
+
+/**
+ * Gets a single conversation by ID from the public API.
+ * Returns any conversation since all are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation to retrieve
+ * @returns The conversation object or null if not found
+ *
+ * @example
+ * ```typescript
+ * const conversation = await ctx.runQuery(api.conversations.get, {
+ *   conversationId: "j123..."
+ * });
+ * if (conversation) {
+ *   console.log(`Conversation: ${conversation.title}`);
+ * }
+ * ```
+ */
+export const get = query({
+  args: {
+    conversationId: v.id('conversations'),
+  },
+  returns: v.union(v.any(), v.null()),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const userId = identity.subject;
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    // Check ownership
+    if (!conversation || conversation.userId !== userId) {
+      return null;
+    }
+
+    return conversation;
+  },
+});
+
+/**
+ * Updates a conversation's title and/or metadata in the public API.
+ * Any conversation can be updated since all are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation to update
+ * @param args.title - New title (optional)
+ * @param args.metadata - Metadata to update (optional, merged with existing)
+ * @throws Error "Conversation not found" if conversation doesn't exist
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.conversations.update, {
+ *   conversationId: "j123...",
+ *   title: "Updated Title",
+ *   metadata: {
+ *     tags: ["important", "work"]
+ *   }
+ * });
+ * ```
+ */
+export const update = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    title: v.optional(v.string()),
+    metadata: v.optional(
+      v.object({
+        provider: v.optional(v.string()),
+        model: v.optional(v.string()),
+        tags: v.optional(v.array(v.string())),
+        archived: v.optional(v.boolean()),
+      }),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    // Check ownership
+    if (!conversation || conversation.userId !== userId) {
+      throw new Error('Conversation not found');
+    }
+
+    const updates: any = {
+      updatedAt: Date.now(),
+    };
+
+    if (args.title !== undefined) {
+      updates.title = args.title;
+    }
+
+    if (args.metadata !== undefined) {
+      updates.metadata = {
+        ...(conversation.metadata || {}),
+        ...args.metadata,
+      };
+    }
+
+    await ctx.db.patch(args.conversationId, updates);
+    return null;
+  },
+});
+
+/**
+ * Archives a conversation (soft delete) in the public API.
+ * The conversation remains in the database but is marked as archived.
+ *
+ * @param args.conversationId - The ID of the conversation to archive
+ * @throws Error "Conversation not found" if conversation doesn't exist
+ *
+ * @example
+ * ```typescript
+ * await ctx.runMutation(api.conversations.archive, {
+ *   conversationId: "j123..."
+ * });
+ * ```
+ */
+export const archive = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+    const userId = identity.subject;
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    // Check ownership
+    if (!conversation || conversation.userId !== userId) {
+      throw new Error('Conversation not found');
+    }
+
+    await ctx.db.patch(args.conversationId, {
+      metadata: {
+        ...(conversation.metadata || {}),
+        archived: true,
+      },
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+/**
+ * Updates the last message timestamp for a conversation.
+ * Called internally when new messages are added to maintain sort order.
+ *
+ * @param args.conversationId - The ID of the conversation to update
+ * @throws Error "Conversation not found" if conversation doesn't exist
+ * @internal
+ *
+ * @example
+ * ```typescript
+ * // Usually called after creating a message
+ * await ctx.runMutation(api.conversations.updateLastMessageAt, {
+ *   conversationId: "j123..."
+ * });
+ * ```
+ */
+export const updateLastMessageAt = internalMutation({
+  args: {
+    conversationId: v.id('conversations'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Internal only; caller must ensure auth/ownership
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    // Check ownership
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    await ctx.db.patch(args.conversationId, {
+      lastMessageAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+/**
+ * Counts the total number of conversations in the public API.
+ *
+ * @param args.archived - Filter by archived status (optional)
+ * @returns The count of conversations matching the filter
+ *
+ * @example
+ * ```typescript
+ * const activeCount = await ctx.runQuery(api.conversations.count, {
+ *   archived: false
+ * });
+ * console.log(`Found ${activeCount} active conversations`);
+ * ```
+ */
+export const count = query({
+  args: {
+    archived: v.optional(v.boolean()),
+  },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
+    const userId = identity.subject;
+
+    const { archived: _archived } = args;
+
+    const conversations = await ctx.db
+      .query('conversations')
+      .filter((q) => q.eq(q.field('userId'), userId))
+      .collect();
+
+    // Filter by archived status if specified
+    if (_archived !== undefined) {
+      return conversations.filter((c) => c.metadata?.archived === _archived).length;
+    }
+
+    return conversations.length;
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/db/messages.ts =====
+
+import { v } from 'convex/values';
+import { mutation, query } from '../_generated/server';
+import { Id } from '../_generated/dataModel';
+// Auth system removed
+
+/**
+ * Creates a new message in a conversation using the public API.
+ * All conversations and messages are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.authorType - Type of author: "user", "agent", or "system"
+ * @param args.authorId - ID of the author ("anonymous" for users, provider name for agents)
+ * @param args.type - Message type: "text", "tool_call", "tool_output", "chain_of_thought", or "error"
+ * @param args.content - Message content (structure depends on type)
+ * @param args.metadata - Optional metadata like model, tokens, etc.
+ * @returns The ID of the created message
+ * @throws Error if conversation not found
+ *
+ * @example
+ * ```typescript
+ * const messageId = await ctx.runMutation(api.messages.create, {
+ *   conversationId: "j123...",
+ *   authorType: "user",
+ *   authorId: "anonymous",
+ *   type: "text",
+ *   content: "Hello, AI!"
+ * });
+ * ```
+ */
+export const create = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+    authorId: v.string(),
+    type: v.union(
+      v.literal('text'),
+      v.literal('tool_call'),
+      v.literal('tool_output'),
+      v.literal('chain_of_thought'),
+      v.literal('error'),
+    ),
+    content: v.any(), // Content structure depends on type
+    metadata: v.optional(
+      v.object({
+        model: v.optional(v.string()),
+        provider: v.optional(v.string()),
+        promptTokens: v.optional(v.number()),
+        completionTokens: v.optional(v.number()),
+        totalTokens: v.optional(v.number()),
+        finishReason: v.optional(v.string()),
+        visibility: v.optional(v.array(v.string())),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+    if (args.authorType === 'user' && conversation.userId !== identity.subject) {
+      throw new Error('Access denied');
+    }
+
+    // Create the message with proper timestamps
+    const now = Date.now();
+    const messageId = await ctx.db.insert('messages', {
+      ...args,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Update conversation's last message timestamp
+    await ctx.db.patch(args.conversationId, {
+      lastMessageAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return messageId;
+  },
+});
+
+/**
+ * Lists messages in a conversation with pagination support.
+ * Messages are returned in chronological order (oldest first).
+ * All conversations are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.paginationOpts - Pagination options
+ * @param args.paginationOpts.numItems - Number of items per page (default: 50)
+ * @param args.paginationOpts.cursor - Cursor for pagination
+ * @returns Paginated message list with page array and isDone flag
+ * @returns Empty result if conversation not found
+ *
+ * @example
+ * ```typescript
+ * const { page, isDone } = await ctx.runQuery(api.messages.list, {
+ *   conversationId: "j123...",
+ *   paginationOpts: { numItems: 20 }
+ * });
+ * ```
+ */
+export const list = query({
+  args: {
+    conversationId: v.id('conversations'),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.optional(v.union(v.string(), v.null())),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { page: [], isDone: true };
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      return { page: [], isDone: true };
+    }
+
+    const { paginationOpts = { numItems: 50, cursor: null } } = args;
+
+    // Ensure cursor is always defined for pagination
+    const paginationOptions = {
+      numItems: paginationOpts.numItems,
+      cursor: paginationOpts.cursor ?? null,
+    };
+
+    return await ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .order('asc') // Oldest first for chat display
+      .paginate(paginationOptions);
+  },
+});
+
+/**
+ * Gets all messages for a conversation with cursor-based pagination.
+ * Includes protection against loading too many messages at once.
+ * All conversations are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.limit - Maximum messages to return (default: 100, max: 1000)
+ * @param args.cursor - Message ID to start after (for pagination)
+ * @returns Object with messages array, hasMore flag, and nextCursor
+ * @returns Empty result if conversation not found
+ *
+ * @example
+ * ```typescript
+ * // First page
+ * const { messages, hasMore, nextCursor } = await ctx.runQuery(api.messages.getAll, {
+ *   conversationId: "j123...",
+ *   limit: 50
+ * });
+ *
+ * // Next page
+ * if (hasMore && nextCursor) {
+ *   const nextPage = await ctx.runQuery(api.messages.getAll, {
+ *     conversationId: "j123...",
+ *     limit: 50,
+ *     cursor: nextCursor
+ *   });
+ * }
+ * ```
+ */
+export const getAll = query({
+  args: {
+    conversationId: v.id('conversations'),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { messages: [], hasMore: false, nextCursor: null };
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      return { messages: [], hasMore: false, nextCursor: null };
+    }
+
+    // Validate and set limit (default: 100, max: 1000)
+    const requestedLimit = args.limit ?? 100;
+    const effectiveLimit = Math.min(Math.max(1, requestedLimit), 1000);
+
+    // Get cursor message if provided
+    let cursorCreatedAt: number | null = null;
+    if (args.cursor) {
+      const cursorMessage = await ctx.db.get(args.cursor as Id<'messages'>);
+      if (cursorMessage && cursorMessage.conversationId === args.conversationId) {
+        cursorCreatedAt = cursorMessage.createdAt;
+      }
+    }
+
+    // Build query with cursor filter if needed
+    const baseQuery = ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId));
+
+    // Apply cursor filter and order, then take limit + 1
+    const messages = await (
+      cursorCreatedAt !== null
+        ? baseQuery.filter((q) => q.gt(q.field('createdAt'), cursorCreatedAt))
+        : baseQuery
+    )
+      .order('asc')
+      .take(effectiveLimit + 1);
+
+    // Check if there are more messages
+    const hasMore = messages.length > effectiveLimit;
+    let nextCursor: string | null = null;
+
+    if (hasMore) {
+      // Remove the extra message
+      messages.pop();
+      // Set cursor to the last message's ID
+      if (messages.length > 0) {
+        nextCursor = messages[messages.length - 1]._id;
+      }
+    }
+
+    return {
+      messages,
+      hasMore,
+      nextCursor,
+    };
+  },
+});
+
+/**
+ * Creates multiple messages at once in a conversation using the public API.
+ * Useful for importing chat history or setting up initial context.
+ * All conversations are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.messages - Array of message objects to create
+ * @returns Array of created message IDs
+ * @throws Error if conversation not found
+ *
+ * @example
+ * ```typescript
+ * const messageIds = await ctx.runMutation(api.messages.createBatch, {
+ *   conversationId: "j123...",
+ *   messages: [
+ *     {
+ *       authorType: "user",
+ *       authorId: "anonymous",
+ *       type: "text",
+ *       content: "What is TypeScript?"
+ *     },
+ *     {
+ *       authorType: "agent",
+ *       authorId: "openai",
+ *       type: "text",
+ *       content: "TypeScript is a typed superset of JavaScript...",
+ *       metadata: {
+ *         model: "gpt-4",
+ *         provider: "openai",
+ *         totalTokens: 125
+ *       }
+ *     }
+ *   ]
+ * });
+ * ```
+ */
+export const createBatch = mutation({
+  args: {
+    conversationId: v.id('conversations'),
+    messages: v.array(
+      v.object({
+        authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+        authorId: v.string(),
+        type: v.union(
+          v.literal('text'),
+          v.literal('tool_call'),
+          v.literal('tool_output'),
+          v.literal('chain_of_thought'),
+          v.literal('error'),
+        ),
+        content: v.any(),
+        metadata: v.optional(
+          v.object({
+            model: v.optional(v.string()),
+            provider: v.optional(v.string()),
+            promptTokens: v.optional(v.number()),
+            completionTokens: v.optional(v.number()),
+            totalTokens: v.optional(v.number()),
+            finishReason: v.optional(v.string()),
+            visibility: v.optional(v.array(v.string())),
+          }),
+        ),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error('Authentication required');
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      throw new Error('Conversation not found');
+    }
+
+    const now = Date.now();
+    const messageIds: Id<'messages'>[] = [];
+
+    // Insert all messages
+    for (const message of args.messages) {
+      const messageId = await ctx.db.insert('messages', {
+        conversationId: args.conversationId,
+        authorType: message.authorType,
+        authorId: message.authorId,
+        type: message.type,
+        content: message.content,
+        createdAt: now,
+        updatedAt: now,
+        metadata: message.metadata,
+      });
+
+      messageIds.push(messageId);
+    }
+
+    // Update conversation's last message timestamp
+    await ctx.db.patch(args.conversationId, {
+      lastMessageAt: now,
+      updatedAt: now,
+    });
+
+    return messageIds;
+  },
+});
+
+/**
+ * Counts messages in a conversation, optionally filtered by type.
+ * All conversations are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.type - Optional filter by message type
+ * @returns The count of messages matching the criteria
+ * @returns 0 if conversation not found
+ *
+ * @example
+ * ```typescript
+ * // Count all messages
+ * const total = await ctx.runQuery(api.messages.count, {
+ *   conversationId: "j123..."
+ * });
+ *
+ * // Count only error messages
+ * const errors = await ctx.runQuery(api.messages.count, {
+ *   conversationId: "j123...",
+ *   type: "error"
+ * });
+ * ```
+ */
+export const count = query({
+  args: {
+    conversationId: v.id('conversations'),
+    type: v.optional(
+      v.union(
+        v.literal('text'),
+        v.literal('tool_call'),
+        v.literal('tool_output'),
+        v.literal('chain_of_thought'),
+        v.literal('error'),
+      ),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      return 0;
+    }
+
+    const messages = await ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .collect();
+
+    // Filter by type if specified
+    if (args.type !== undefined) {
+      return messages.filter((m) => m.type === args.type).length;
+    }
+
+    return messages.length;
+  },
+});
+
+/**
+ * Gets the latest messages from a conversation.
+ * Returns messages in chronological order, useful for building context windows.
+ * All conversations are publicly accessible.
+ *
+ * @param args.conversationId - The ID of the conversation
+ * @param args.limit - Number of messages to return (default: 10)
+ * @returns Array of the latest messages in chronological order
+ * @returns Empty array if conversation not found
+ *
+ * @example
+ * ```typescript
+ * // Get last 5 messages for context
+ * const context = await ctx.runQuery(api.messages.getLatest, {
+ *   conversationId: "j123...",
+ *   limit: 5
+ * });
+ * ```
+ */
+export const getLatest = query({
+  args: {
+    conversationId: v.id('conversations'),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    // Verify user owns the conversation
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      return [];
+    }
+
+    const limit = args.limit || 10;
+
+    const messages = await ctx.db
+      .query('messages')
+      .withIndex('by_conversation', (q) => q.eq('conversationId', args.conversationId))
+      .order('desc')
+      .take(limit);
+
+    // Return in chronological order
+    return messages.reverse();
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/db/migrations.ts =====
+
+/**
+ * Database migrations for schema changes
+ */
+
+import { mutation } from '../_generated/server';
+import { Doc } from '../_generated/dataModel';
+
+/**
+ * Migration: Add updatedAt field to existing messages
+ *
+ * This migration adds the updatedAt field to messages that don't have it,
+ * setting it to the same value as createdAt for backwards compatibility.
+ */
+export const addUpdatedAtToMessages = mutation({
+  args: {},
+  handler: async (ctx) => {
+    console.log('Starting migration: addUpdatedAtToMessages');
+
+    // Find all messages without updatedAt field
+    const messages = await ctx.db.query('messages').collect();
+
+    let migrated = 0;
+    for (const message of messages) {
+      const messageData = message as Doc<'messages'> & { updatedAt?: number };
+      if (!('updatedAt' in messageData)) {
+        await ctx.db.patch(message._id, {
+          updatedAt: message.createdAt, // Set updatedAt to createdAt for existing messages
+        });
+        migrated++;
+      }
+    }
+
+    console.log(`Migration complete: ${migrated} messages updated`);
+    return { migrated, total: messages.length };
+  },
+});
+
+/**
+ * Migration: Add updatedAt field to existing conversations
+ *
+ * Similar migration for conversations table if needed
+ */
+export const addUpdatedAtToConversations = mutation({
+  args: {},
+  handler: async (ctx) => {
+    console.log('Starting migration: addUpdatedAtToConversations');
+
+    const conversations = await ctx.db.query('conversations').collect();
+
+    let migrated = 0;
+    for (const conversation of conversations) {
+      const conversationData = conversation as Doc<'conversations'> & { updatedAt?: number };
+      if (!('updatedAt' in conversationData)) {
+        await ctx.db.patch(conversation._id, {
+          updatedAt: conversation.createdAt,
+        });
+        migrated++;
+      }
+    }
+
+    console.log(`Migration complete: ${migrated} conversations updated`);
+    return { migrated, total: conversations.length };
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/edge/aiHttpHelpers.ts =====
+
+import { ProviderName } from './aiProviders';
+import { model } from './aiModelBuilder';
+
+// Helper to create model for HTTP endpoints
+export async function createModelForHttp(
+  provider: ProviderName,
+  modelId?: string,
+  providerOptions?: Record<string, any>,
+) {
+  const builder = model(provider);
+  if (modelId) builder.withModel(modelId);
+  if (providerOptions) builder.withProviderOptions(providerOptions);
+
+  return builder.build();
+}
+
+// Get headers for Vercel AI SDK streaming
+export function getStreamingHeaders() {
+  const headers = new Headers();
+  headers.set('X-Vercel-AI-Data-Stream', 'v1');
+  headers.set('Content-Type', 'text/plain; charset=utf-8');
+  return headers;
+}
+
+
+===== FILE: apps/liminal-api/convex/edge/aiModelBuilder.ts =====
+
+import { ProviderName, getProviderConfig, getProviderApiKey } from './aiProviders';
+
+// Standard Vercel AI SDK parameters
+export interface ModelParams {
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  topK?: number;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
+  stopSequences?: string[];
+  seed?: number;
+  maxRetries?: number;
+}
+
+// Builder class for fluent API
+export class ModelBuilder {
+  private provider: ProviderName;
+  private modelId?: string;
+  private params: ModelParams = {};
+  private providerOptions: Record<string, any> = {};
+
+  constructor(provider: ProviderName) {
+    this.provider = provider;
+  }
+
+  withModel(modelId: string): this {
+    this.modelId = modelId;
+    return this;
+  }
+
+  withTemperature(temperature: number): this {
+    this.params.temperature = temperature;
+    return this;
+  }
+
+  withMaxTokens(maxTokens: number): this {
+    this.params.maxTokens = maxTokens;
+    return this;
+  }
+
+  withTopP(topP: number): this {
+    this.params.topP = topP;
+    return this;
+  }
+
+  withTopK(topK: number): this {
+    this.params.topK = topK;
+    return this;
+  }
+
+  withFrequencyPenalty(penalty: number): this {
+    this.params.frequencyPenalty = penalty;
+    return this;
+  }
+
+  withPresencePenalty(penalty: number): this {
+    this.params.presencePenalty = penalty;
+    return this;
+  }
+
+  withStopSequences(sequences: string[]): this {
+    this.params.stopSequences = sequences;
+    return this;
+  }
+
+  withSeed(seed: number): this {
+    this.params.seed = seed;
+    return this;
+  }
+
+  withMaxRetries(retries: number): this {
+    this.params.maxRetries = retries;
+    return this;
+  }
+
+  withProviderOptions(options: Record<string, any>): this {
+    this.providerOptions = { ...this.providerOptions, ...options };
+    return this;
+  }
+
+  async build(): Promise<any> {
+    const config = getProviderConfig(this.provider);
+    const modelId = this.modelId || config.defaultModel;
+    const apiKey = getProviderApiKey(this.provider);
+
+    // The getProviderApiKey function now throws with a helpful error message
+    // if the API key is missing, so we don't need additional error handling here
+
+    // Dynamic imports based on provider
+    // Note: Model parameters (temperature, etc.) should be passed to generateText/streamText,
+    // not to the provider constructor
+    switch (this.provider) {
+      case 'openai': {
+        const { openai, createOpenAI } = await import('@ai-sdk/openai');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createOpenAI({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return openai(modelId);
+      }
+      case 'anthropic': {
+        const { anthropic, createAnthropic } = await import('@ai-sdk/anthropic');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createAnthropic({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return anthropic(modelId);
+      }
+      case 'google': {
+        const { google, createGoogleGenerativeAI } = await import('@ai-sdk/google');
+        if (Object.keys(this.providerOptions).length > 0) {
+          const customProvider = createGoogleGenerativeAI({
+            apiKey,
+            ...this.providerOptions,
+          });
+          return customProvider(modelId);
+        }
+        return google(modelId);
+      }
+      case 'perplexity': {
+        const { createPerplexity } = await import('@ai-sdk/perplexity');
+        const provider = createPerplexity({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId);
+      }
+      case 'vercel': {
+        const { createVercel } = await import('@ai-sdk/vercel');
+        const provider = createVercel({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId);
+      }
+      case 'openrouter': {
+        const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
+        const provider = createOpenRouter({
+          apiKey,
+          ...this.providerOptions,
+        });
+        return provider(modelId);
+      }
+      default:
+        throw new Error(`Unknown provider: ${String(this.provider)}`);
+    }
+  }
+
+  // Get configuration for use with AI SDK functions
+  // Returns both the model (for generateText/streamText) and params separately
+  async getModelAndParams() {
+    const model = await this.build();
+    return {
+      model,
+      params: this.params, // These go to generateText/streamText calls
+      provider: this.provider,
+      modelId: this.modelId || getProviderConfig(this.provider).defaultModel,
+    };
+  }
+
+  // Legacy method for backward compatibility
+  getConfig() {
+    const config = getProviderConfig(this.provider);
+    return {
+      provider: this.provider,
+      modelId: this.modelId || config.defaultModel,
+      params: this.params,
+      providerOptions: this.providerOptions,
+    };
+  }
+}
+
+// Factory function for cleaner API
+export function model(provider: ProviderName): ModelBuilder {
+  return new ModelBuilder(provider);
+}
+
+
+===== FILE: apps/liminal-api/convex/edge/aiProviders.ts =====
+
+// Provider configuration and registry
+
+import { env } from '../lib/env';
+
+export interface ProviderConfig {
+  name: string;
+  defaultModel: string;
+  keyName: string;
+}
+
+// Provider registry with all supported providers
+export const providerRegistry = {
+  openai: {
+    name: 'openai',
+    defaultModel: 'gpt-4o-mini',
+    keyName: 'OPENAI_API_KEY',
+  },
+  anthropic: {
+    name: 'anthropic',
+    defaultModel: 'claude-3-5-sonnet-20241022',
+    keyName: 'ANTHROPIC_API_KEY',
+  },
+  google: {
+    name: 'google',
+    defaultModel: 'gemini-2.0-flash-exp',
+    keyName: 'GOOGLE_GENERATIVE_AI_API_KEY',
+  },
+  perplexity: {
+    name: 'perplexity',
+    defaultModel: 'sonar-pro',
+    keyName: 'PERPLEXITY_API_KEY',
+  },
+  vercel: {
+    name: 'vercel',
+    defaultModel: 'v0-1.0-md',
+    keyName: 'VERCEL_API_KEY',
+  },
+  openrouter: {
+    name: 'openrouter',
+    defaultModel: 'google/gemini-2.5-flash',
+    keyName: 'OPENROUTER_API_KEY',
+  },
+} as const;
+
+// Type-safe provider names
+export type ProviderName = keyof typeof providerRegistry;
+
+// Helper to get provider config
+export function getProviderConfig(name: ProviderName): ProviderConfig {
+  const config = providerRegistry[name];
+  if (!config) {
+    throw new Error(`Unknown provider: ${name}`);
+  }
+  return config;
+}
+
+// Get API key for a provider with better error handling
+export function getProviderApiKey(name: ProviderName): string {
+  switch (name) {
+    case 'openai':
+      return env.OPENAI_API_KEY;
+    case 'anthropic':
+      return env.ANTHROPIC_API_KEY;
+    case 'google':
+      return env.GOOGLE_GENERATIVE_AI_API_KEY;
+    case 'perplexity':
+      return env.PERPLEXITY_API_KEY;
+    case 'vercel':
+      return env.VERCEL_API_KEY;
+    case 'openrouter':
+      return env.OPENROUTER_API_KEY;
+    default: {
+      // TypeScript exhaustive check
+      const _exhaustiveCheck: never = name;
+      return _exhaustiveCheck;
+    }
+  }
+}
+
+
+===== FILE: apps/liminal-api/convex/edge/aiService.ts =====
+
+import { generateText as vercelGenerateText, streamText as vercelStreamText } from 'ai';
+import { ProviderName } from './aiProviders';
+import { model, ModelParams } from './aiModelBuilder';
+import { createRateLimitError } from '../lib/errors';
+
+// Parameters for AI operations
+export interface GenerateTextParams {
+  provider: ProviderName;
+  modelId?: string;
+  prompt?: string;
+  messages?: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }>;
+  params?: ModelParams;
+  providerOptions?: Record<string, any>;
+}
+
+/**
+ * AI Service for centralized model operations.
+ * Provides a unified interface for text generation across multiple providers.
+ * Handles model configuration, error handling, and response formatting.
+ *
+ * @example
+ * ```typescript
+ * const result = await aiService.generateText({
+ *   provider: "openai",
+ *   modelId: "gpt-4",
+ *   prompt: "Explain quantum computing",
+ *   params: { temperature: 0.7, maxTokens: 500 }
+ * });
+ * ```
+ */
+export class AIService {
+  /**
+   * Builds a model instance with all specified parameters.
+   * @private
+   * @param params - Generation parameters including provider and model config
+   * @returns Configured model builder
+   */
+  private buildModel(params: GenerateTextParams) {
+    const { provider, modelId, params: modelParams, providerOptions } = params;
+
+    const builder = model(provider);
+    if (modelId) builder.withModel(modelId);
+    if (modelParams?.temperature !== undefined) builder.withTemperature(modelParams.temperature);
+    if (modelParams?.maxTokens !== undefined) builder.withMaxTokens(modelParams.maxTokens);
+    if (modelParams?.topP !== undefined) builder.withTopP(modelParams.topP);
+    if (modelParams?.topK !== undefined) builder.withTopK(modelParams.topK);
+    if (modelParams?.frequencyPenalty !== undefined)
+      builder.withFrequencyPenalty(modelParams.frequencyPenalty);
+    if (modelParams?.presencePenalty !== undefined)
+      builder.withPresencePenalty(modelParams.presencePenalty);
+    if (modelParams?.stopSequences) builder.withStopSequences(modelParams.stopSequences);
+    if (modelParams?.seed !== undefined) builder.withSeed(modelParams.seed);
+    if (providerOptions) builder.withProviderOptions(providerOptions);
+
+    return builder;
+  }
+
+  /**
+   * Generates text using the specified provider and model.
+   * Non-streaming version that returns complete text.
+   *
+   * @param params - Generation parameters
+   * @returns Generated text with metadata
+   * @throws Rate limit errors with retry guidance
+   * @throws Model not found errors
+   * @throws API key errors from env module
+   *
+   * @example
+   * ```typescript
+   * const result = await aiService.generateText({
+   *   provider: "anthropic",
+   *   modelId: "claude-3-sonnet",
+   *   messages: [
+   *     { role: "system", content: "You are helpful" },
+   *     { role: "user", content: "Hello!" }
+   *   ]
+   * });
+   * ```
+   */
+  async generateText(params: GenerateTextParams) {
+    const { prompt, messages, params: _modelParams, provider } = params;
+
+    try {
+      // Build the model
+      const builder = this.buildModel(params);
+      const llm = await builder.build();
+
+      // Call Vercel AI SDK
+      const result = await vercelGenerateText({
+        model: llm,
+        ...(prompt ? { prompt } : {}),
+        ...(messages ? { messages } : {}),
+      });
+
+      return {
+        text: result.text,
+        usage: result.usage,
+        finishReason: result.finishReason,
+        model: builder.getConfig().modelId,
+        provider,
+      };
+    } catch (error: any) {
+      // Handle common API errors with helpful messages
+      if (error.message?.includes('rate limit')) {
+        throw createRateLimitError(provider, error.retryAfter);
+      }
+
+      if (error.message?.includes('model not found') || error.message?.includes('does not exist')) {
+        // For model errors, we'd need to know available models
+        // For now, re-throw with the original error
+        throw error;
+      }
+
+      // For API key errors, the env module already provides good errors
+      // Re-throw other errors as-is
+      throw error;
+    }
+  }
+
+  /**
+   * Streams text using the specified provider and model.
+   * Returns a streaming response compatible with Vercel AI SDK.
+   *
+   * @param params - Generation parameters
+   * @returns Vercel AI SDK stream result
+   *
+   * @example
+   * ```typescript
+   * const stream = await aiService.streamText({
+   *   provider: "openai",
+   *   messages: [{ role: "user", content: "Tell me a story" }],
+   *   params: { temperature: 0.8 }
+   * });
+   * // Use stream.toDataStreamResponse() for HTTP streaming
+   * ```
+   */
+  async streamText(params: GenerateTextParams) {
+    const { prompt, messages, params: _modelParams } = params;
+
+    // Build the model
+    const builder = this.buildModel(params);
+    const llm = await builder.build();
+
+    // Call Vercel AI SDK
+    const result = vercelStreamText({
+      model: llm,
+      ...(prompt ? { prompt } : {}),
+      ...(messages ? { messages } : {}),
+    });
+
+    return result;
+  }
+
+  /**
+   * Creates a model instance for direct use.
+   * Useful when you need to pass the model to other functions.
+   *
+   * @param provider - The AI provider to use
+   * @param modelId - Optional specific model ID
+   * @returns Configured model instance
+   *
+   * @example
+   * ```typescript
+   * const model = await aiService.createModel("google", "gemini-pro");
+   * // Use with Vercel AI SDK directly
+   * const result = await generateText({ model, prompt: "Hello" });
+   * ```
+   */
+  async createModel(provider: ProviderName, modelId?: string) {
+    const builder = model(provider);
+    if (modelId) builder.withModel(modelId);
+    return builder.build();
+  }
+}
+
+/**
+ * Singleton instance of AIService.
+ * Use this for all AI operations in the application.
+ *
+ * @example
+ * ```typescript
+ * import { aiService } from "./ai/service";
+ *
+ * const text = await aiService.generateText({
+ *   provider: "openai",
+ *   prompt: "Hello, world!"
+ * });
+ * ```
+ */
+export const aiService = new AIService();
+
+
+===== FILE: apps/liminal-api/convex/http.ts =====
+
+import { httpRouter } from 'convex/server';
+import { httpAction } from './_generated/server';
+import { api } from './_generated/api';
+import { Id } from './_generated/dataModel';
+
+// Create HTTP router
+const http = httpRouter();
+
+// Health check endpoint with authentication
+http.route({
+  path: '/health',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          service: 'liminal-api',
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    } catch (error) {
+      // Handle authentication errors
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// TypeScript types for conversation endpoints
+interface CreateConversationRequest {
+  title: string;
+  type?: 'standard' | 'roundtable' | 'pipeline';
+  metadata?: {
+    provider?: string;
+    model?: string;
+    [key: string]: unknown;
+  };
+}
+
+// TypeScript types for agent endpoints
+interface CreateAgentRequest {
+  name: string;
+  systemPrompt: string;
+  provider: string;
+  model: string;
+  config?: {
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    reasoning?: boolean;
+    streamingSupported?: boolean;
+  };
+}
+
+/**
+ * Common error response handler for HTTP endpoints
+ */
+function createErrorResponse(error: unknown, defaultStatus = 500): Response {
+  // Normalize and classify common auth errors so tests receive expected messages
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const msg = errorMessage.toLowerCase();
+
+  // 1) Convex validator and application errors → 4xx
+  // ArgumentValidationError is Convex's standard validator failure
+  if (msg.includes('argumentvalidationerror') || msg.includes('value does not match validator')) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Common application-level validation messages from our mutations/queries
+  if (
+    msg.includes('already exists') ||
+    msg.includes('cannot be empty') ||
+    msg.includes('letters, numbers, and hyphens') ||
+    msg.includes('title is required') ||
+    msg.includes('prompt is required') ||
+    msg.includes('messages array is required')
+  ) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Not-found style messages
+  if (msg.includes('not found or access denied') || msg === 'conversation not found') {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const isHeaderError =
+    msg.includes('missing authorization header') ||
+    msg.includes('invalid authorization header format') ||
+    msg.includes('missing authorization token in bearer header');
+
+  const isInvalidTokenError =
+    msg.includes('invalid token') ||
+    msg.includes('invalid or expired token') ||
+    msg.includes('invalid or expired authorization token') ||
+    msg.includes('could not parse jwt payload') ||
+    msg.includes('valid jwt format') ||
+    msg.includes('could not validate token') ||
+    msg.includes('token expired');
+
+  const isAuthRequired = msg.includes('authentication required');
+
+  if (isHeaderError) {
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (isInvalidTokenError || isAuthRequired) {
+    return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Final fallback: log minimal details and return 500
+  try {
+    console.error('http_fallback_500', { message: errorMessage });
+  } catch {
+    // Ignore logging errors to prevent cascading failures
+  }
+
+  return new Response(
+    JSON.stringify({
+      error: error instanceof Error ? error.message : String(error),
+    }),
+    {
+      status: defaultStatus,
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
+}
+
+/**
+ * Validate Authorization header to preserve legacy granular errors.
+ * Returns an error message string if invalid, otherwise null.
+ */
+function getAuthHeaderError(request: Request): string | null {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) return 'Missing Authorization header';
+  if (!authHeader.startsWith('Bearer ')) return 'Invalid authorization header format';
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  if (!token) return 'Missing authorization token in Bearer header';
+  return null;
+}
+
+// Non-streaming text chat endpoint
+http.route({
+  path: '/api/chat-text',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { prompt, model, conversationId, provider } = body;
+
+      if (!prompt) {
+        return new Response(JSON.stringify({ error: 'Prompt is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Call the action with conversation support
+      const result = await ctx.runAction(api.node.chat.simpleChatAction, {
+        prompt,
+        model,
+        provider,
+        conversationId,
+      });
+
+      return new Response(JSON.stringify(result), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Perplexity search endpoint
+http.route({
+  path: '/api/perplexity',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { query, model, systemPrompt } = body;
+
+      if (!query) {
+        return new Response(JSON.stringify({ error: 'Search query is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Enhanced system prompt for Perplexity research
+      const defaultSystemPrompt = `You are a professional research assistant with access to real-time web information. Provide comprehensive, accurate, and current information with proper citations.
+
+Guidelines:
+- Always include citations and sources for your information
+- Focus on authoritative and recent sources
+- Provide technical details when relevant
+- Structure your response clearly with headings if helpful
+- If information is conflicting across sources, note the discrepancy
+- Include relevant links when available`;
+
+      const finalPrompt = systemPrompt
+        ? `${systemPrompt}\n\nUser Query: ${query}`
+        : `${defaultSystemPrompt}\n\nUser Query: ${query}`;
+
+      // Use best Perplexity model by default
+      const selectedModel = model || 'llama-3.1-sonar-huge-128k-online';
+
+      const result = await ctx.runAction(api.node.chat.simpleChatAction, {
+        prompt: finalPrompt,
+        model: selectedModel,
+        provider: 'perplexity',
+      });
+
+      return new Response(
+        JSON.stringify({
+          ...result,
+          metadata: {
+            model: selectedModel,
+            provider: 'perplexity',
+            timestamp: new Date().toISOString(),
+          },
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// List conversations
+http.route({
+  path: '/api/conversations',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const archived = url.searchParams.get('archived') === 'true';
+      const cursor = url.searchParams.get('cursor') || undefined;
+      const limit = parseInt(url.searchParams.get('limit') || '50');
+
+      const result = await ctx.runQuery(api.db.conversations.list, {
+        archived,
+        paginationOpts: {
+          numItems: limit,
+          cursor,
+        },
+      });
+
+      return new Response(JSON.stringify(result), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Create conversation
+http.route({
+  path: '/api/conversations',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body: CreateConversationRequest = await request.json();
+      const { title, type = 'standard', metadata } = body;
+
+      if (!title) {
+        return new Response(JSON.stringify({ error: 'Title is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const conversationId = await ctx.runMutation(api.db.conversations.create, {
+        title,
+        type,
+        metadata,
+      });
+
+      return new Response(JSON.stringify({ id: conversationId }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Get conversation with messages
+http.route({
+  pathPrefix: '/api/conversations/',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const conversationId = pathParts[pathParts.length - 1] as Id<'conversations'>;
+
+      // Get conversation details
+      const conversation = await ctx.runQuery(api.db.conversations.get, {
+        conversationId,
+      });
+
+      if (!conversation) {
+        return new Response(JSON.stringify({ error: 'Conversation not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Get messages
+      const messages = await ctx.runQuery(api.db.messages.getAll, {
+        conversationId,
+      });
+
+      return new Response(
+        JSON.stringify({
+          conversation,
+          messages,
+        }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Update conversation
+http.route({
+  pathPrefix: '/api/conversations/',
+  method: 'PATCH',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const conversationId = pathParts[pathParts.length - 1] as Id<'conversations'>;
+      const body = await request.json();
+      const { title, metadata } = body;
+
+      await ctx.runMutation(api.db.conversations.update, {
+        conversationId,
+        title,
+        metadata,
+      });
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Archive conversation
+http.route({
+  pathPrefix: '/api/conversations/',
+  method: 'DELETE',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const pathParts = url.pathname.split('/');
+      const conversationId = pathParts[pathParts.length - 1] as Id<'conversations'>;
+
+      await ctx.runMutation(api.db.conversations.archive, {
+        conversationId,
+      });
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Create agent
+http.route({
+  path: '/api/agents',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body: CreateAgentRequest = await request.json();
+      const { name, systemPrompt, provider, model, config } = body;
+
+      if (!name) {
+        return new Response(JSON.stringify({ error: 'Agent name is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!systemPrompt) {
+        return new Response(JSON.stringify({ error: 'System prompt is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!provider) {
+        return new Response(JSON.stringify({ error: 'Provider is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!model) {
+        return new Response(JSON.stringify({ error: 'Model is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        const agentId = await ctx.runMutation(api.db.agents.create, {
+          name,
+          systemPrompt,
+          provider,
+          model,
+          config,
+        });
+
+        // Get the created agent to return it
+        const agent = await ctx.runQuery(api.db.agents.get, {
+          agentId,
+        });
+
+        return new Response(
+          JSON.stringify({
+            id: agentId,
+            agent,
+          }),
+          {
+            status: 201,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        );
+      } catch (dbError) {
+        if (dbError instanceof Error) {
+          if (dbError.message.includes('Agent with this name already exists')) {
+            return new Response(
+              JSON.stringify({ error: 'Agent with this name already exists for this user' }),
+              {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          if (
+            dbError.message.includes('letters, numbers, and hyphens') ||
+            dbError.message.includes('Agent name cannot be empty')
+          ) {
+            return new Response(JSON.stringify({ error: dbError.message }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// List agents
+http.route({
+  path: '/api/agents',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const includeArchived = url.searchParams.get('includeArchived') === 'true';
+
+      const agents = await ctx.runQuery(api.db.agents.list, {
+        includeArchived,
+      });
+
+      return new Response(JSON.stringify(agents), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Get agent by ID
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'GET',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const agent = await ctx.runQuery(api.db.agents.get, {
+        agentId,
+      });
+
+      if (!agent) {
+        return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify(agent), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Update agent
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'PATCH',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { name, systemPrompt, provider, model, config } = body;
+
+      try {
+        await ctx.runMutation(api.db.agents.update, {
+          agentId,
+          name,
+          systemPrompt,
+          provider,
+          model,
+          config,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (dbError) {
+        if (dbError instanceof Error) {
+          if (
+            dbError.message.includes('not found or access denied') ||
+            dbError.message.includes('ArgumentValidationError') ||
+            dbError.message.includes('does not match validator')
+          ) {
+            return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+          if (dbError.message.includes('Agent with this name already exists')) {
+            return new Response(
+              JSON.stringify({ error: 'Agent with this name already exists for this user' }),
+              {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }
+          if (
+            dbError.message.includes('letters, numbers, and hyphens') ||
+            dbError.message.includes('Agent name cannot be empty')
+          ) {
+            return new Response(JSON.stringify({ error: dbError.message }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Archive agent (soft delete)
+http.route({
+  pathPrefix: '/api/agents/',
+  method: 'DELETE',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const url = new URL(request.url);
+      const agentId = url.pathname.split('/').pop() as Id<'agents'>;
+
+      if (!agentId) {
+        return new Response(JSON.stringify({ error: 'Agent ID is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        await ctx.runMutation(api.db.agents.archive, {
+          agentId,
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (dbError) {
+        if (dbError instanceof Error) {
+          if (
+            dbError.message.includes('not found or access denied') ||
+            dbError.message.includes('ArgumentValidationError') ||
+            dbError.message.includes('does not match validator')
+          ) {
+            return new Response(JSON.stringify({ error: 'Agent not found or access denied' }), {
+              status: 404,
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Streaming chat endpoint
+http.route({
+  path: '/api/chat',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { messages, model: requestedModel, provider = 'openrouter', conversationId } = body;
+
+      if (!messages || !Array.isArray(messages)) {
+        return new Response(JSON.stringify({ error: 'Messages array is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Handle conversation persistence
+      const chatContext = await ctx.runAction(api.node.chat.streamingChatAction, {
+        messages,
+        model: requestedModel,
+        provider,
+        conversationId,
+      });
+
+      // Use AI service to stream response
+      const { aiService } = await import('./edge/aiService');
+      const result = await aiService.streamText({
+        provider,
+        modelId: requestedModel,
+        messages,
+      });
+
+      // Add conversationId to headers
+      const headers = new Headers();
+      headers.set('X-Vercel-AI-Data-Stream', 'v1');
+      headers.set('Content-Type', 'text/plain; charset=utf-8');
+      if (chatContext.conversationId) {
+        headers.set('X-Conversation-Id', chatContext.conversationId);
+      }
+
+      // Create a streaming response that saves the result when done
+      const stream = result.toDataStreamResponse({ headers });
+
+      // Note: We'll need to handle saving the final response differently
+      // since we can't use onFinish callback in edge runtime
+      return stream;
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+// Streaming completion endpoint
+http.route({
+  path: '/api/completion',
+  method: 'POST',
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const headerError = getAuthHeaderError(request);
+      if (headerError) {
+        return new Response(JSON.stringify({ error: headerError }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return new Response(JSON.stringify({ error: 'Invalid or expired authorization token' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      const body = await request.json();
+      const { prompt, model: requestedModel, provider = 'openrouter' } = body;
+
+      if (!prompt) {
+        return new Response(JSON.stringify({ error: 'Prompt is required' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Use AI service to stream response
+      const { aiService } = await import('./edge/aiService');
+      const result = await aiService.streamText({
+        provider,
+        modelId: requestedModel,
+        prompt,
+      });
+
+      // Return streaming response
+      const headers = new Headers();
+      headers.set('X-Vercel-AI-Data-Stream', 'v1');
+      headers.set('Content-Type', 'text/plain; charset=utf-8');
+
+      return result.toDataStreamResponse({ headers });
+    } catch (error) {
+      return createErrorResponse(error);
+    }
+  }),
+});
+
+/**
+ * HTTP router configuration for Convex.
+ * Combines Hono routes for RESTful endpoints with native Convex HTTP actions for streaming.
+ *
+ * Available endpoints:
+ * - GET /health - System health check
+ * - Clerk webhook removed
+ * - POST /api/chat-text - Non-streaming chat completion
+ * - POST /api/chat - Streaming chat (Vercel AI SDK format)
+ * - POST /api/completion - Streaming completion
+ * - GET /api/conversations - List conversations
+ * - POST /api/conversations - Create conversation
+ * - GET /api/conversations/:id - Get conversation with messages
+ * - PATCH /api/conversations/:id - Update conversation
+ * - DELETE /api/conversations/:id - Archive conversation
+ * - POST /api/agents - Create agent
+ * - GET /api/agents - List user's agents
+ * - GET /api/agents/{agentId} - Get agent by ID
+ * - PATCH /api/agents/{agentId} - Update agent
+ * - DELETE /api/agents/{agentId} - Archive agent
+ */
+export default http;
+
+
+===== FILE: apps/liminal-api/convex/lib/env.ts =====
+
+/**
+ * Environment variable validation and type-safe access
+ * Provides centralized environment configuration with clear error messages
+ */
+
+import { ConvexError } from 'convex/values';
+
+/**
+ * Required environment variables for the application
+ */
+const REQUIRED_ENV_VARS = {
+  // AI Provider API Keys
+  OPENAI_API_KEY: {
+    description: 'OpenAI API key for GPT models',
+    example: 'sk-...',
+    docs: 'https://platform.openai.com/api-keys',
+  },
+  ANTHROPIC_API_KEY: {
+    description: 'Anthropic API key for Claude models',
+    example: 'sk-ant-...',
+    docs: 'https://console.anthropic.com/settings/keys',
+  },
+  GOOGLE_GENERATIVE_AI_API_KEY: {
+    description: 'Google AI API key for Gemini models',
+    example: 'AIza...',
+    docs: 'https://makersuite.google.com/app/apikey',
+  },
+  PERPLEXITY_API_KEY: {
+    description: 'Perplexity API key for search-enhanced models',
+    example: 'pplx-...',
+    docs: 'https://docs.perplexity.ai/docs/getting-started',
+  },
+  VERCEL_API_KEY: {
+    description: 'Vercel API key for v0 models',
+    example: '...',
+    docs: 'https://vercel.com/account/tokens',
+  },
+  OPENROUTER_API_KEY: {
+    description: 'OpenRouter API key for multi-provider access',
+    example: 'sk-or-...',
+    docs: 'https://openrouter.ai/keys',
+  },
+
+  // Auth system removed
+} as const;
+
+/**
+ * Conditionally required environment variables
+ */
+// Development auth system removed
+const _CONDITIONAL_ENV_VARS = {} as const;
+
+/**
+ * Optional environment variables with defaults
+ */
+const OPTIONAL_ENV_VARS = {
+  NODE_ENV: {
+    description: 'Node environment',
+    default: 'development',
+    values: ['development', 'production', 'test'],
+  },
+  // Dev auth removed
+} as const;
+
+/**
+ * Type-safe environment variable access.
+ * All getters use lazy evaluation to prevent module loading failures.
+ *
+ * @example
+ * ```typescript
+ * // Access API keys
+ * const apiKey = env.OPENAI_API_KEY; // Throws helpful error if not set
+ *
+ * // Check environment
+ * if (env.isProduction) {
+ *   // Production-only code
+ * }
+ *
+ * // Check dev auth
+ * if (env.isDevAuthEnabled) {
+ *   // Use dev user
+ * }
+ * ```
+ */
+export const env = {
+  // Required vars (will throw if not set)
+  get OPENAI_API_KEY(): string {
+    return getRequiredEnv('OPENAI_API_KEY');
+  },
+  get ANTHROPIC_API_KEY(): string {
+    return getRequiredEnv('ANTHROPIC_API_KEY');
+  },
+  get GOOGLE_GENERATIVE_AI_API_KEY(): string {
+    return getRequiredEnv('GOOGLE_GENERATIVE_AI_API_KEY');
+  },
+  get PERPLEXITY_API_KEY(): string {
+    return getRequiredEnv('PERPLEXITY_API_KEY');
+  },
+  get VERCEL_API_KEY(): string {
+    return getRequiredEnv('VERCEL_API_KEY');
+  },
+  get OPENROUTER_API_KEY(): string {
+    return getRequiredEnv('OPENROUTER_API_KEY');
+  },
+  // Auth system removed
+
+  // Auth vars removed
+
+  // Optional vars with defaults
+  get NODE_ENV(): string {
+    return process.env.NODE_ENV || OPTIONAL_ENV_VARS.NODE_ENV.default;
+  },
+  // Helper to check if in production
+  get isProduction(): boolean {
+    return process.env.NODE_ENV === 'production';
+  },
+};
+
+/**
+ * Get a required environment variable with helpful error message
+ */
+function getRequiredEnv(key: keyof typeof REQUIRED_ENV_VARS): string {
+  const value = process.env[key];
+  if (!value) {
+    const config = REQUIRED_ENV_VARS[key];
+    throw new ConvexError(
+      `Missing required environment variable: ${key}\n` +
+        `Description: ${config.description}\n` +
+        `Example: ${config.example}\n` +
+        `Documentation: ${config.docs}\n\n` +
+        `To set this variable in Convex:\n` +
+        `npx convex env set ${key} "your-value-here"`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Get a conditionally required environment variable
+ */
+// Conditional env function removed - no conditional vars
+
+/**
+ * Validates all environment variables at startup.
+ * Checks required and conditionally required variables.
+ *
+ * @returns Validation result
+ *
+ * @example
+ * ```typescript
+ * const { valid, errors } = validateEnvironment();
+ * if (!valid) {
+ *   console.error("Missing environment variables:");
+ *   errors.forEach(error => console.error(`  - ${error}`));
+ * }
+ * ```
+ */
+export function validateEnvironment(): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Check required vars
+  for (const [key, config] of Object.entries(REQUIRED_ENV_VARS)) {
+    if (!process.env[key]) {
+      errors.push(`${key}: ${config.description} (see: ${config.docs})`);
+    }
+  }
+
+  // No conditional vars to check
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Logs environment configuration status to console.
+ * Masks sensitive values for security (shows only first 4 chars).
+ *
+ * @example
+ * ```typescript
+ * // Call during startup or debugging
+ * logEnvironmentStatus();
+ * // Output:
+ * // === Environment Configuration Status ===
+ * // Required Variables:
+ * //   OPENAI_API_KEY: ✅ Set (sk-p...)
+ * //   ANTHROPIC_API_KEY: ❌ Missing (Not set)
+ * ```
+ */
+export function logEnvironmentStatus(): void {
+  console.log('=== Environment Configuration Status ===');
+
+  // Required vars
+  console.log('\nRequired Variables:');
+  for (const key of Object.keys(REQUIRED_ENV_VARS)) {
+    const value = process.env[key];
+    const status = value ? '✅ Set' : '❌ Missing';
+    const masked = value ? `${value.substring(0, 4)}...` : 'Not set';
+    console.log(`  ${key}: ${status} (${masked})`);
+  }
+
+  // No conditional vars to display
+
+  // Optional vars
+  console.log('\nOptional Variables:');
+  for (const [key, config] of Object.entries(OPTIONAL_ENV_VARS)) {
+    const value = process.env[key] || config.default;
+    console.log(`  ${key}: ${value} (default: ${config.default})`);
+  }
+
+  console.log('\n=======================================');
+}
+
+
+===== FILE: apps/liminal-api/convex/lib/errors.ts =====
+
+/**
+ * Enhanced error utilities for better developer experience
+ */
+
+/**
+ * Configuration error with helpful instructions.
+ * Extends Error with additional context for missing configuration.
+ */
+export class ConfigurationError extends Error {
+  constructor(
+    message: string,
+    public readonly variableName?: string,
+    public readonly helpText?: string,
+  ) {
+    super(message);
+    this.name = 'ConfigurationError';
+  }
+}
+
+/**
+ * Creates a helpful configuration error message with setup instructions.
+ *
+ * @param variableName - The name of the missing environment variable
+ * @param description - What the variable is used for
+ * @param example - Example value format
+ * @param additionalHelp - Extra help text specific to this variable
+ * @returns ConfigurationError with formatted message
+ *
+ * @example
+ * ```typescript
+ * throw createConfigError(
+ *   "OPENAI_API_KEY",
+ *   "OpenAI API key for GPT models",
+ *   "sk-...",
+ *   "Get your key at: https://platform.openai.com/api-keys"
+ * );
+ * ```
+ */
+export function createConfigError(
+  variableName: string,
+  description: string,
+  example?: string,
+  additionalHelp?: string,
+): ConfigurationError {
+  let message = `❌ Missing required configuration: ${variableName}\n\n`;
+  message += `📝 Description: ${description}\n`;
+
+  if (example) {
+    message += `💡 Example: ${example}\n`;
+  }
+
+  message += `\n🔧 To fix this:\n`;
+  message += `npx convex env set ${variableName} "your-value-here"\n`;
+
+  if (additionalHelp) {
+    message += `\n${additionalHelp}`;
+  }
+
+  return new ConfigurationError(message, variableName, additionalHelp);
+}
+
+/**
+ * Creates an API key error with provider-specific documentation links.
+ *
+ * @param provider - The AI provider name (e.g., "openai", "anthropic")
+ * @param keyName - The environment variable name for the API key
+ * @returns Error with setup instructions and documentation link
+ *
+ * @example
+ * ```typescript
+ * if (!process.env.OPENAI_API_KEY) {
+ *   throw createApiKeyError("openai", "OPENAI_API_KEY");
+ * }
+ * ```
+ */
+export function createApiKeyError(provider: string, keyName: string): Error {
+  const providerUrls: Record<string, string> = {
+    openai: 'https://platform.openai.com/api-keys',
+    anthropic: 'https://console.anthropic.com/settings/keys',
+    google: 'https://makersuite.google.com/app/apikey',
+    perplexity: 'https://docs.perplexity.ai/docs/getting-started',
+    vercel: 'https://vercel.com/account/tokens',
+    openrouter: 'https://openrouter.ai/keys',
+  };
+
+  const url = providerUrls[provider.toLowerCase()] || 'your provider dashboard';
+
+  return new Error(
+    `🔑 API Key Required for ${provider}\n\n` +
+      `The ${keyName} environment variable is not set.\n\n` +
+      `To use ${provider}, you need to:\n` +
+      `1. Get your API key from: ${url}\n` +
+      `2. Set it in Convex:\n` +
+      `   npx convex env set ${keyName} "your-api-key"\n\n` +
+      `Note: API keys are sensitive. Never commit them to version control.`,
+  );
+}
+
+/**
+ * Creates an authentication configuration error.
+ * Different messages for production vs development contexts.
+ *
+ * @param context - Whether this is a production or development auth error
+ * @returns Error with context-appropriate setup instructions
+ *
+ * @example
+ * ```typescript
+ * if (!identity && env.isProduction) {
+ *   throw createAuthError('production');
+ * }
+ * ```
+ */
+export function createAuthError(context: 'production' | 'development'): Error {
+  if (context === 'production') {
+    return new Error(
+      `🔒 Authentication Required\n\n` +
+        `This endpoint requires authentication in production.\n` +
+        `Please ensure you have:\n` +
+        `1. Clerk authentication properly configured\n` +
+        `2. Valid authentication token in your request headers\n` +
+        `3. CLERK_ISSUER_URL environment variable set\n\n` +
+        `For local development, you can enable dev auth:\n` +
+        `npx convex env set DEV_AUTH_DEFAULT "true"`,
+    );
+  }
+
+  return new Error(
+    `🔧 Development Authentication Not Configured\n\n` +
+      `Dev auth is enabled but required variables are missing.\n\n` +
+      `Please set these environment variables:\n` +
+      `• DEV_USER_ID - Clerk user ID for dev user\n` +
+      `• DEV_USER_EMAIL - Email for dev user\n` +
+      `• DEV_USER_NAME - Display name for dev user\n\n` +
+      `Example:\n` +
+      `npx convex env set DEV_USER_ID "user_123..."\n` +
+      `npx convex env set DEV_USER_EMAIL "dev@example.com"\n` +
+      `npx convex env set DEV_USER_NAME "Dev User"`,
+  );
+}
+
+/**
+ * Creates a model not found error with available alternatives.
+ *
+ * @param provider - The AI provider name
+ * @param requestedModel - The model that was requested but not found
+ * @param availableModels - List of models available for this provider
+ * @returns Error with model suggestions
+ *
+ * @example
+ * ```typescript
+ * throw createModelError(
+ *   "openai",
+ *   "gpt-5",
+ *   ["gpt-4", "gpt-3.5-turbo"]
+ * );
+ * ```
+ */
+export function createModelError(
+  provider: string,
+  requestedModel: string,
+  availableModels: string[],
+): Error {
+  return new Error(
+    `🤖 Model Not Found: ${requestedModel}\n\n` +
+      `The model '${requestedModel}' is not available for ${provider}.\n\n` +
+      `Available models:\n` +
+      availableModels.map((m) => `• ${m}`).join('\n') +
+      `\n\nTo use a different model, specify it in your request:\n` +
+      `{ "provider": "${provider}", "model": "${availableModels[0]}" }`,
+  );
+}
+
+/**
+ * Creates a rate limit error with retry guidance.
+ *
+ * @param provider - The AI provider that returned rate limit error
+ * @param retryAfter - Optional seconds to wait before retry
+ * @returns Error with rate limit handling suggestions
+ *
+ * @example
+ * ```typescript
+ * // From a 429 response
+ * throw createRateLimitError("openai", 60);
+ * ```
+ */
+export function createRateLimitError(provider: string, retryAfter?: number): Error {
+  let message = `⏱️ Rate Limit Exceeded for ${provider}\n\n`;
+  message += `You've hit the rate limit for ${provider} API.\n\n`;
+
+  if (retryAfter) {
+    message += `Please retry after ${retryAfter} seconds.\n\n`;
+  }
+
+  message += `To avoid rate limits:\n`;
+  message += `• Use a lower request frequency\n`;
+  message += `• Implement exponential backoff\n`;
+  message += `• Consider upgrading your API plan\n`;
+  message += `• Use a different provider temporarily`;
+
+  return new Error(message);
+}
+
+/**
+ * Creates a webhook configuration or verification error.
+ *
+ * @param issue - The type of webhook error
+ * @returns Error with webhook setup or debugging instructions
+ *
+ * @example
+ * ```typescript
+ * // When secret is missing
+ * if (!env.CLERK_WEBHOOK_SECRET) {
+ *   throw createWebhookError('missing_secret');
+ * }
+ *
+ * // When signature verification fails
+ * if (!isValidSignature) {
+ *   throw createWebhookError('invalid_signature');
+ * }
+ * ```
+ */
+export function createWebhookError(issue: 'missing_secret' | 'invalid_signature'): Error {
+  if (issue === 'missing_secret') {
+    return new Error(
+      `🔐 Webhook Secret Not Configured\n\n` +
+        `The CLERK_WEBHOOK_SECRET is required for webhook verification.\n\n` +
+        `To set up webhook security:\n` +
+        `1. Go to your Clerk dashboard > Webhooks\n` +
+        `2. Copy the signing secret (starts with 'whsec_')\n` +
+        `3. Set it in Convex:\n` +
+        `   npx convex env set CLERK_WEBHOOK_SECRET "whsec_..."\n\n` +
+        `This prevents webhook spoofing attacks.`,
+    );
+  }
+
+  return new Error(
+    `❌ Invalid Webhook Signature\n\n` +
+      `The webhook signature verification failed.\n` +
+      `This could mean:\n` +
+      `• The webhook secret is incorrect\n` +
+      `• The request was tampered with\n` +
+      `• The request is not from Clerk\n\n` +
+      `Please verify your CLERK_WEBHOOK_SECRET matches the one in Clerk dashboard.`,
+  );
+}
+
+
+===== FILE: apps/liminal-api/convex/node/chat.ts =====
+
+'use node';
+
+import { action } from '../_generated/server';
+import { v } from 'convex/values';
+import { aiService } from '../edge/aiService';
+import { api } from '../_generated/api';
+import { Id } from '../_generated/dataModel';
+// Remove auth import
+
+/**
+ * Non-streaming text generation action for simple chat completions.
+ * Creates or continues a conversation with full message history context.
+ * Automatically fetches and includes conversation history to maintain context continuity.
+ * Used by the `/api/chat-text` HTTP endpoint.
+ *
+ * @param args.prompt - The user's input prompt
+ * @param args.model - Optional model override (provider-specific)
+ * @param args.provider - AI provider to use (default: "openrouter")
+ * @param args.conversationId - Optional existing conversation to continue
+ * @returns Generated text response with metadata including conversationId
+ *
+ * @example
+ * ```typescript
+ * const result = await ctx.runAction(api.chat.simpleChatAction, {
+ *   prompt: "Explain TypeScript generics",
+ *   provider: "openai",
+ *   model: "gpt-4",
+ *   conversationId: "existing-conversation-id" // Optional for context
+ * });
+ * console.log(result.text);
+ * console.log(`Conversation ID: ${result.conversationId}`);
+ * ```
+ *
+ * @note Fetches up to 100 recent messages from the conversation to provide
+ * full context to the AI model, ensuring conversation continuity and coherence.
+ */
+export const simpleChatAction = action({
+  args: {
+    prompt: v.string(),
+    model: v.optional(v.string()),
+    provider: v.optional(
+      v.union(
+        v.literal('openrouter'),
+        v.literal('openai'),
+        v.literal('anthropic'),
+        v.literal('google'),
+        v.literal('perplexity'),
+        v.literal('vercel'),
+      ),
+    ),
+    conversationId: v.optional(v.id('conversations')),
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    text: string;
+    usage?: any;
+    finishReason?: string;
+    model: string;
+    provider: string;
+    conversationId?: Id<'conversations'>;
+  }> => {
+    const { prompt, provider = 'openrouter', model, conversationId } = args;
+
+    const identity = await ctx.auth.getUserIdentity();
+    const userId = identity?.subject ?? '';
+
+    let actualConversationId = conversationId;
+
+    // If no conversationId provided, create a new conversation
+    if (!identity) {
+      throw new Error('Authentication required');
+    }
+
+    if (!actualConversationId) {
+      actualConversationId = await ctx.runMutation(api.db.conversations.create, {
+        title: prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''),
+        type: 'standard',
+        metadata: {
+          provider,
+          model,
+        },
+      });
+    }
+
+    // Fetch conversation history BEFORE saving current message to avoid duplicates
+    const messagesResult = await ctx.runQuery(api.db.messages.list, {
+      conversationId: actualConversationId,
+      paginationOpts: { numItems: 99 }, // Leave room for current message
+    });
+
+    const conversationMessages = messagesResult?.page || [];
+
+    // Convert existing conversation history to AI SDK format
+    const existingMessages = conversationMessages.map((msg) => ({
+      role:
+        msg.authorType === 'user'
+          ? ('user' as const)
+          : msg.authorType === 'system'
+            ? ('system' as const)
+            : ('assistant' as const),
+      content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+    }));
+
+    // Add current user message to the conversation context
+    const messages = [
+      ...existingMessages,
+      {
+        role: 'user' as const,
+        content: prompt,
+      },
+    ];
+
+    // Save user message to database (after building AI context to avoid duplicates)
+    if (actualConversationId) {
+      await ctx.runMutation(api.db.messages.create, {
+        conversationId: actualConversationId,
+        authorType: 'user',
+        authorId: userId,
+        type: 'text',
+        content: prompt,
+      });
+    }
+
+    // Use AI service with conversation history
+    const result = await aiService.generateText({
+      provider: provider,
+      modelId: model,
+      messages,
+    });
+
+    // Save assistant response if we have a conversation
+    if (actualConversationId) {
+      await ctx.runMutation(api.db.messages.create, {
+        conversationId: actualConversationId,
+        authorType: 'agent',
+        authorId: provider,
+        type: 'text',
+        content: result.text,
+        metadata: {
+          model: result.model,
+          provider: result.provider,
+          promptTokens: result.usage?.promptTokens,
+          completionTokens: result.usage?.completionTokens,
+          totalTokens: result.usage?.totalTokens,
+          finishReason: result.finishReason,
+        },
+      });
+    }
+
+    return {
+      ...result,
+      conversationId: actualConversationId,
+    };
+  },
+});
+
+/**
+ * Streaming chat action that prepares conversation context.
+ * Saves the user message and returns conversation metadata.
+ * The actual streaming response is handled by the HTTP endpoint.
+ *
+ * @param args.messages - Array of conversation messages
+ * @param args.model - Optional model override (provider-specific)
+ * @param args.provider - AI provider to use (default: "openrouter")
+ * @param args.conversationId - Optional existing conversation to continue
+ * @returns Conversation context for streaming
+ * @throws Error if last message is not from user
+ *
+ * @example
+ * ```typescript
+ * const context = await ctx.runAction(api.chat.streamingChatAction, {
+ *   messages: [
+ *     { role: "system", content: "You are a helpful assistant" },
+ *     { role: "user", content: "Hello!" }
+ *   ],
+ *   provider: "anthropic",
+ *   model: "claude-3-sonnet"
+ * });
+ * // Use context.conversationId to save the streaming response later
+ * ```
+ */
+export const streamingChatAction = action({
+  args: {
+    messages: v.array(
+      v.object({
+        role: v.union(v.literal('system'), v.literal('user'), v.literal('assistant')),
+        content: v.string(),
+      }),
+    ),
+    model: v.optional(v.string()),
+    provider: v.optional(
+      v.union(
+        v.literal('openrouter'),
+        v.literal('openai'),
+        v.literal('anthropic'),
+        v.literal('google'),
+        v.literal('perplexity'),
+        v.literal('vercel'),
+      ),
+    ),
+    conversationId: v.optional(v.id('conversations')),
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    conversationId?: Id<'conversations'>;
+    provider: string;
+    model?: string;
+  }> => {
+    const { messages, provider = 'openrouter', model, conversationId } = args;
+
+    const identity = await ctx.auth.getUserIdentity();
+
+    let actualConversationId = conversationId;
+
+    if (!identity) {
+      throw new Error('Authentication required');
+    }
+
+    const userId: string = identity.subject;
+
+    // Get the latest user message
+    const userMessage = messages[messages.length - 1];
+    if (!userMessage || userMessage.role !== 'user') {
+      throw new Error('Last message must be from user');
+    }
+
+    // If no conversationId provided, create a new conversation
+    if (!actualConversationId) {
+      actualConversationId = await ctx.runMutation(api.db.conversations.create, {
+        title: userMessage.content.slice(0, 50) + (userMessage.content.length > 50 ? '...' : ''),
+        type: 'standard',
+        metadata: {
+          provider,
+          model,
+        },
+      });
+    }
+
+    // Save user message if we have a conversation
+    if (actualConversationId) {
+      await ctx.runMutation(api.db.messages.create, {
+        conversationId: actualConversationId,
+        authorType: 'user',
+        authorId: userId,
+        type: 'text',
+        content: userMessage.content,
+      });
+    }
+
+    // Note: For streaming, we return the conversationId immediately
+    // The actual response will be saved by the HTTP endpoint using onFinish callback
+    return {
+      conversationId: actualConversationId,
+      provider,
+      model,
+    };
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/node/startup.ts =====
+
+import { internalMutation } from '../_generated/server';
+import { v } from 'convex/values';
+import { validateEnvironment, logEnvironmentStatus } from '../lib/env';
+
+/**
+ * Internal mutation to validate environment configuration at startup
+ * This should be called when the Convex deployment starts
+ */
+export const validateStartup = internalMutation({
+  args: v.object({}),
+  handler: async (_ctx, _args) => {
+    console.log('🚀 Liminal Chat - Validating environment configuration...');
+
+    // Log current environment status
+    logEnvironmentStatus();
+
+    // Validate all required environment variables
+    const validation = validateEnvironment();
+
+    if (!validation.valid) {
+      console.error('\n❌ Environment validation failed!');
+      console.error('Missing required environment variables:');
+      validation.errors.forEach((error) => {
+        console.error(`  - ${error}`);
+      });
+      console.error('\nPlease set these variables using:');
+      console.error('npx convex env set VARIABLE_NAME "value"');
+
+      throw new Error(
+        `Environment validation failed: ${validation.errors.length} missing variables`,
+      );
+    }
+
+    console.log('\n✅ Environment validation passed!');
+    console.log('All required environment variables are configured.');
+
+    return {
+      status: 'validated',
+      timestamp: Date.now(),
+      errors: validation.errors,
+    };
+  },
+});
+
+/**
+ * Internal mutation to check environment health
+ * Returns validation status without exposing sensitive information
+ */
+export const checkEnvironmentHealth = internalMutation({
+  args: v.object({}),
+  handler: async (_ctx, _args) => {
+    const validation = validateEnvironment();
+
+    return {
+      healthy: validation.valid,
+      missingVariables: validation.errors.length,
+      timestamp: Date.now(),
+      // Don't expose the actual variable names in production
+      details: process.env.NODE_ENV === 'development' ? validation.errors : undefined,
+    };
+  },
+});
+
+
+===== FILE: apps/liminal-api/convex/schema.ts =====
+
+// Liminal Chat Convex Schema
+// Mixed API schema - agents require authentication, conversations are public
+
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
+
+export default defineSchema(
+  {
+    // Users table removed - no authentication system
+
+    // Agents table - stores AI agent configurations
+    agents: defineTable({
+      // Which user owns this agent (authenticated user ID from WorkOS)
+      userId: v.string(),
+      // Unique identifier like "alice" or "jarvis" (unique per user)
+      name: v.string(),
+      // The personality/behavior prompt
+      systemPrompt: v.string(),
+      // Provider like "openai" or "anthropic"
+      provider: v.string(),
+      // Model like "gpt-4" or "claude-3-sonnet"
+      model: v.string(),
+      // Configuration object with optional fields
+      config: v.optional(
+        v.object({
+          temperature: v.optional(v.number()),
+          maxTokens: v.optional(v.number()),
+          topP: v.optional(v.number()),
+          reasoning: v.optional(v.boolean()),
+          streamingSupported: v.optional(v.boolean()),
+        }),
+      ),
+      // Archived status (defaults to false - not archived)
+      archived: v.optional(v.boolean()),
+      // Timestamps
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index('by_user_and_name', ['userId', 'name'])
+      .index('by_user_and_archived', ['userId', 'archived']),
+
+    // Conversations table - stores chat sessions
+    conversations: defineTable({
+      // Anonymous user identifier
+      userId: v.string(), // No authentication system
+      // Conversation title (auto-generated or user-provided)
+      title: v.string(),
+      // Type of conversation determines orchestration needs
+      type: v.union(v.literal('standard'), v.literal('roundtable'), v.literal('pipeline')),
+      // Optional metadata for flexibility
+      metadata: v.optional(
+        v.object({
+          provider: v.optional(v.string()),
+          model: v.optional(v.string()),
+          tags: v.optional(v.array(v.string())),
+          archived: v.optional(v.boolean()),
+        }),
+      ),
+      // Track last activity for sorting
+      lastMessageAt: v.number(),
+      // Timestamps
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }),
+
+    // Messages table - stores all messages in conversations
+    messages: defineTable(
+      v.union(
+        // Text message
+        v.object({
+          conversationId: v.id('conversations'),
+          authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+          authorId: v.string(),
+          type: v.literal('text'),
+          content: v.string(),
+          createdAt: v.number(),
+          updatedAt: v.number(),
+          metadata: v.optional(
+            v.object({
+              model: v.optional(v.string()),
+              provider: v.optional(v.string()),
+              promptTokens: v.optional(v.number()),
+              completionTokens: v.optional(v.number()),
+              totalTokens: v.optional(v.number()),
+              finishReason: v.optional(v.string()),
+              visibility: v.optional(v.array(v.string())),
+            }),
+          ),
+        }),
+        // Tool call message
+        v.object({
+          conversationId: v.id('conversations'),
+          authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+          authorId: v.string(),
+          type: v.literal('tool_call'),
+          content: v.object({
+            toolId: v.string(),
+            toolName: v.string(),
+            arguments: v.any(), // Tool arguments can be any structure
+          }),
+          createdAt: v.number(),
+          updatedAt: v.number(),
+          metadata: v.optional(
+            v.object({
+              model: v.optional(v.string()),
+              provider: v.optional(v.string()),
+              promptTokens: v.optional(v.number()),
+              completionTokens: v.optional(v.number()),
+              totalTokens: v.optional(v.number()),
+              finishReason: v.optional(v.string()),
+              visibility: v.optional(v.array(v.string())),
+            }),
+          ),
+        }),
+        // Tool output message
+        v.object({
+          conversationId: v.id('conversations'),
+          authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+          authorId: v.string(),
+          type: v.literal('tool_output'),
+          content: v.object({
+            toolCallId: v.string(),
+            output: v.any(), // Tool output can be any structure
+            error: v.optional(v.string()),
+          }),
+          createdAt: v.number(),
+          updatedAt: v.number(),
+          metadata: v.optional(
+            v.object({
+              model: v.optional(v.string()),
+              provider: v.optional(v.string()),
+              promptTokens: v.optional(v.number()),
+              completionTokens: v.optional(v.number()),
+              totalTokens: v.optional(v.number()),
+              finishReason: v.optional(v.string()),
+              visibility: v.optional(v.array(v.string())),
+            }),
+          ),
+        }),
+        // Chain of thought message
+        v.object({
+          conversationId: v.id('conversations'),
+          authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+          authorId: v.string(),
+          type: v.literal('chain_of_thought'),
+          content: v.object({
+            reasoning: v.string(),
+            steps: v.array(v.string()),
+          }),
+          createdAt: v.number(),
+          updatedAt: v.number(),
+          metadata: v.optional(
+            v.object({
+              model: v.optional(v.string()),
+              provider: v.optional(v.string()),
+              promptTokens: v.optional(v.number()),
+              completionTokens: v.optional(v.number()),
+              totalTokens: v.optional(v.number()),
+              finishReason: v.optional(v.string()),
+              visibility: v.optional(v.array(v.string())),
+            }),
+          ),
+        }),
+        // Error message
+        v.object({
+          conversationId: v.id('conversations'),
+          authorType: v.union(v.literal('user'), v.literal('agent'), v.literal('system')),
+          authorId: v.string(),
+          type: v.literal('error'),
+          content: v.object({
+            message: v.string(),
+            code: v.optional(v.string()),
+            details: v.optional(v.any()),
+          }),
+          createdAt: v.number(),
+          updatedAt: v.number(),
+          metadata: v.optional(
+            v.object({
+              model: v.optional(v.string()),
+              provider: v.optional(v.string()),
+              promptTokens: v.optional(v.number()),
+              completionTokens: v.optional(v.number()),
+              totalTokens: v.optional(v.number()),
+              finishReason: v.optional(v.string()),
+              visibility: v.optional(v.array(v.string())),
+            }),
+          ),
+        }),
+      ),
+    ).index('by_conversation', ['conversationId', 'createdAt']),
+  },
+  { schemaValidation: true },
+);
+
+
+===== FILE: apps/liminal-api/convex/shared-types.ts =====
+
+/**
+ * Shared types that need to be available to other apps in the monorepo.
+ * This file will be automatically copied to _generated/shared-types.d.ts
+ * after Convex codegen runs.
+ */
+
+// Re-export any types that need to be shared across apps
+// For example:
+// export type ChatRole = 'user' | 'assistant' | 'system';
+// export type ModelProvider = 'openai' | 'anthropic' | 'google';
+
+
+===== FILE: apps/liminal-api/convex/tsconfig.json =====
+
+{
+  /* This TypeScript project config describes the environment that
+   * Convex functions run in and is used to typecheck them.
+   * You can modify it, but some settings required to use Convex.
+   */
+  "compilerOptions": {
+    /* These settings are not required by Convex and can be modified. */
+    "allowJs": true,
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* These compiler options are required by Convex */
+    "target": "ESNext",
+    "lib": ["ES2021", "dom"],
+    "types": ["node"],
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["./**/*"],
+  "exclude": ["./_generated"]
+}
+
+
+===== FILE: apps/liminal-api/index.ts =====
+
+// Export Convex API for use in other packages
+export { api } from './convex/_generated/api';
+
+
+===== FILE: apps/liminal-api/lib/utils/project-root.ts =====
+
+import * as path from 'path';
+import * as fs from 'fs';
+
+/**
+ * Finds the project root by looking for package.json with "liminal-chat" name
+ */
+export function findProjectRoot(startPath: string = __dirname): string {
+  let currentDir = startPath;
+
+  while (currentDir !== path.parse(currentDir).root) {
+    const packageJsonPath = path.join(currentDir, 'package.json');
+
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        if (packageJson.name === 'liminal-chat') {
+          return currentDir;
+        }
+      } catch {
+        // Continue searching if package.json is invalid
+      }
+    }
+
+    currentDir = path.dirname(currentDir);
+  }
+
+  throw new Error('Could not find liminal-chat project root');
+}
+
+
+===== FILE: apps/liminal-api/package.json =====
+
+{
+  "name": "@liminal/api",
+  "private": true,
+  "version": "0.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "echo 'Delegating to dev:start to start both services...' && pnpm dev:start",
+    "dev:start": "npm run dev:stop && ../../node_modules/.bin/pm2 start 'npx convex dev' --name 'liminal-api'",
+    "dev:stop": "../../node_modules/.bin/pm2 delete liminal-api 2>/dev/null || true",
+    "dev:restart": "npm run dev:stop && npm run dev:start",
+    "dev:logs": "../../node_modules/.bin/pm2 logs liminal-api --lines 20 --nostream",
+    "postcodegen": "cp convex/shared-types.ts convex/_generated/shared-types.d.ts",
+    "dev:dashboard": "convex dashboard",
+    "dev:watch": "convex dev --watch",
+    "dev:typecheck": "tsc -p convex --watch",
+    "dev:all": "npm-run-all -p dev:watch dev:typecheck",
+    "build": "tsc -p convex",
+    "deploy": "convex deploy",
+    "deploy:prod": "convex deploy --prod",
+    "logs": "convex logs",
+    "logs:prod": "convex logs --prod",
+    "lint": "tsc -p convex && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "typecheck": "tsc -p convex --noEmit",
+    "clean": "rm -rf convex/_generated",
+    "reset": "npm run clean && convex dev --until-success",
+    "env:pull": "convex env list",
+    "env:set": "convex env set",
+    "test": "node scripts/check-test-deps.js && playwright test",
+    "test:smoke": "node scripts/check-test-deps.js && playwright test smoke-test.spec.ts",
+    "test:ui": "node scripts/check-test-deps.js && playwright test --ui",
+    "test:deps": "node scripts/check-test-deps.js",
+    "docs": "typedoc --out ../../docs/tsdocs/api convex",
+    "docs:llm": "node scripts/generate-llms-custom.js && node scripts/generate-api-for-claude-v2.js",
+    "consult:v0": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:large": "curl -s -X POST http://127.0.0.1:8081/consult/v0 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\", \\\"useLargeModel\\\": true}\"",
+    "consult:perplexity:pro": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-pro -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:perplexity:deep": "curl -s -X POST http://127.0.0.1:8081/consult/perplexity/sonar-deep-research -H 'Content-Type: application/json' -d \"{\\\"query\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:o3-pro": "curl -s -X POST http://127.0.0.1:8081/consult/o3-pro -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1 -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-mini": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-mini -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:gpt4.1-nano": "curl -s -X POST http://127.0.0.1:8081/consult/gpt/4.1-nano -H 'Content-Type: application/json' -d \"{\\\"prompt\\\": \\\"$npm_config_prompt\\\"}\"",
+    "consult:v0:formatted": "npm run consult:v0 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:v0:large:formatted": "npm run consult:v0:large --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:perplexity:pro:formatted": "npm run consult:perplexity:pro --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1:formatted": "npm run consult:gpt4.1 --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-mini:formatted": "npm run consult:gpt4.1-mini --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:gpt4.1-nano:formatted": "npm run consult:gpt4.1-nano --prompt=\"$npm_config_prompt\" --silent | jq -r '.response // .error // .'",
+    "consult:help": "echo 'LLM Consultation Commands:\\n\\n🎨 v0 (Vercel Design):\\n  npm run consult:v0 --prompt=\"create a login form\"\\n  npm run consult:v0:large --prompt=\"complex dashboard design\"\\n\\n🔍 Perplexity (Research):\\n  npm run consult:perplexity:pro --prompt=\"latest AI developments\"\\n  npm run consult:perplexity:deep --prompt=\"comprehensive analysis of quantum computing\"\\n\\n🧠 OpenAI Models:\\n  npm run consult:o3-pro --prompt=\"complex reasoning task\" (async - returns ID)\\n  npm run consult:gpt4.1 --prompt=\"general purpose query\"\\n  npm run consult:gpt4.1-mini --prompt=\"fast response needed\"\\n  npm run consult:gpt4.1-nano --prompt=\"simple question\"\\n\\n📝 Formatted Output (response only):\\n  npm run consult:v0:formatted --prompt=\"your prompt\"\\n  npm run consult:perplexity:pro:formatted --prompt=\"your query\"\\n  npm run consult:gpt4.1:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-mini:formatted --prompt=\"your prompt\"\\n  npm run consult:gpt4.1-nano:formatted --prompt=\"your prompt\"\\n\\n💡 Note: o3-pro is async - returns ID, check status separately'"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/google": "^1.2.19",
+    "@ai-sdk/openai": "^1.3.22",
+    "@ai-sdk/perplexity": "^1.1.9",
+    "@ai-sdk/vercel": "^0.0.1",
+    "@openrouter/ai-sdk-provider": "^0.7.2",
+    "@workos-inc/node": "^7.57.0",
+    "ai": "^4.3.16",
+    "convex": "^1.25.2",
+    "convex-helpers": "^0.1.96",
+    "dotenv": "^17.0.1",
+    "hono": "^4.8.3",
+    "jose": "^6.0.11",
+    "jwt-decode": "^4.0.0"
+  },
+  "devDependencies": {
+    "@microsoft/tsdoc": "^0.15.1",
+    "@types/node": "^20.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
+    "npm-run-all": "^4.1.5",
+    "typedoc": "^0.28.7",
+    "typescript": "^5.3.3"
+  }
+}
+
+
+===== FILE: apps/liminal-api/playwright.config.ts =====
+
+import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+import * as path from 'path';
+import { findProjectRoot } from './lib/utils/project-root';
+
+// Load environment variables from project root
+const rootDir = findProjectRoot(__dirname);
+config({ path: path.join(rootDir, '.env') });
+
+/**
+ * Playwright configuration for Convex backend integration tests
+ * Focused on wide coverage with minimal maintenance burden
+ */
+export default defineConfig({
+  testDir: './tests/specs',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: process.env.CI ? [['html', { open: 'never' }]] : 'line',
+
+  use: {
+    // Base URL for Convex backend HTTP endpoints
+    baseURL: process.env.CONVEX_HTTP_URL || 'https://modest-squirrel-498.convex.site',
+
+    // Collect trace on first retry
+    trace: 'on-first-retry',
+
+    // Timeouts
+    actionTimeout: 10000,
+    navigationTimeout: 30000,
+  },
+
+  /* Single test suite for lean testing */
+  projects: [
+    {
+      name: 'integration',
+      testMatch: '*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+
+  /* Convex runs separately - no need for webServer config */
+  // webServer: process.env.CI ? undefined : {
+  //   command: 'cd .. && npm run dev',
+  //   port: 3000,
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000,
+  // },
+});
+
+
+===== FILE: apps/liminal-api/README.md =====
+
+# Liminal API - Convex Backend
+
+This is the Convex backend for Liminal Chat, providing real-time data synchronization, authentication with WorkOS, and HTTP endpoints for integration with Vercel AI SDK.
+
+**CI/CD Status**: Phase 1 complete with staging deployment configured.
+
+## Architecture Overview
+
+- **Database**: Convex real-time database with TypeScript schema validation
+- **Authentication**: WorkOS integration for user management
+- **HTTP Actions**: Node.js runtime endpoints for AI SDK integration
+- **Real-time**: WebSocket-based real-time updates
+
+## Prerequisites
+
+- Node.js 18+ (for Node.js runtime in HTTP actions)
+- npm or pnpm
+- WorkOS account for authentication
+- Convex account
+
+## Getting Started
+
+### 1. Install Dependencies
+
+From the project root:
+
+```bash
+cd apps/liminal-api
+npm install
+# or
+pnpm install
+```
+
+### 2. Set Up Convex
+
+Initialize Convex in your project:
+
+```bash
+npx convex dev
+```
+
+This will:
+
+- Create a new Convex project (if not already created)
+- Generate TypeScript types
+- Start the development server
+- Deploy your functions to the cloud
+
+Your Convex deployment URL will be displayed, e.g., `https://modest-squirrel-498.convex.cloud`
+
+### 3. Set Up WorkOS Authentication
+
+1. Create a WorkOS application at [workos.com](https://workos.com)
+2. In WorkOS Dashboard, configure your application
+3. Set up SSO/OIDC configuration with:
+   - Redirect URIs for your application
+   - Required scopes and claims
+4. Copy your WorkOS Client ID and API Key
+
+### 4. Configure Convex Authentication
+
+1. In the Convex dashboard, go to **Settings** → **Environment Variables**
+2. Add the following:
+
+   ```
+   WORKOS_CLIENT_ID=client_your_workos_client_id
+   WORKOS_API_KEY=sk_live_your_workos_api_key
+   ```
+
+3. Deploy the auth configuration:
+   ```bash
+   npx convex deploy
+   ```
+
+### 5. Set Up Environment Variables
+
+Create a `.env.local` file in the liminal-api directory:
+
+```env
+# Convex deployment URL
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+
+# WorkOS public key (from WorkOS dashboard)
+NEXT_PUBLIC_WORKOS_CLIENT_ID=client_your_workos_client_id
+
+# Optional: for local development
+CONVEX_DEPLOYMENT=development
+```
+
+## Verifying the Setup
+
+### 1. Check HTTP Endpoints
+
+The following endpoints are available for testing:
+
+#### Health Check
+
+```bash
+curl https://your-deployment.convex.cloud/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "healthy",
+  "database": {
+    "connected": true,
+    "userCount": 0,
+    "hasSampleUser": false
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+#### Test Endpoint (Node.js Runtime Verification)
+
+```bash
+curl https://your-deployment.convex.cloud/test
+```
+
+Expected response:
+
+```json
+{
+  "status": "success",
+  "message": "Test endpoint working",
+  "nodeRuntime": {
+    "verified": true,
+    "version": "v18.x.x",
+    "platform": "linux",
+    "randomBytes": "..."
+  },
+  "auth": {
+    "authenticated": false,
+    "tokenIdentifier": null,
+    "email": null,
+    "name": null
+  },
+  "environment": {
+    "CONVEX_DEPLOYMENT": "production",
+    "NODE_ENV": "production",
+    "envVarsHash": "..."
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### 2. Test Authentication
+
+With a valid WorkOS JWT token:
+
+```bash
+curl -H "Authorization: Bearer YOUR_WORKOS_JWT" https://your-deployment.convex.cloud/test
+```
+
+The response should show `authenticated: true` with user details.
+
+### 3. Test Database Functions
+
+Using the Convex CLI:
+
+```bash
+# Test authentication
+npx convex run users:testAuth
+
+# Get current user (requires auth)
+npx convex run users:getCurrentUser
+
+# Get user count
+npx convex run users:getUserCount
+```
+
+## Available Functions
+
+### HTTP Endpoints
+
+- `GET /health` - Health check with database connectivity test
+- `GET /test` - Comprehensive test endpoint with Node.js runtime verification
+- `POST /workos-webhook` - WorkOS webhook for user synchronization (if implemented)
+
+### Convex Functions
+
+#### users.ts
+
+- `getCurrentUser` - Get authenticated user profile
+- `syncUser` - Create/update user from WorkOS data
+- `testAuth` - Test authentication status
+- `getUserCount` - Get total number of users
+- `getSampleUser` - Get sanitized sample user data
+
+## Integration with Vercel AI SDK
+
+The HTTP actions are designed to work with Vercel AI SDK:
+
+1. **Node.js Runtime**: The `"use node"` directive enables full Node.js APIs
+2. **Environment Variables**: Access to process.env for configuration
+3. **Authentication**: Integrated with WorkOS for user context
+4. **Database Access**: Direct queries to Convex database
+
+Example integration:
+
+```typescript
+// In your Vercel AI SDK route
+import { ConvexHttpClient } from 'convex/browser';
+
+const client = new ConvexHttpClient(process.env.CONVEX_URL);
+const response = await fetch(`${process.env.CONVEX_URL}/test`);
+```
+
+## Development Workflow
+
+1. Start Convex dev server:
+
+   ```bash
+   npx convex dev
+   ```
+
+2. Make changes to functions in the `convex/` directory
+
+3. Changes are automatically deployed to your development instance
+
+4. Test using the Convex dashboard or CLI:
+   ```bash
+   npx convex logs
+   npx convex dashboard
+   ```
+
+## Production Deployment
+
+1. Set production environment variables in Convex dashboard
+2. Deploy to production:
+   ```bash
+   npx convex deploy --prod
+   ```
+
+## Troubleshooting
+
+### Node.js Runtime Not Working
+
+- Ensure the file starts with `"use node";`
+- Check that you're importing Node.js modules correctly
+- Verify in the `/test` endpoint that Node.js version is shown
+
+### Authentication Issues
+
+- Verify WorkOS Client ID and API Key are correctly set in Convex
+- Check that WorkOS SSO/OIDC is properly configured
+- Ensure Authorization header is properly formatted
+
+### Database Queries Failing
+
+- Check schema definitions in `schema.ts`
+- Verify indexes are properly defined
+- Use Convex dashboard to inspect data
+
+## Next Steps
+
+- Set up WorkOS webhooks for automatic user synchronization (if needed)
+- Configure production environment variables
+- Integrate with your frontend application
+- Add custom HTTP actions for AI model interactions
+
+
+===== FILE: apps/liminal-api/scripts/check-test-deps.js =====
+
+#!/usr/bin/env node
+
+/**
+ * Checks that required services are running before tests
+ */
+
+async function checkService(name, url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Status ${response.status}`);
+    }
+    console.log(`✅ ${name} is running`);
+    return true;
+  } catch (error) {
+    console.error(`❌ ${name} is not running at ${url}`);
+    return false;
+  }
+}
+
+async function main() {
+  console.log('Checking test dependencies...\n');
+
+  // Skip local service checks in CI environment
+  if (process.env.CI === 'true') {
+    console.log('🤖 Running in CI environment - skipping local service checks');
+    console.log('✨ All test dependencies are ready!');
+    return;
+  }
+
+  const checks = [
+    // Add service checks here if needed
+  ];
+
+  const results = await Promise.all(checks.map((check) => checkService(check.name, check.url)));
+
+  if (results.some((result) => !result)) {
+    console.log('\n⚠️  Required services are not running!');
+    process.exit(1);
+  }
+
+  console.log('\n✨ All test dependencies are ready!');
+}
+
+main().catch(console.error);
+
+
+===== FILE: apps/liminal-api/scripts/create-system-user.ts =====
+
+#!/usr/bin/env node
+
+/**
+ * Script to create a system user in WorkOS for integration testing.
+ *
+ * Usage (from project root):
+ *   npx tsx apps/liminal-api/scripts/create-system-user.ts
+ *
+ * Environment Variables Required (from root .env):
+ *   - WORKOS_API_KEY: WorkOS API key
+ *   - WORKOS_CLIENT_ID: WorkOS client ID
+ *   - SYSTEM_USER_EMAIL: Email for system user
+ *   - SYSTEM_USER_PASSWORD: Password for system user (32+ characters)
+ */
+
+import { WorkOS } from '@workos-inc/node';
+import * as crypto from 'crypto';
+import { config } from 'dotenv';
+import * as path from 'path';
+import { findProjectRoot } from '../lib/utils/project-root';
+
+// Load environment variables from project root
+const rootDir = findProjectRoot(__dirname);
+config({ path: path.join(rootDir, '.env') });
+
+interface CreateSystemUserConfig {
+  email: string;
+  password?: string;
+  clientId: string;
+  apiKey: string;
+  environment?: string;
+}
+
+function validateConfig(config: Partial<CreateSystemUserConfig>): CreateSystemUserConfig {
+  const { email, password, clientId, apiKey } = config;
+
+  if (!email) {
+    throw new Error('SYSTEM_USER_EMAIL environment variable is required');
+  }
+
+  if (!clientId) {
+    throw new Error('WORKOS_CLIENT_ID environment variable is required');
+  }
+
+  if (!apiKey) {
+    throw new Error('WORKOS_API_KEY environment variable is required');
+  }
+
+  // Generate secure password if not provided
+  const finalPassword = password || generateSecurePassword();
+
+  if (finalPassword.length < 32) {
+    throw new Error('System user password must be at least 32 characters long');
+  }
+
+  return {
+    email,
+    password: finalPassword,
+    clientId,
+    apiKey,
+    environment: process.env.NODE_ENV || 'development',
+  };
+}
+
+function generateSecurePassword(): string {
+  // Generate a secure 40-character password
+  return crypto.randomBytes(30).toString('base64');
+}
+
+async function createSystemUser(config: CreateSystemUserConfig) {
+  console.log('🚀 Creating system user for integration testing...');
+  console.log(`   Email: ${config.email}`);
+  console.log(`   Environment: ${config.environment}`);
+
+  const workos = new WorkOS(config.apiKey, {
+    clientId: config.clientId,
+  });
+
+  try {
+    // Check if user already exists
+    try {
+      const existingUsers = await workos.userManagement.listUsers({
+        email: config.email,
+        limit: 1,
+      });
+
+      if (existingUsers.data.length > 0) {
+        console.log('⚠️  System user already exists!');
+        console.log(`   User ID: ${existingUsers.data[0].id}`);
+        console.log(`   Created: ${existingUsers.data[0].createdAt}`);
+        console.log('   Use the existing user or delete it first if you need to recreate.');
+        return;
+      }
+    } catch (error) {
+      // User doesn't exist, continue with creation
+    }
+
+    // Create the system user
+    const user = await workos.userManagement.createUser({
+      email: config.email,
+      password: config.password,
+      firstName: 'System',
+      lastName: 'Test User',
+      emailVerified: true, // Skip email verification for system user
+      externalId: `system-integration-test-${config.environment}`,
+      metadata: {
+        purpose: 'integration_testing',
+        environment: config.environment!,
+        created_by: 'system_script',
+        created_at: new Date().toISOString(),
+      },
+    });
+
+    console.log('✅ System user created successfully!');
+    console.log(`   User ID: ${user.id}`);
+    console.log(`   Email: ${user.email}`);
+    console.log(`   External ID: ${user.externalId}`);
+    console.log(`   Created: ${user.createdAt}`);
+
+    // Test authentication
+    console.log('\\n🔐 Testing authentication...');
+    const authResponse = await workos.userManagement.authenticateWithPassword({
+      email: config.email,
+      password: config.password,
+      clientId: config.clientId,
+    });
+
+    console.log('✅ Authentication successful!');
+    console.log(`   Access token length: ${authResponse.accessToken.length}`);
+    console.log(`   User authenticated: ${authResponse.user.email}`);
+
+    // Display environment variables to set
+    console.log('\\n📝 Environment Variables:');
+    console.log('   Add these to your .env files:');
+    console.log(`   SYSTEM_USER_EMAIL="${config.email}"`);
+    console.log(`   SYSTEM_USER_PASSWORD="${config.password}"`);
+
+    console.log('\\n🎯 Next Steps:');
+    console.log('1. Configure JWT Template in WorkOS Dashboard:');
+    console.log('   - Go to Authentication → JWT Template');
+    console.log('   - Add custom claims for system user identification');
+    console.log('2. Update your test framework to use the SystemAuth utility from tests/utils/');
+  } catch (error) {
+    console.error('❌ Failed to create system user:', error);
+    process.exit(1);
+  }
+}
+
+async function main() {
+  try {
+    const config = validateConfig({
+      email: process.env.SYSTEM_USER_EMAIL,
+      password: process.env.SYSTEM_USER_PASSWORD,
+      clientId: process.env.WORKOS_CLIENT_ID,
+      apiKey: process.env.WORKOS_API_KEY,
+    });
+
+    await createSystemUser(config);
+  } catch (error) {
+    console.error('❌ Error:', (error as Error).message);
+    process.exit(1);
+  }
+}
+
+// Run the script if executed directly
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('❌ Unexpected error:', error);
+    process.exit(1);
+  });
+}
+
+
+===== FILE: apps/liminal-api/scripts/generate-api-for-claude-v2.js =====
+
+const fs = require('fs');
+const path = require('path');
+const ts = require('typescript');
+
+// Configuration
+const CONFIG = {
+  // Directories to scan
+  scanDirs: [
+    'convex',
+    'src', // If you add src/ later
+    'lib', // If you add lib/ later
+  ],
+
+  // File patterns to exclude
+  excludePatterns: ['_generated', 'node_modules', '.test.ts', '.spec.ts', 'd.ts', 'tsconfig.json'],
+
+  // Function patterns to detect
+  functionPatterns: {
+    convex: [
+      'query',
+      'mutation',
+      'action',
+      'httpAction',
+      'internalQuery',
+      'internalMutation',
+      'internalAction',
+    ],
+    classes: ['class', 'interface', 'type'],
+    exports: ['export const', 'export function', 'export class'],
+  },
+};
+
+// Recursively find all TypeScript files
+function findTsFiles(dir, baseDir = dir) {
+  const files = [];
+
+  if (!fs.existsSync(dir)) return files;
+
+  const items = fs.readdirSync(dir);
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+
+    // Skip excluded patterns
+    if (CONFIG.excludePatterns.some((pattern) => fullPath.includes(pattern))) {
+      continue;
+    }
+
+    if (stat.isDirectory()) {
+      files.push(...findTsFiles(fullPath, baseDir));
+    } else if (item.endsWith('.ts') && !item.endsWith('.d.ts')) {
+      const relativePath = path.relative(baseDir, fullPath);
+      files.push({ fullPath, relativePath });
+    }
+  }
+
+  return files;
+}
+
+// Extract all exports from a file
+function extractExports(filePath, relativePath) {
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  const sourceFile = ts.createSourceFile(relativePath, fileContent, ts.ScriptTarget.Latest, true);
+
+  const exports = {
+    functions: [],
+    classes: [],
+    types: [],
+    interfaces: [],
+  };
+
+  function extractJsDoc(node) {
+    const jsDocNodes = ts.getJSDocCommentsAndTags(node);
+    const docs = {
+      description: '',
+      params: [],
+      returns: '',
+      example: '',
+      throws: [],
+    };
+
+    if (jsDocNodes.length > 0) {
+      const comment = jsDocNodes[0];
+      if (comment.comment) {
+        docs.description =
+          typeof comment.comment === 'string'
+            ? comment.comment.trim().split('\n')[0]
+            : comment.comment
+                .map((part) => part.text)
+                .join('')
+                .trim()
+                .split('\n')[0];
+      }
+
+      if (comment.tags) {
+        comment.tags.forEach((tag) => {
+          const tagName = tag.tagName.text;
+          const tagComment = tag.comment
+            ? typeof tag.comment === 'string'
+              ? tag.comment
+              : tag.comment.map((p) => p.text).join('')
+            : '';
+
+          switch (tagName) {
+            case 'param':
+              docs.params.push(tagComment.trim());
+              break;
+            case 'returns':
+            case 'return':
+              docs.returns = tagComment.trim();
+              break;
+            case 'example':
+              docs.example = tagComment.trim();
+              break;
+            case 'throws':
+              docs.throws.push(tagComment.trim());
+              break;
+          }
+        });
+      }
+    }
+
+    return docs;
+  }
+
+  function getType(node) {
+    // Detect Convex function type
+    if (node.initializer) {
+      const text = node.initializer.getText();
+      for (const pattern of CONFIG.functionPatterns.convex) {
+        if (text.includes(`${pattern}(`)) {
+          return pattern;
+        }
+      }
+    }
+    return 'function';
+  }
+
+  function visit(node) {
+    // Export const declarations (Convex functions)
+    if (
+      ts.isVariableStatement(node) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
+      const declaration = node.declarationList.declarations[0];
+      if (declaration && ts.isVariableDeclaration(declaration)) {
+        const name = declaration.name.getText();
+        const docs = extractJsDoc(node);
+        const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        const type = getType(declaration);
+
+        exports.functions.push({
+          name,
+          type,
+          line: line + 1,
+          ...docs,
+        });
+      }
+    }
+
+    // Export function declarations
+    if (
+      ts.isFunctionDeclaration(node) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
+      const name = node.name?.getText() || 'anonymous';
+      const docs = extractJsDoc(node);
+      const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+
+      exports.functions.push({
+        name,
+        type: 'function',
+        line: line + 1,
+        ...docs,
+      });
+    }
+
+    // Export class declarations
+    if (
+      ts.isClassDeclaration(node) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
+      const name = node.name?.getText() || 'anonymous';
+      const docs = extractJsDoc(node);
+      const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+
+      // Extract methods
+      const methods = [];
+      node.members.forEach((member) => {
+        if (
+          ts.isMethodDeclaration(member) &&
+          member.modifiers?.some((m) => m.kind === ts.SyntaxKind.PublicKeyword)
+        ) {
+          const methodName = member.name?.getText();
+          const methodDocs = extractJsDoc(member);
+          methods.push({
+            name: methodName,
+            ...methodDocs,
+          });
+        }
+      });
+
+      exports.classes.push({
+        name,
+        line: line + 1,
+        methods,
+        ...docs,
+      });
+    }
+
+    // Export type/interface declarations
+    if (
+      (ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) &&
+      node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
+      const name = node.name?.getText();
+      const kind = ts.isTypeAliasDeclaration(node) ? 'type' : 'interface';
+      const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+
+      const target = kind === 'type' ? exports.types : exports.interfaces;
+      target.push({
+        name,
+        line: line + 1,
+        description: extractJsDoc(node).description,
+      });
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return exports;
+}
+
+// Group files by directory
+function groupByDirectory(files) {
+  const grouped = {};
+
+  files.forEach(({ fullPath, relativePath }) => {
+    const dir = path.dirname(relativePath);
+    if (!grouped[dir]) {
+      grouped[dir] = [];
+    }
+
+    const exports = extractExports(fullPath, relativePath);
+    if (Object.values(exports).some((arr) => arr.length > 0)) {
+      grouped[dir].push({
+        file: path.basename(relativePath),
+        path: relativePath,
+        exports,
+      });
+    }
+  });
+
+  return grouped;
+}
+
+// Format function for markdown
+function formatFunction(fn, filePath) {
+  let output = `**\`${fn.name}\`** (${fn.type})`;
+  if (filePath) output += ` - ${filePath}:${fn.line}`;
+  output += '  \n';
+
+  if (fn.description) {
+    output += `${fn.description}  \n`;
+  }
+
+  if (fn.params.length > 0) {
+    output += `Args: ${fn.params.join(', ')}  \n`;
+  }
+
+  if (fn.returns) {
+    output += `Returns: ${fn.returns}  \n`;
+  }
+
+  if (fn.throws.length > 0) {
+    output += `Throws: ${fn.throws.join(', ')}  \n`;
+  }
+
+  return output + '\n';
+}
+
+// Generate the markdown
+function generateMarkdown() {
+  const baseDir = path.join(__dirname, '..');
+  const outputPath = path.join(__dirname, '../../docs/tsdocs/api-for-claude.md');
+
+  // Find all TypeScript files
+  const allFiles = [];
+  CONFIG.scanDirs.forEach((dir) => {
+    const dirPath = path.join(baseDir, dir);
+    allFiles.push(...findTsFiles(dirPath, baseDir));
+  });
+
+  // Group by directory
+  const grouped = groupByDirectory(allFiles);
+
+  // Generate markdown
+  let content = `# Liminal Chat API Reference for Claude
+
+This is a comprehensive reference generated from the codebase, designed for AI agents.
+
+## Quick Setup
+
+\`\`\`bash
+# From project root
+pnpm --filter liminal-api dev              # Start Convex backend
+pnpm --filter web dev                      # Start Next.js frontend
+pnpm --filter @liminal/cli dev             # Run CLI
+\`\`\`
+
+## Environment Variables
+
+### Required for Production
+- \`CLERK_ISSUER_URL\` - From Clerk JWT Templates
+- \`CLERK_WEBHOOK_SECRET\` - For user sync webhooks
+- \`OPENAI_API_KEY\`, \`ANTHROPIC_API_KEY\`, etc. - For AI providers
+
+### Development Mode
+\`\`\`bash
+npx convex env set DEV_AUTH_DEFAULT true
+npx convex env set DEV_USER_ID "user_2zINPyhtT9Wem9OeVW4eZDs21KI"  
+npx convex env set DEV_USER_EMAIL "dev@liminal.chat"
+npx convex env set DEV_USER_NAME "Dev User"
+\`\`\`
+
+## API Reference
+
+`;
+
+  // Sort directories
+  const sortedDirs = Object.keys(grouped).sort();
+
+  sortedDirs.forEach((dir) => {
+    const files = grouped[dir];
+    if (files.length === 0) return;
+
+    content += `### ${dir}/\n\n`;
+
+    files.forEach((fileInfo) => {
+      if (fileInfo.exports.functions.length === 0 && fileInfo.exports.classes.length === 0) return;
+
+      content += `#### ${fileInfo.file}\n\n`;
+
+      // Functions
+      fileInfo.exports.functions.forEach((fn) => {
+        content += formatFunction(fn, fileInfo.path);
+      });
+
+      // Classes
+      fileInfo.exports.classes.forEach((cls) => {
+        content += `**\`${cls.name}\`** (class) - ${fileInfo.path}:${cls.line}  \n`;
+        if (cls.description) {
+          content += `${cls.description}  \n`;
+        }
+
+        if (cls.methods.length > 0) {
+          content += `Methods: ${cls.methods.map((m) => `\`${m.name}\``).join(', ')}  \n`;
+        }
+        content += '\n';
+      });
+
+      // Types and Interfaces (brief listing)
+      if (fileInfo.exports.types.length > 0) {
+        content += `Types: ${fileInfo.exports.types.map((t) => `\`${t.name}\``).join(', ')}  \n\n`;
+      }
+
+      if (fileInfo.exports.interfaces.length > 0) {
+        content += `Interfaces: ${fileInfo.exports.interfaces.map((i) => `\`${i.name}\``).join(', ')}  \n\n`;
+      }
+    });
+  });
+
+  // Add quick reference sections
+  content += `
+## Function Index by Type
+
+### Convex Queries
+`;
+  sortedDirs.forEach((dir) => {
+    grouped[dir].forEach((file) => {
+      const queries = file.exports.functions.filter((f) => f.type === 'query');
+      if (queries.length > 0) {
+        content += `${file.file}: ${queries.map((q) => `\`${q.name}\``).join(', ')}  \n`;
+      }
+    });
+  });
+
+  content += `
+### Convex Mutations
+`;
+  sortedDirs.forEach((dir) => {
+    grouped[dir].forEach((file) => {
+      const mutations = file.exports.functions.filter((f) => f.type === 'mutation');
+      if (mutations.length > 0) {
+        content += `${file.file}: ${mutations.map((m) => `\`${m.name}\``).join(', ')}  \n`;
+      }
+    });
+  });
+
+  content += `
+### Convex Actions
+`;
+  sortedDirs.forEach((dir) => {
+    grouped[dir].forEach((file) => {
+      const actions = file.exports.functions.filter(
+        (f) => f.type === 'action' || f.type === 'httpAction',
+      );
+      if (actions.length > 0) {
+        content += `${file.file}: ${actions.map((a) => `\`${a.name}\``).join(', ')}  \n`;
+      }
+    });
+  });
+
+  // Write the file
+  fs.writeFileSync(outputPath, content, 'utf-8');
+  console.log(`✅ Generated api-for-claude.md (${allFiles.length} files scanned)`);
+
+  // Debug info
+  const totalExports = sortedDirs.reduce((sum, dir) => {
+    return (
+      sum +
+      grouped[dir].reduce((dirSum, file) => {
+        return dirSum + file.exports.functions.length + file.exports.classes.length;
+      }, 0)
+    );
+  }, 0);
+
+  console.log(
+    `   Found ${totalExports} exported functions/classes across ${sortedDirs.length} directories`,
+  );
+}
+
+// Run it
+try {
+  generateMarkdown();
+} catch (error) {
+  console.error('❌ Error:', error);
+  process.exit(1);
+}
+
+
+===== FILE: apps/liminal-api/scripts/generate-llms-custom.js =====
+
+const fs = require('fs');
+const path = require('path');
+
+// Read config
+const configPath = path.join(__dirname, 'llms-config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+// Output directory
+const outputDir = path.join(__dirname, '../../docs/tsdocs');
+
+// Create llms.txt content
+const llmsTxt = `# llms.txt - Liminal Chat API Documentation
+
+project_name: ${config.project_name}
+version: ${config.version}
+description: ${config.description}
+base_url: ${config.base_url}
+docs_url: ${config.docs_url}
+
+## API Endpoints
+
+${config.endpoints.map((endpoint) => `- ${endpoint}`).join('\n')}
+
+## Authentication
+
+method: ${config.auth.method}
+details: ${config.auth.details}
+
+## Convex Functions
+
+### Users
+${config.convex_functions.users.map((fn) => `- ${fn}`).join('\n')}
+
+### Conversations
+${config.convex_functions.conversations.map((fn) => `- ${fn}`).join('\n')}
+
+### Messages
+${config.convex_functions.messages.map((fn) => `- ${fn}`).join('\n')}
+
+### Chat
+${config.convex_functions.chat.map((fn) => `- ${fn}`).join('\n')}
+
+## Environment Variables
+
+### Required for Production
+${config.environment_variables.map((v) => `- ${v}`).join('\n')}
+
+### Development Environment
+${config.dev_environment.variables.map((v) => `- ${v}`).join('\n')}
+${config.dev_environment.description}
+
+## Support
+
+contact: ${config.support.contact}
+url: ${config.support.url}
+`;
+
+// Create output directory if it doesn't exist
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir, { recursive: true });
+}
+
+// Write the file
+fs.writeFileSync(path.join(outputDir, 'llms.txt'), llmsTxt, 'utf-8');
+console.log(`✅ Generated llms.txt in ${outputDir}`);
+
+
+===== FILE: apps/liminal-api/scripts/generate-test-token.sh =====
+
+#!/bin/bash
+
+echo "Opening Clerk token generator..."
+echo ""
+echo "Instructions:"
+echo "1. Sign in with your Clerk account"
+echo "2. Click 'Generate Test Token'"
+echo "3. Copy the generated token"
+echo "4. Set it as environment variable:"
+echo "   export CLERK_TEST_TOKEN='Bearer <your-token>'"
+echo ""
+
+# Open the HTML file in default browser
+open test-token-generator.html
+
+echo "Once you have the token, run tests with:"
+echo "  npm test"
+
+===== FILE: apps/liminal-api/scripts/llms-config.json =====
+
+{
+  "project_name": "Liminal Chat API",
+  "version": "0.0.0",
+  "description": "Convex backend for Liminal Chat - real-time data sync, authentication with Clerk, and HTTP endpoints for Vercel AI SDK integration",
+  "base_url": "https://your-deployment.convex.cloud",
+  "docs_url": "https://github.com/leegmoore/liminal-chat/tree/main/apps/liminal-api",
+  "endpoints": ["/health", "/test", "/clerk-webhook", "/api/chat-text", "/api/chat-stream"],
+  "auth": {
+    "method": "Clerk JWT",
+    "details": "Pass JWT token in Authorization header: Bearer YOUR_CLERK_JWT"
+  },
+  "convex_functions": {
+    "users": [
+      "getCurrentUser",
+      "syncUser",
+      "testAuth",
+      "getUserCount",
+      "getSampleUser",
+      "initializeDevUser"
+    ],
+    "conversations": ["create", "list", "get", "update", "archive", "count"],
+    "messages": ["create", "createBatch", "list", "getAll", "count", "getLatest"],
+    "chat": ["simpleChatAction", "streamingChatAction"]
+  },
+  "environment_variables": [
+    "CLERK_ISSUER_URL",
+    "CLERK_WEBHOOK_SECRET",
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GOOGLE_GENERATIVE_AI_API_KEY",
+    "PERPLEXITY_API_KEY",
+    "OPENROUTER_API_KEY",
+    "VERCEL_API_KEY"
+  ],
+  "dev_environment": {
+    "variables": ["DEV_AUTH_DEFAULT", "DEV_USER_ID", "DEV_USER_EMAIL", "DEV_USER_NAME"],
+    "description": "Development authentication bypass for local testing"
+  },
+  "support": {
+    "contact": "support@liminal.chat",
+    "url": "https://github.com/leegmoore/liminal-chat/issues"
+  }
+}
+
+
+===== FILE: apps/liminal-api/scripts/migrate-to-local-auth.md =====
+
+# Migration Guide: WorkOS Direct → Local Dev Service
+
+## Overview
+
+We've migrated from direct WorkOS authentication in tests to using a centralized local dev service. This simplifies credential management and provides a single source of truth for development authentication.
+
+## What Changed
+
+### Before (Direct WorkOS)
+- Tests called WorkOS APIs directly
+- Each test process managed its own token cache
+- Required WorkOS credentials in test environment
+
+### After (Local Dev Service)  
+- Tests request tokens from `http://127.0.0.1:8081/auth/token`
+- Single token cache in local-dev-service
+- Only local-dev-service needs WorkOS credentials
+
+## Migration Steps
+
+1. **Update Environment Variables**
+   
+   Move from liminal-api tests to local-dev-service:
+   ```bash
+   # From: apps/liminal-api/.env
+   # To: apps/local-dev-service/.env
+   
+   WORKOS_CLIENT_ID=your_client_id
+   WORKOS_API_KEY=your_api_key
+   DEV_USER_EMAIL=system@example.com
+   DEV_USER_PASSWORD=your_password
+   ```
+
+2. **Start Local Dev Service**
+   ```bash
+   cd apps/local-dev-service
+   npm run dev:start
+   ```
+
+3. **Run Tests**
+   ```bash
+   cd apps/liminal-api
+   npm test
+   ```
+
+## Benefits
+
+- **Centralized Auth**: One service handles all dev authentication
+- **Simpler Config**: Only configure WorkOS credentials once
+- **Better Caching**: Shared token cache across all tools
+- **Easier Debugging**: Single place to monitor auth issues
+
+## Rollback
+
+If needed, you can temporarily revert:
+
+1. Replace `local-dev-auth.ts` import with `system-auth.ts` in `auth-fixture.ts`
+2. Restore WorkOS env vars to test environment
+3. Comment out the local dev service check in `playwright.config.ts`
+
+## Future Plans
+
+- React app will use same endpoint via `useAuthFromDev` hook
+- CLI tools can authenticate through local service
+- Potential for mock auth mode in tests
+
+===== FILE: apps/liminal-api/tsconfig.json =====
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "allowJs": false,
+    "noEmit": true,
+    "types": ["node", "@types/node"]
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist", "convex/_generated"]
+}
+
+
+===== FILE: apps/liminal-api/tsdoc.json =====
+
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "tagDefinitions": [
+    {
+      "tagName": "@security",
+      "syntaxKind": "block",
+      "allowMultiple": true
+    }
+  ]
+}
+
+
+===== FILE: apps/liminal-api/typedoc.json =====
+
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./convex"],
+  "entryPointStrategy": "expand",
+  "out": "../../docs/tsdocs/api",
+  "exclude": ["**/node_modules/**", "**/_generated/**", "**/tests/**", "**/test-utils/**"],
+  "includeVersion": true,
+  "categorizeByGroup": true,
+  "plugin": [],
+  "name": "Liminal Chat API Documentation",
+  "navigationLinks": {
+    "Liminal Chat": "https://github.com/leegmoore/liminal-chat"
+  },
+  "tsconfig": "./convex/tsconfig.json",
+  "readme": "./README.md",
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "disableSources": false,
+  "hideGenerator": true,
+  "theme": "default",
+  "sort": ["static-first", "alphabetical"],
+  "validation": {
+    "notExported": false,
+    "invalidLink": true
+  }
+}
+
+
+===== SINGLE FILE CONVEX REPO END =====
