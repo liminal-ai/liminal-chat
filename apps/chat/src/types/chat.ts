@@ -21,7 +21,14 @@ export interface ChatMessage {
   stopped?: boolean;
   metadata?: {
     provenance?: MessageProvenance;
+    artifactIds?: string[];
   };
 }
 
 export type StreamStatus = 'idle' | 'sending' | 'streaming' | 'error';
+
+export interface Artifact {
+  id: string;
+  name: string;
+  type: 'doc' | 'code' | 'img' | 'data';
+}

@@ -3,6 +3,8 @@ import type { ChatMessage, StreamStatus, Capability, MessageProvenance } from '.
 
 type SendOptions = {
   onToken?: (chunk: string) => void;
+  artifactIds?: string[];
+  rag?: unknown;
 };
 
 export function useChatStream(threadId: string, capability: Capability) {
@@ -52,7 +54,14 @@ export function useChatStream(threadId: string, capability: Capability) {
 
       const userId = `u_${Date.now()}`;
       lastUserId.current = userId;
-      addMessage({ id: userId, threadId, role: 'user', text, ts: Date.now() });
+      addMessage({
+        id: userId,
+        threadId,
+        role: 'user',
+        text,
+        ts: Date.now(),
+        metadata: { artifactIds: opts?.artifactIds ?? [] },
+      });
 
       const controller = new AbortController();
       abortRef.current = controller;
@@ -65,7 +74,13 @@ export function useChatStream(threadId: string, capability: Capability) {
         const res = await fetch('/api/chat/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threadId, text, capability, artifactIds: [], rag: null }),
+          body: JSON.stringify({
+            threadId,
+            text,
+            capability,
+            artifactIds: opts?.artifactIds ?? [],
+            rag: opts?.rag ?? null,
+          }),
           signal: controller.signal,
         });
         if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
@@ -114,6 +129,16 @@ export function useChatStream(threadId: string, capability: Capability) {
       }
 
       const aId = startAssistant();
+      // Attach same artifactIds to assistant for display grouping
+      if (opts?.artifactIds && opts.artifactIds.length > 0) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === aId
+              ? { ...m, metadata: { ...(m.metadata || {}), artifactIds: opts.artifactIds } }
+              : m,
+          ),
+        );
+      }
       if (metaFromServer) {
         setMessages((prev) =>
           prev.map((m) =>
