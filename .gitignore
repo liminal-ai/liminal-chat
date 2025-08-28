@@ -148,3 +148,8 @@ docs/llm-agent-exploration/pocketflow-github.md
 docs/llm-agent-exploration/phase-1-impl.md
 agent-management/veloc-code-prompt.md
 .vercel
+
+# Development demo pages and build artifacts
+apps/chat/src/pages/demos/
+single-file-repo/
+single-file-convex-repo/
